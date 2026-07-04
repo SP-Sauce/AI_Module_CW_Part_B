@@ -1,0 +1,91 @@
+[
+  {
+    "source_id": "sample-001",
+    "name": "Pizza Hut Cherry Hinton",
+    "food": "italian",
+    "area": "south",
+    "pricerange": "cheap",
+    "address": "G4 Cambridge Leisure Park Clifton Way Cherry Hinton",
+    "postcode": "CB1 7DY",
+    "phone": "01223 323737",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-002",
+    "name": "Curry Garden",
+    "food": "indian",
+    "area": "centre",
+    "pricerange": "expensive",
+    "address": "106 Regent Street City Centre",
+    "postcode": "CB2 1DP",
+    "phone": "01223 302330",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-003",
+    "name": "The Cambridge Chop House",
+    "food": "british",
+    "area": "centre",
+    "pricerange": "expensive",
+    "address": "1 Kings Parade City Centre",
+    "postcode": "CB2 1SJ",
+    "phone": "01223 359506",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-004",
+    "name": "Yippee Noodle Bar",
+    "food": "chinese",
+    "area": "centre",
+    "pricerange": "moderate",
+    "address": "7-9 King Street",
+    "postcode": "CB1 1LH",
+    "phone": "01223 518111",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-005",
+    "name": "Nandos City Centre",
+    "food": "portuguese",
+    "area": "centre",
+    "pricerange": "moderate",
+    "address": "33-34 St Andrews Street",
+    "postcode": "CB2 3AR",
+    "phone": "01223 327908",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-006",
+    "name": "Aromi",
+    "food": "italian",
+    "area": "centre",
+    "pricerange": "moderate",
+    "address": "1 Bene't Street",
+    "postcode": "CB2 3QN",
+    "phone": "01223 300117",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-007",
+    "name": "Thanh Binh",
+    "food": "vietnamese",
+    "area": "west",
+    "pricerange": "cheap",
+    "address": "17 Magdalene Street",
+    "postcode": "CB3 0AF",
+    "phone": "01223 362456",
+    "type": "restaurant"
+  },
+  {
+    "source_id": "sample-008",
+    "name": "Midsummer House",
+    "food": "modern european",
+    "area": "east",
+    "pricerange": "expensive",
+    "address": "Midsummer Common",
+    "postcode": "CB4 1HA",
+    "phone": "01223 369299",
+    "type": "restaurant"
+  }
+]
+

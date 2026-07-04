@@ -1,0 +1,42 @@
+[
+  {
+    "text": "I need a cheap Italian restaurant in the south",
+    "intent": "search",
+    "slots": {
+      "food": "italian",
+      "area": "south",
+      "pricerange": "cheap"
+    }
+  },
+  {
+    "text": "Can you book it for Friday at 7pm for 2 people?",
+    "intent": "book",
+    "slots": {
+      "day": "friday",
+      "time": "19:00",
+      "people": 2
+    }
+  },
+  {
+    "text": "Move the booking to Saturday",
+    "intent": "reschedule",
+    "slots": {
+      "day": "saturday"
+    }
+  },
+  {
+    "text": "Cancel it please",
+    "intent": "cancel",
+    "slots": {}
+  },
+  {
+    "text": "Find a moderate Chinese place in the centre",
+    "intent": "search",
+    "slots": {
+      "food": "chinese",
+      "area": "centre",
+      "pricerange": "moderate"
+    }
+  }
+]
+

@@ -1,0 +1,24 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local datasets and generated outputs
+data/raw/*
+!data/raw/README.md
+data/processed/*
+!data/processed/README.md
+!data/processed/restaurants.jsonl
+results/*
+!results/README.md
+
+# Model/cache artifacts
+models/
+.cache/
+*.log
