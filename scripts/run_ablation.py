@@ -32,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
 def final_system(use_sample: bool) -> dict[str, Any]:
     assistant = RestaurantAssistant(use_sample=use_sample)
     responses = [assistant.process(turn).response for turn in SCENARIO]
-    return {"success": "simulated reference" in responses[-1].lower(), "responses": responses}
+    return {"success": "your reference" in responses[-1].lower(), "responses": responses}
 
 
 def retrieval_only(restaurants: list[dict[str, Any]]) -> dict[str, Any]:
@@ -48,7 +48,7 @@ def no_state_tracking(use_sample: bool) -> dict[str, Any]:
     for turn in SCENARIO:
         assistant = RestaurantAssistant(use_sample=use_sample)
         responses.append(assistant.process(turn).response)
-    return {"success": "simulated reference" in responses[-1].lower(), "responses": responses}
+    return {"success": "your reference" in responses[-1].lower(), "responses": responses}
 
 
 def llm_only_placeholder() -> dict[str, Any]:
@@ -72,4 +72,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -13,7 +13,7 @@ def test_dialogue_state_updates_and_missing_slots():
 
 
 def test_dialogue_state_reset_clears_session_data():
-    state = DialogueState(food="italian", area="south", booking_status="confirmed", booking_reference="SIM-ABC123")
+    state = DialogueState(food="italian", area="south", booking_status="confirmed", booking_reference="BK-ABC123")
     state.add_turn("hello", "hi")
 
     state.reset()
@@ -22,4 +22,3 @@ def test_dialogue_state_reset_clears_session_data():
     assert state.booking_status == "none"
     assert state.booking_reference is None
     assert state.conversation_history == []
-

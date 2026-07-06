@@ -14,18 +14,20 @@ BOOKING_SLOTS = ("day", "time", "people")
 
 @dataclass
 class DialogueState:
-    """Track restaurant preferences and simulated booking details."""
+    """Track restaurant preferences and session booking details."""
 
     food: str | None = None
     area: str | None = None
     pricerange: str | None = None
     day: str | None = None
+    booking_date: str | None = None
     time: str | None = None
     people: int | None = None
     selected_restaurant: dict[str, Any] | None = None
     booking_restaurant: dict[str, Any] | None = None
     booking_status: str = "none"
     booking_reference: str | None = None
+    pending_day_modifier: str | None = None
     conversation_history: list[dict[str, str]] = field(default_factory=list)
 
     def update_slots(self, new_slots: dict[str, Any]) -> None:
@@ -42,6 +44,8 @@ class DialogueState:
                 self.pricerange = normalize_price(value)
             elif key == "day":
                 self.day = str(value).strip().lower()
+            elif key == "booking_date":
+                self.booking_date = str(value).strip()
             elif key == "time":
                 self.time = normalize_time(str(value))
             elif key == "people":
@@ -77,12 +81,14 @@ class DialogueState:
         self.area = None
         self.pricerange = None
         self.day = None
+        self.booking_date = None
         self.time = None
         self.people = None
         self.selected_restaurant = None
         self.booking_restaurant = None
         self.booking_status = "none"
         self.booking_reference = None
+        self.pending_day_modifier = None
         self.conversation_history.clear()
 
     def to_dict(self) -> dict[str, Any]:
@@ -91,11 +97,13 @@ class DialogueState:
             "area": self.area,
             "pricerange": self.pricerange,
             "day": self.day,
+            "booking_date": self.booking_date,
             "time": self.time,
             "people": self.people,
             "selected_restaurant": self.selected_restaurant,
             "booking_restaurant": self.booking_restaurant,
             "booking_status": self.booking_status,
             "booking_reference": self.booking_reference,
+            "pending_day_modifier": self.pending_day_modifier,
             "conversation_history": list(self.conversation_history),
         }

@@ -9,7 +9,8 @@ User message
 -> restaurant retrieval
 -> preference-fit ranking
 -> grounded response generation
--> simulated booking update
+-> booking-state update
+-> SQLite session and booking persistence in the web app
 ```
 
 The assistant is a CPU-feasible retrieval-grounded dialogue system. It does not
@@ -24,8 +25,8 @@ of people. Optional LLM extraction can be added later, but rule extraction is th
 tested baseline.
 
 `dialogue_state.py` stores session-level context. The state object has food,
-area, price range, booking day, booking time, people, selected restaurant,
-booking status, simulated reference and conversation history.
+area, price range, booking day, concrete booking date, booking time, people,
+selected restaurant, booking status, booking reference and conversation history.
 
 `retrieval.py` builds searchable text from restaurant records and uses
 scikit-learn TF-IDF similarity. Known constraints are used for exact filtering
@@ -40,12 +41,25 @@ a local/downloadable model are available, it can use a small encoder-decoder
 model such as `google/flan-t5-small`. Otherwise it uses safe templates. Both
 paths are instructed to use only retrieved restaurant evidence.
 
-`booking.py` creates simulated booking references such as `SIM-AB12CD`, supports
-simulated rescheduling and cancellation, and avoids any claim that a real booking
-was made.
+`booking.py` creates booking references such as `BK-AB12CD`, supports
+rescheduling and cancellation, and avoids any claim about live restaurant
+availability.
+
+`storage.py` persists local user accounts, web sessions, chat turns and booking
+records in SQLite. Passwords are stored as hashes. The database stores generated
+session ids and restaurant booking details, but no payments, live availability
+or external customer account integrations.
 
 `assistant.py` coordinates the pipeline and returns optional debug information
 for live demonstration.
+
+`web_app.py` exposes the browser interface using Flask. Users register or log in
+locally, the browser keeps a session id cookie for the active conversation, and
+each booking record is associated with that conversation. The account history
+view groups conversations and recent bookings by user. The local `/admin`
+overseer dashboard reads the same SQLite store and presents all demo session
+transcripts, booking records and aggregate metrics. The shared login page routes
+the local admin account to the dashboard and normal users to the chat app.
 
 ## Data Flow
 
@@ -62,6 +76,6 @@ postcodes or food types.
 
 The implementation only supports the restaurant domain. It does not provide
 hotel, train, taxi, bus, attraction or hospital support. It does not query live
-availability, process payments, use external review sites or store personal data
-beyond the current Python session.
-
+availability, process payments or use external review sites. The web app stores
+only local proof-of-concept accounts, session ids, chat turns and booking
+records.

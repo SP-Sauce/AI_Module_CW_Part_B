@@ -42,6 +42,8 @@ class RestaurantRetriever:
         state_dict = self._state_to_dict(state)
         candidate_indices = self._constraint_indices(state_dict)
         if not candidate_indices:
+            if self._has_active_constraints(state_dict):
+                return []
             candidate_indices = list(range(len(self.restaurants)))
 
         query_text = self._build_query_text(query, state_dict)
@@ -56,8 +58,19 @@ class RestaurantRetriever:
         state_dict = self._state_to_dict(state)
         candidate_indices = self._constraint_indices(state_dict)
         if not candidate_indices:
+            if self._has_active_constraints(state_dict):
+                return []
             candidate_indices = list(range(len(self.restaurants)))
         return [RetrievedRestaurant(self.restaurants[index], 0.0) for index in candidate_indices[:top_k]]
+
+    def _has_active_constraints(self, state: dict[str, Any]) -> bool:
+        return any(
+            (
+                normalize_food(state.get("food")),
+                normalize_area(state.get("area")),
+                normalize_price(state.get("pricerange")),
+            )
+        )
 
     def _constraint_indices(self, state: dict[str, Any]) -> list[int]:
         constraints = {

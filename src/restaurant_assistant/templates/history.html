@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Account History - MultiWOZ Restaurant Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <main class="history-shell">
+      <header class="history-header">
+        <div>
+          <h1>Account History</h1>
+          <p>{{ user.display_name }} - {{ user.username }}</p>
+        </div>
+        <div class="history-actions">
+          <a class="secondary-link-button" href="{{ url_for('index') }}">Chat app</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="danger-button" type="submit">Logout</button>
+          </form>
+        </div>
+      </header>
+
+      <section class="history-grid">
+        <article class="history-panel">
+          <h2>Conversations</h2>
+          {% for item in history.sessions %}
+            <div class="history-item">
+              <strong>{{ item.session_id }}</strong>
+              <span>{{ item.turn_count }} turns - {{ item.booking_count }} bookings - {{ item.status }}</span>
+              {% if item.last_user_message %}
+                <p>{{ item.last_user_message }}</p>
+              {% else %}
+                <p>No messages yet.</p>
+              {% endif %}
+            </div>
+          {% else %}
+            <p class="empty-state">No conversations yet.</p>
+          {% endfor %}
+        </article>
+
+        <article class="history-panel">
+          <h2>Bookings</h2>
+          {% for booking in history.bookings %}
+            <div class="history-item">
+              <strong>{{ booking.reference }} - {{ booking.restaurant_name }}</strong>
+              <span>{{ booking.booking_date or booking.day }} at {{ booking.time }} for {{ booking.people }} people</span>
+              <p>{{ booking.pricerange or "unknown price" }} {{ booking.food or "unknown cuisine" }} in {{ booking.area or "unknown area" }} - {{ booking.status }}</p>
+            </div>
+          {% else %}
+            <p class="empty-state">No booking records yet.</p>
+          {% endfor %}
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

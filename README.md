@@ -1,9 +1,9 @@
-# Retrieval-Grounded LLM Dialogue System for Restaurant Search and Simulated Booking
+# Retrieval-Grounded LLM Dialogue System for Restaurant Search and Booking Records
 
 This repository contains a Part B implementation for the 6CM606 Frontiers in
 Artificial Intelligence and Data Science coursework. It builds a CPU-feasible
 MultiWOZ restaurant assistant that can search restaurant records, maintain
-session state and create clearly simulated booking confirmations.
+session state and create proof-of-concept booking records.
 
 ## Overview
 
@@ -21,7 +21,7 @@ User message
 -> restaurant retrieval
 -> preference-fit ranking
 -> grounded LLM or template response
--> simulated booking-state update
+-> booking-state update
 ```
 
 ## Setup
@@ -60,7 +60,74 @@ python scripts/prepare_multiwoz.py --sample-if-missing
 
 Tests use `data/samples/sample_restaurants.json`.
 
-## Run The Chatbot
+## Run The Web App
+
+```powershell
+python scripts/run_web.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+For the local demo overseer/admin view, open:
+
+```text
+http://127.0.0.1:5000/admin
+```
+
+Use the same login page for normal users and admin. Demo credentials:
+
+```text
+user1 / pass123  (existing demo history)
+user2 / pass123  (empty account)
+admin / pass123  (admin dashboard)
+```
+
+The admin dashboard shows all local sessions, saved conversations, booking
+records and prototype metrics such as intent distribution, booking conversion,
+average turns per session, clarification counts and latency for newly saved
+turns. It also lets the local demo overseer close a session while preserving
+the transcript and booking evidence for review. The raw dashboard payload is
+also available at:
+
+```text
+http://127.0.0.1:5000/api/admin
+```
+
+If you want to use the bundled sample data instead of the processed MultiWOZ
+restaurant records:
+
+```powershell
+python scripts/run_web.py --sample-data
+```
+
+The browser app now uses local username/password accounts. Register or log in
+first, then the app creates user-owned conversation sessions and stores chat
+turns plus booking records in a local SQLite database at
+`data/runtime/bookings.sqlite3`. Set `BOOKING_DB_PATH` to change the database
+location.
+
+Account history is available from the chat sidebar or:
+
+```text
+http://127.0.0.1:5000/history
+```
+
+Use **Copy history** in the web app to copy the current session transcript and
+booking summary. **New session** switches to a separate empty conversation; it
+does not delete earlier session records from SQLite. **Exit conversation**
+deletes the active chat session and its booking records, then starts a fresh
+session with the opening greeting.
+
+Booking references are scoped to the logged-in user and active session in the
+public chat. The admin dashboard can show all local account/session records for
+demo oversight, but a normal chat session cannot open booking details from
+another account or session id.
+
+## Run The Terminal Chatbot
 
 ```powershell
 python scripts/run_chat.py --sample-data --debug
@@ -73,13 +140,13 @@ You: I need a cheap Italian restaurant in the centre.
 Assistant: I found pizza hut city centre...
 
 You: Can you book it for Friday at 7 for 2 people?
-Assistant: I have created a simulated booking...
+Assistant: I have created a booking record...
 
 You: Move it to Saturday.
-Assistant: I have updated the simulated booking...
+Assistant: I have updated booking...
 
 You: Cancel it.
-Assistant: I have cancelled the simulated booking...
+Assistant: I have cancelled booking...
 ```
 
 Enable attempted Transformers generation:
@@ -109,7 +176,7 @@ simpler baselines.
 
 ## Safety And Limitations
 
-- Bookings are simulated only and use references such as `SIM-AB12CD`.
+- Booking records are proof-of-concept and session-only, with references such as `BK-AB12CD`.
 - Relative booking days such as `today`, `tomorrow`, `day after tomorrow`
   and `the day after` are resolved from the local prompt timestamp using the
   configured timezone, defaulting to `Europe/London`.
@@ -120,7 +187,8 @@ simpler baselines.
   certification unless a field is explicitly present in the data.
 - The assistant must not invent phone numbers, addresses, postcodes or food
   types. Responses are grounded in loaded restaurant records.
-- State is session-only and is reset when the process exits.
+- The web app stores local session ids, chat turns and booking records in
+  SQLite. The terminal chatbot keeps state only for the current process.
 
 ## Optional Stretch Work
 

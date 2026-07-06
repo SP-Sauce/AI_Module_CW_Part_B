@@ -25,3 +25,12 @@ def test_retrieve_by_constraints_filters_exact_slots():
     assert len(results) == 1
     assert results[0].record["name"] == "Yippee Noodle Bar"
 
+
+def test_retrieval_does_not_fallback_when_constraints_conflict():
+    restaurants = load_sample_restaurants()
+    retriever = RestaurantRetriever().fit(restaurants)
+    state = DialogueState(food="italian", area="east")
+
+    results = retriever.search("italian restaurant in the east", state, top_k=3)
+
+    assert results == []

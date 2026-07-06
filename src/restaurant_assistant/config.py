@@ -24,6 +24,7 @@ class Settings:
     raw_multiwoz_path: Path = PROJECT_ROOT / "data" / "raw"
     processed_restaurant_path: Path = PROJECT_ROOT / "data" / "processed" / "restaurants.jsonl"
     sample_data_path: Path = PROJECT_ROOT / "data" / "samples" / "sample_restaurants.json"
+    booking_db_path: Path = PROJECT_ROOT / "data" / "runtime" / "bookings.sqlite3"
     top_k: int = 3
     enable_llm: bool = False
     model_name: str = "google/flan-t5-small"
@@ -37,6 +38,7 @@ def get_settings() -> Settings:
     top_k = int(os.getenv("TOP_K", "3"))
     return Settings(
         raw_multiwoz_path=raw_path,
+        booking_db_path=Path(os.getenv("BOOKING_DB_PATH", str(PROJECT_ROOT / "data" / "runtime" / "bookings.sqlite3"))),
         top_k=top_k,
         enable_llm=_env_bool("ENABLE_LLM", False),
         model_name=os.getenv("HF_MODEL_NAME", "google/flan-t5-small"),

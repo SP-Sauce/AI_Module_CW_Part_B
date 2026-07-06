@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Restaurant Assistant Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Local overseer view for demo analytics, conversation review and booking evidence.</p>
+        </div>
+        <div class="admin-actions">
+          <a class="nav-link" href="/">Chat app</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="nav-button" type="submit">Logout admin</button>
+          </form>
+        </div>
+      </header>
+
+      <section class="metric-grid" aria-label="Summary metrics">
+        <article class="metric"><span>Sessions</span><strong>{{ snapshot.summary.total_sessions }}</strong></article>
+        <article class="metric"><span>Active</span><strong>{{ snapshot.summary.active_sessions }}</strong></article>
+        <article class="metric"><span>Closed</span><strong>{{ snapshot.summary.closed_sessions }}</strong></article>
+        <article class="metric"><span>Chat turns</span><strong>{{ snapshot.summary.total_turns }}</strong></article>
+        <article class="metric"><span>Bookings</span><strong>{{ snapshot.summary.total_bookings }}</strong></article>
+        <article class="metric"><span>Confirmed</span><strong>{{ snapshot.summary.confirmed_bookings }}</strong></article>
+        <article class="metric"><span>Conversion</span><strong>{{ snapshot.summary.booking_conversion_rate }}%</strong></article>
+        <article class="metric"><span>Avg turns/session</span><strong>{{ snapshot.summary.average_turns_per_session }}</strong></article>
+        <article class="metric">
+          <span>Avg latency</span>
+          <strong>{% if snapshot.summary.average_latency_ms is not none %}{{ snapshot.summary.average_latency_ms }}ms{% else %}n/a{% endif %}</strong>
+        </article>
+        <article class="metric"><span>Clarifications</span><strong>{{ snapshot.summary.clarification_count }}</strong></article>
+      </section>
+
+      <section class="band">
+        <h2>Assessment Alignment</h2>
+        <div class="alignment-grid">
+          <p><strong>Part A scope:</strong> restaurant-only MultiWOZ assistant, grounded in restaurant records and session state.</p>
+          <p><strong>Part B evidence:</strong> live bookings, transcripts, intent distribution, conversion proxy and failure/limitation counts.</p>
+          <p><strong>Evaluation story:</strong> supports demo discussion of task success, clarification turns, unsupported requests and latency.</p>
+          <p><strong>Ethics boundary:</strong> local demo accounts only; no payments, live availability or external calendar accounts.</p>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel">
+          <h2>Intent Distribution</h2>
+          <table>
+            <thead><tr><th>Intent</th><th>Turns</th></tr></thead>
+            <tbody>
+              {% for intent, count in snapshot.intent_counts %}
+                <tr><td>{{ intent }}</td><td>{{ count }}</td></tr>
+              {% else %}
+                <tr><td colspan="2">No turn analytics yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </article>
+
+        <article class="panel">
+          <h2>Booked Cuisines</h2>
+          <table>
+            <thead><tr><th>Cuisine</th><th>Bookings</th></tr></thead>
+            <tbody>
+              {% for cuisine, count in snapshot.cuisine_counts %}
+                <tr><td>{{ cuisine }}</td><td>{{ count }}</td></tr>
+              {% else %}
+                <tr><td colspan="2">No bookings yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </article>
+
+        <article class="panel">
+          <h2>Booked Restaurants</h2>
+          <table>
+            <thead><tr><th>Restaurant</th><th>Bookings</th></tr></thead>
+            <tbody>
+              {% for restaurant, count in snapshot.booked_restaurant_counts %}
+                <tr><td>{{ restaurant }}</td><td>{{ count }}</td></tr>
+              {% else %}
+                <tr><td colspan="2">No bookings yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>All Booking Records</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th><th>User</th><th>Restaurant</th><th>Cuisine</th><th>Date</th><th>Time</th><th>People</th><th>Status</th><th>Session</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for booking in snapshot.bookings %}
+                <tr>
+                  <td>{{ booking.reference }}</td>
+                  <td>{{ booking.display_name or booking.username or "anonymous" }}</td>
+                  <td>{{ booking.restaurant_name }}</td>
+                  <td>{{ booking.food or "unknown" }}</td>
+                  <td>{{ booking.booking_date or booking.day }}</td>
+                  <td>{{ booking.time }}</td>
+                  <td>{{ booking.people }}</td>
+                  <td>{{ booking.status }}</td>
+                  <td class="session-cell">{{ booking.session_id }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="9">No booking records yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel conversation-panel">
+        <form method="post" action="{{ url_for('admin_close_selected_sessions') }}">
+          <div class="conversation-toolbar">
+            <h2>Conversations</h2>
+            <div class="conversation-actions">
+              <label class="select-all-control">
+                <input id="selectAllSessions" type="checkbox">
+                Select all active
+              </label>
+              <button class="admin-secondary-button" type="submit">Close selected</button>
+              <button class="admin-danger-button" type="submit" formaction="{{ url_for('admin_close_all_sessions') }}">Close all</button>
+            </div>
+          </div>
+
+          <div class="conversation-scroll">
+            {% for session in snapshot.sessions %}
+              <details class="session-block">
+                <summary>
+                  <span class="session-summary-main">
+                    <input
+                      class="session-checkbox"
+                      type="checkbox"
+                      name="session_ids"
+                      value="{{ session.session_id }}"
+                      aria-label="Select session {{ session.session_id }}"
+                      {% if session.status == "closed" %}disabled{% endif %}
+                    >
+                    <span>
+                      {{ session.session_id }}
+                      <span class="session-status {{ session.status or 'active' }}">{{ session.status or "active" }}</span>
+                      <span class="session-user">{{ session.display_name or session.username or "anonymous" }}</span>
+                    </span>
+                  </span>
+                  <small>{{ session.turn_count }} turns &middot; {{ session.booking_count }} bookings &middot; updated {{ session.updated_at }}</small>
+                </summary>
+                <div class="session-controls">
+                  {% if session.status == "closed" %}
+                    <span>Closed at {{ session.closed_at or "unknown time" }}</span>
+                  {% else %}
+                    <button
+                      class="admin-danger-button"
+                      type="submit"
+                      name="session_ids"
+                      value="{{ session.session_id }}"
+                    >
+                      Close session
+                    </button>
+                  {% endif %}
+                </div>
+                {% if session.bookings %}
+                  <div class="mini-heading">Bookings</div>
+                  <ul class="booking-list">
+                    {% for booking in session.bookings %}
+                      <li>{{ booking.reference }} &middot; {{ booking.restaurant_name }} &middot; {{ booking.booking_date or booking.day }} {{ booking.time }} &middot; {{ booking.status }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+                <div class="turn-list">
+                  {% for turn in session.messages %}
+                    <article class="turn">
+                      <div class="turn-meta">
+                        <span>{{ turn.created_at }}</span>
+                        <span>{{ turn.effective_intent or turn.intent or "unlabelled" }}</span>
+                        {% if turn.latency_ms is not none %}<span>{{ turn.latency_ms }}ms</span>{% endif %}
+                      </div>
+                      <p><strong>User:</strong> {{ turn.user_message }}</p>
+                      <p><strong>Assistant:</strong> {{ turn.assistant_message }}</p>
+                    </article>
+                  {% else %}
+                    <p class="empty">No conversation turns saved for this session.</p>
+                  {% endfor %}
+                </div>
+              </details>
+            {% else %}
+              <p class="empty">No sessions yet.</p>
+            {% endfor %}
+          </div>
+        </form>
+      </section>
+    </main>
+    <script>
+      const selectAllSessions = document.getElementById("selectAllSessions");
+      if (selectAllSessions) {
+        selectAllSessions.addEventListener("change", () => {
+          document.querySelectorAll(".session-checkbox:not(:disabled)").forEach((checkbox) => {
+            checkbox.checked = selectAllSessions.checked;
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

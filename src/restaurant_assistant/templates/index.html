@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MultiWOZ Restaurant Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="account-sidebar" aria-label="Account navigation">
+        <div class="brand-block">
+          <div class="brand-mark">DR</div>
+          <div>
+            <h1>DineReserve AI</h1>
+            <p>MultiWOZ restaurant hub</p>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <a class="active" href="{{ url_for('index') }}">Chat Assistant</a>
+          <a href="{{ url_for('account_history') }}">Account History</a>
+          <a href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+        </nav>
+
+        <section class="sidebar-section">
+          <div class="sidebar-heading">
+            <h2>Conversations</h2>
+            <span id="historyCount" class="sidebar-count">0</span>
+          </div>
+          <div id="historyList" class="sidebar-list conversation-list"></div>
+        </section>
+
+        <div class="account-card">
+          <div class="avatar">{{ user.display_name[:1] | upper }}</div>
+          <div>
+            <strong id="accountName">{{ user.display_name }}</strong>
+            <span id="accountUsername">{{ user.username }}</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="app-main">
+        <header class="topbar">
+          <div>
+            <h1>MultiWOZ Restaurant Assistant</h1>
+            <div class="session-line">Conversation <span id="sessionId">{{ session_id }}</span></div>
+          </div>
+          <div class="topbar-actions">
+            <button id="copyHistoryButton" class="secondary-button" type="button" title="Copy this conversation's saved chat and bookings">Copy chat</button>
+            <button id="newSessionButton" class="secondary-button" type="button" title="Start a separate empty conversation">New chat</button>
+            <form method="post" action="{{ url_for('logout') }}">
+              <button class="secondary-button" type="submit">Logout</button>
+            </form>
+          </div>
+        </header>
+
+        <section class="workspace">
+          <section class="chat-pane" aria-label="Chat">
+            <div id="messages" class="messages" aria-live="polite"></div>
+            <form id="chatForm" class="composer">
+              <input
+                id="messageInput"
+                name="message"
+                type="text"
+                autocomplete="off"
+                placeholder="Ask for restaurants or bookings"
+                aria-label="Message"
+                required
+              >
+              <button id="sendButton" class="primary-button" type="submit">Send</button>
+            </form>
+          </section>
+
+          <aside class="bookings-pane" aria-label="Account bookings">
+            <div class="pane-heading">
+              <h2>Bookings</h2>
+              <span id="bookingCount" class="count-pill">0</span>
+            </div>
+            <div id="bookings" class="bookings"></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <div id="bookingModal" class="modal-backdrop" hidden>
+      <section class="booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
+        <div class="modal-kicker">Calendar entry</div>
+        <h2 id="bookingModalTitle">Booking details</h2>
+        <dl id="bookingModalDetails" class="booking-detail-list"></dl>
+        <div class="modal-actions">
+          <button id="bookingModalCopy" class="secondary-button" type="button">Copy reference</button>
+          <button id="bookingModalCalendar" class="primary-button" type="button">Download calendar</button>
+          <button id="bookingModalClose" class="secondary-button" type="button">Close</button>
+        </div>
+      </section>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>

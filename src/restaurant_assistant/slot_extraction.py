@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from restaurant_assistant.date_utils import RELATIVE_DAYS
+from restaurant_assistant.date_utils import DAY_MODIFIERS, RELATIVE_DAYS
 from restaurant_assistant.preprocessing import normalize_area, normalize_food, normalize_price, normalize_time
 
 
@@ -49,11 +49,71 @@ SUPPORTED_FOODS = {
 
 FOOD_ALIASES = {
     "pizza": "italian",
+    "spaghetti": "italian",
+    "pasta": "italian",
     "portugese": "portuguese",
     "asian": "asian oriental",
     "veggie": "vegetarian",
     "mediteranian": "mediterranean",
     "mediterranian": "mediterranean",
+    "arab": "lebanese",
+    "arabic": "lebanese",
+    "middle eastern": "lebanese",
+    "middle-eastern": "lebanese",
+}
+
+CUISINE_GROUP_SUGGESTIONS = {
+    "Middle Eastern": {
+        "patterns": [r"\bmiddle[- ]eastern\b"],
+        "foods": ["lebanese", "turkish", "mediterranean"],
+    },
+}
+
+DISH_CUISINE_SUGGESTIONS = {
+    "chicken and rice": {
+        "patterns": [r"\bchicken\b.*\brice\b|\brice\b.*\bchicken\b"],
+        "foods": ["indian", "chinese", "thai", "lebanese", "turkish"],
+    },
+    "cake or dessert": {
+        "patterns": [
+            r"\bcakes?\b",
+            r"\bdesserts?\b",
+            r"\bdeserts?\b",
+            r"\bsweets?\b",
+            r"\bpudding\b",
+            r"\bpastr(?:y|ies)\b",
+        ],
+        "foods": ["british", "european", "french", "international"],
+    },
+    "burger": {
+        "patterns": [r"\bburgers?\b"],
+        "foods": ["north american", "gastropub"],
+    },
+    "curry": {
+        "patterns": [r"\bcurr(?:y|ies)\b"],
+        "foods": ["indian", "thai"],
+    },
+    "noodles": {
+        "patterns": [r"\bnoodles?\b"],
+        "foods": ["chinese", "asian oriental", "thai", "vietnamese"],
+    },
+    "sushi": {
+        "patterns": [r"\bsushi\b"],
+        "foods": ["japanese"],
+    },
+    "lamb and rice": {
+        "patterns": [r"\blamb\b.*\brice\b|\brice\b.*\blamb\b"],
+        "foods": ["lebanese", "turkish", "mediterranean"],
+    },
+    "mandi": {
+        "patterns": [r"\bmandi\b|\bmandhi\b|\bmandy\b"],
+        "foods": ["lebanese", "turkish", "mediterranean"],
+    },
+}
+
+UNSUPPORTED_FOOD_PATTERNS = {
+    "egyptian": r"\begyptian\b|\begyption\b",
+    "yemeni": r"\byemeni\b|\byemen\b",
 }
 
 DAY_VALUES = {
@@ -100,9 +160,26 @@ class RuleBasedSlotExtractor:
         slots: dict[str, Any] = {}
         unsupported_slots: dict[str, str] = {}
 
-        food = self._extract_food(text)
-        if food:
-            slots["food"] = food
+        cuisine_group = self._extract_cuisine_group(text)
+        if cuisine_group:
+            group_label, food_candidates = cuisine_group
+            slots["cuisine_group"] = group_label
+            slots["food_candidates"] = food_candidates
+        else:
+            food = self._extract_food(text)
+            if food:
+                slots["food"] = food
+            else:
+                dish_preference = self._extract_dish_preference(text)
+                if dish_preference:
+                    dish, food_candidates = dish_preference
+                    slots["dish"] = dish
+                    slots["food_candidates"] = food_candidates
+                    unsupported_food = None
+                else:
+                    unsupported_food = self._extract_unsupported_food(text)
+                if unsupported_food:
+                    unsupported_slots["food"] = unsupported_food
 
         area = self._extract_area(text)
         if area:
@@ -123,6 +200,9 @@ class RuleBasedSlotExtractor:
         day = self._extract_day(text)
         if day:
             slots["day"] = day
+            day_modifier = self._extract_day_modifier(text, day)
+            if day_modifier:
+                slots["day_modifier"] = day_modifier
         else:
             unsupported_day = self._extract_unsupported_day(text)
             if unsupported_day:
@@ -147,16 +227,31 @@ class RuleBasedSlotExtractor:
         text = message.lower().replace(">", " ")
         replacements = [
             (r"\bothe\s+r\b", "other"),
+            (r"\bresuratns\b", "restaurants"),
+            (r"\bresurants\b", "restaurants"),
             (r"\bresturants\b", "restaurants"),
             (r"\brestraunts\b", "restaurants"),
             (r"\brresutrants\b", "restaurants"),
             (r"\bresutrants\b", "restaurants"),
             (r"\bresturants\b", "restaurants"),
+            (r"\bresuratn\b", "restaurant"),
+            (r"\bresurant\b", "restaurant"),
             (r"\bresturant\b", "restaurant"),
             (r"\brestraunt\b", "restaurant"),
             (r"\brresutrant\b", "restaurant"),
             (r"\bresutrant\b", "restaurant"),
             (r"\br+esu?t+r?a?u?r?a?n?t\b", "restaurant"),
+            (r"\bcusines\b", "cuisines"),
+            (r"\bcusine\b", "cuisine"),
+            (r"\blists\b", "list"),
+            (r"\bmoderatley\b", "moderately"),
+            (r"\bmoderatly\b", "moderately"),
+            (r"\bplese\b", "please"),
+            (r"\btbale\b", "table"),
+            (r"\bitalion\b", "italian"),
+            (r"\begyption\b", "egyptian"),
+            (r"\blamd\b", "lamb"),
+            (r"\bmandhi\b", "mandi"),
             (r"\bcancle\b", "cancel"),
             (r"\bcancelation\b", "cancellation"),
             (r"\bresechdeule\b", "reschedule"),
@@ -165,6 +260,7 @@ class RuleBasedSlotExtractor:
             (r"\breschduele\b", "reschedule"),
             (r"\breschdule\b", "reschedule"),
             (r"\breschudle\b", "reschedule"),
+            (r"\bthursdat\b|\bthurday\b|\bthrusday\b", "thursday"),
         ]
         for pattern, replacement in replacements:
             text = re.sub(pattern, replacement, text)
@@ -179,7 +275,32 @@ class RuleBasedSlotExtractor:
                 return food
         return None
 
+    def _extract_unsupported_food(self, text: str) -> str | None:
+        for label, pattern in UNSUPPORTED_FOOD_PATTERNS.items():
+            if re.search(pattern, text):
+                return label
+        return None
+
+    def _extract_dish_preference(self, text: str) -> tuple[str, list[str]] | None:
+        for label, spec in DISH_CUISINE_SUGGESTIONS.items():
+            patterns = spec["patterns"]
+            if any(re.search(pattern, text) for pattern in patterns):
+                foods = [food for food in spec["foods"] if food in SUPPORTED_FOODS]
+                if foods:
+                    return label, foods
+        return None
+
+    def _extract_cuisine_group(self, text: str) -> tuple[str, list[str]] | None:
+        for label, spec in CUISINE_GROUP_SUGGESTIONS.items():
+            patterns = spec["patterns"]
+            if any(re.search(pattern, text) for pattern in patterns):
+                foods = [food for food in spec["foods"] if food in SUPPORTED_FOODS]
+                if foods:
+                    return label, foods
+        return None
+
     def _extract_area(self, text: str) -> str | None:
+        text = re.sub(r"\bmiddle[- ]eastern\b", "middleeastern", text)
         area_patterns = {
             "centre": [
                 r"\bcentre\b",
@@ -203,6 +324,7 @@ class RuleBasedSlotExtractor:
         unsupported_patterns = {
             "countryside": r"\b(countryside|rural|village|villages|country side)\b",
             "outside centre": r"\b(outside|outskirts|suburbs?)\b",
+            "near me": r"\bnear me\b|\bnearby me\b|\bclose to me\b",
         }
         for label, pattern in unsupported_patterns.items():
             if re.search(pattern, text):
@@ -210,6 +332,31 @@ class RuleBasedSlotExtractor:
         return None
 
     def _extract_price(self, text: str) -> str | None:
+        numeric_range = re.search(
+            r"(?:£|\bpounds?\b|\bpriced?\b|\bprice\b|\baround\b|\babout\b|\bunder\b|\bmax\b|\bmaximum\b)?\s*"
+            r"(\d{1,3})\s*(?:-|to|–|—)\s*[£! ]*(\d{1,3})\s*(?:pounds?)?",
+            text,
+        )
+        if numeric_range:
+            first = int(numeric_range.group(1))
+            second = int(numeric_range.group(2))
+            highest = max(first, second)
+            lowest = min(first, second)
+            if highest > 100 and lowest <= 25:
+                return "moderate"
+            if highest <= 10:
+                return "cheap"
+            if highest <= 25:
+                return "moderate"
+            return "expensive"
+        single_price = re.search(r"\b(?:under|max|maximum|around|about)\s*£?\s*(\d{1,3})\s*(?:pounds?)?\b", text)
+        if single_price:
+            amount = int(single_price.group(1))
+            if amount <= 10:
+                return "cheap"
+            if amount <= 25:
+                return "moderate"
+            return "expensive"
         price_patterns = {
             "cheap": [r"\bcheap\b", r"\bbudget\b", r"\binexpensive\b", r"\blow cost\b"],
             "moderate": [r"\bmoderate\b", r"\bmoderately\b", r"\bmid[- ]?range\b", r"\breasonable\b"],
@@ -239,10 +386,22 @@ class RuleBasedSlotExtractor:
             return "today"
         return None
 
+    def _extract_day_modifier(self, text: str, day: str) -> str | None:
+        escaped_day = re.escape(day)
+        if re.search(rf"\bnext\s+week\s+{escaped_day}\b|\b{escaped_day}\s+next\s+week\b", text):
+            return "next_week"
+        if re.search(rf"\bnext\s+{escaped_day}\b", text):
+            return "next"
+        if re.search(rf"\bthis\s+{escaped_day}\b", text):
+            return "this"
+        return None
+
     def _extract_unsupported_day(self, text: str) -> str | None:
         return None
 
     def _extract_time(self, text: str) -> str | None:
+        if re.search(r"\b\d{1,3}\s*(?:-|to|–|—)\s*[£! ]*\d{1,3}\b", text) and not re.search(r"\b(am|pm)\b", text):
+            return None
         if re.search(r"\bmidnight\b", text):
             return "00:00"
         if re.search(r"\bnoon\b", text):
@@ -277,26 +436,55 @@ class RuleBasedSlotExtractor:
         return None
 
     def _extract_booking_reference(self, text: str) -> str | None:
-        match = re.search(r"\b(sim-[a-z0-9]{6})\b", text, flags=re.IGNORECASE)
+        match = re.search(r"\b((?:bk|sim)-[a-z0-9]{6})\b", text, flags=re.IGNORECASE)
         return match.group(1).upper() if match else None
 
     def _detect_intent(self, text: str, slots: dict[str, Any]) -> str:
         if re.search(r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card)\b", text):
             return "unsupported"
+        if slots.get("dish") and slots.get("food_candidates"):
+            return "dish_preference"
+        if slots.get("cuisine_group"):
+            if re.search(r"\b(other|another|alternatives?|else|anymore|any more|more options?|more restaurants?)\b", text):
+                return "alternative"
+            return "list"
+        if re.search(r"\bwhat\b.*\brestaurants?\b.*\b(?:are there|available)\b", text):
+            return "list"
+        if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b", text):
+            return "distance_info"
+        if re.search(r"\bwhat\s+areas?\b|\bwhich\s+areas?\b|\bareas?\s+(?:are|can|to)\b|\bfilter\s+through\b", text):
+            return "filter_info"
+        if re.search(
+            r"\b(what\s+(?:food\s+)?cuisines?|cuisines?.*look for|food types?.*(?:available|can|look)|what to eat|unsure what to eat|suggest.*cuisines?)\b",
+            text,
+        ) and not slots.get("food"):
+            return "cuisine_help"
         if re.search(r"\b(cancel|delete|remove)\b", text) and re.search(
-            r"\b(booking|reservation|table|it|this|sim-[a-z0-9]{6})\b", text
+            r"\b(bookings?|reservations?|table|it|this|(?:bk|sim)-[a-z0-9]{6})\b", text
         ):
             return "cancel"
         if re.search(r"\b(reschedule|move|change|amend|update)\b", text) and re.search(
-            r"\b(booking|reservation|table|it|this|time|day|sim-[a-z0-9]{6})\b", text
+            r"\b(booking|reservation|table|it|this|time|day|(?:bk|sim)-[a-z0-9]{6})\b", text
         ):
             return "reschedule"
         if re.search(r"\b(reschedule|move|change|amend|update)\b", text) and any(
             slot in slots for slot in ("day", "relative_day", "time", "people")
         ):
             return "reschedule"
-        if slots.get("booking_reference") and re.search(
-            r"\b(tell me about|details?|status|show|what is|what's|about)\b", text
+        if re.search(
+            r"\b(address|postcode|post code|phone|telephone|contact|location|located|where is|where's)\b",
+            text,
+        ):
+            return "restaurant_info"
+        if re.search(
+            r"\b(list|show|view|what|which|any|all)\b.*\b(bookings?|reservations?)\b|\b(bookings?|reservations?)\b.*\b(there|current|made|have)\b",
+            text,
+        ):
+            return "booking_list"
+        if re.search(r"\b(?:as|in)\s+a\s+table\b|\btable\s+format\b|\bshow\s+as\s+table\b", text):
+            return "table_view"
+        if re.search(r"\b(tell me about|details?|status|show|what is|what's|about)\b", text) and (
+            slots.get("booking_reference") or re.search(r"\b(booking|reservation|reference|it|this)\b", text)
         ):
             return "booking_info"
         if re.search(
@@ -306,10 +494,22 @@ class RuleBasedSlotExtractor:
             return "correct"
         if re.search(r"\b(book|reserve)\b", text):
             return "book"
-        if re.search(r"\b(make|create|set up)\s+(a\s+)?(booking|reservation)\b", text):
+        if re.search(r"\b(make|create|set up)\s+(?:a\s+|another\s+|one\s+more\s+|new\s+)?(booking|reservation)\b", text):
             return "book"
         if text.strip() in {"hi", "hello", "hey", "good morning", "good afternoon", "good evening"}:
             return "greeting"
+        if re.search(r"\b(thanks|thank you|cheers|ta)\b", text):
+            return "thanks"
+        if re.fullmatch(r"(?:next|following)\s+week", text):
+            return "date_clarification"
+        if re.search(r"\ball\s+of\s+them\b|\blist\s+all\b|\ball\b.*\brestaurants?\b|\brestaurants?\b.*\blist\s+all\b", text):
+            return "list"
+        if "pricerange" in slots and re.search(r"\b(that are|which are|ones that|around|about|priced?)\b", text):
+            return "list"
+        if re.search(r"\b(other|different|another)\s+cuisines?\b|\bnot\s+(?:just|only)\b", text) and re.search(
+            r"\b(list|restaurants?|cuisines?|places?)\b", text
+        ):
+            return "list"
         if re.search(r"\b(other|another|alternatives?|else|nearby|anymore|any more|more options?|more restaurants?)\b", text):
             return "alternative"
         if re.search(
@@ -335,6 +535,24 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
         food = FOOD_ALIASES.get(food, food)
         if food in SUPPORTED_FOODS:
             valid["food"] = food
+    if "dish" in slots:
+        dish = re.sub(r"[^a-z0-9 /-]", "", str(slots["dish"]).strip().lower())
+        if dish:
+            valid["dish"] = dish[:80]
+    if "cuisine_group" in slots:
+        group = str(slots["cuisine_group"]).strip()
+        known_groups = {label.lower(): label for label in CUISINE_GROUP_SUGGESTIONS}
+        if group.lower() in known_groups:
+            valid["cuisine_group"] = known_groups[group.lower()]
+    if "food_candidates" in slots and isinstance(slots["food_candidates"], list):
+        candidates = []
+        for candidate in slots["food_candidates"]:
+            food = normalize_food(candidate)
+            food = FOOD_ALIASES.get(food, food)
+            if food in SUPPORTED_FOODS and food not in candidates:
+                candidates.append(food)
+        if candidates:
+            valid["food_candidates"] = candidates
     if "area" in slots:
         area = normalize_area(slots["area"])
         if area in SUPPORTED_AREAS:
@@ -351,6 +569,10 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
         relative_day = str(slots["relative_day"]).strip().lower()
         if relative_day in RELATIVE_DAYS:
             valid["relative_day"] = relative_day
+    if "day_modifier" in slots:
+        day_modifier = str(slots["day_modifier"]).strip().lower()
+        if day_modifier in DAY_MODIFIERS:
+            valid["day_modifier"] = day_modifier
     if "time" in slots:
         time = normalize_time(str(slots["time"]))
         if re.fullmatch(r"\d{2}:\d{2}", time):
@@ -364,7 +586,7 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
             valid["people"] = people
     if "booking_reference" in slots:
         reference = str(slots["booking_reference"]).strip().upper()
-        if re.fullmatch(r"SIM-[A-Z0-9]{6}", reference):
+        if re.fullmatch(r"(?:BK|SIM)-[A-Z0-9]{6}", reference):
             valid["booking_reference"] = reference
     return valid
 
@@ -394,8 +616,8 @@ class OptionalLLMSlotExtractor:
             return self.rule_extractor.extract(message)
         prompt = (
             "Extract restaurant assistant intent and slots as compact JSON. "
-            "Allowed intents: search, book, reschedule, cancel, greeting, alternative, list, correct, booking_info, unsupported, unknown. "
-            "Allowed slots: food, area, pricerange, day, relative_day, time, people. "
+            "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, correct, booking_info, booking_list, table_view, restaurant_info, filter_info, cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
+            "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, relative_day, day_modifier, time, people. "
             f"User: {message}"
         )
         try:
@@ -409,10 +631,19 @@ class OptionalLLMSlotExtractor:
                 "reschedule",
                 "cancel",
                 "greeting",
+                "thanks",
                 "alternative",
                 "list",
                 "correct",
                 "booking_info",
+                "booking_list",
+                "table_view",
+                "restaurant_info",
+                "filter_info",
+                "cuisine_help",
+                "dish_preference",
+                "distance_info",
+                "date_clarification",
                 "unsupported",
                 "unknown",
             }:

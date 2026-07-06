@@ -100,7 +100,7 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]]) -> 
                 "Move it to Saturday",
                 "Cancel it",
             ],
-            "success_terms": ["simulated reference", "updated the simulated booking", "cancelled the simulated booking"],
+            "success_terms": ["your reference", "updated booking", "cancelled booking"],
         },
         {
             "name": "clarify_missing_search",

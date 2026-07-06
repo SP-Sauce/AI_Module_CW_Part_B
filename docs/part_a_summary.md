@@ -8,8 +8,8 @@ original design explored a broader travel-package assistant using MultiWOZ
 domains such as hotel, restaurant, train, attraction and taxi.
 
 For Part B, the prototype is deliberately narrowed to a restaurant search and
-simulated booking assistant. This keeps the build feasible, demonstrable and
-aligned with the strongest EDA finding for the selected task.
+proof-of-concept booking-record assistant. This keeps the build feasible,
+demonstrable and aligned with the strongest EDA finding for the selected task.
 
 ## EDA Findings Used
 
@@ -47,7 +47,12 @@ state rather than isolated one-turn responses.
 - Use rule-based slot extraction as a robust baseline and optional LLM support
   for generation.
 - Use transparent retrieval and ranking so failures are explainable in the demo.
-- Keep bookings simulated and session-only.
+- Keep bookings as proof-of-concept records rather than live restaurant
+  confirmations.
+- Use a generated session id for local web sessions so booking records can be
+  associated with the correct conversation. The Part B web prototype extends
+  this with local demo accounts so users can return to their own history while
+  still avoiding payments, live availability and external account integrations.
 - Avoid claims about live availability, payments, external reviews or verified
   dietary certification.
 
@@ -62,6 +67,5 @@ flow. This project addresses those requirements through:
 - TF-IDF restaurant retrieval;
 - preference-fit ranking;
 - grounded response generation;
-- simulated booking, rescheduling and cancellation;
+- proof-of-concept booking, rescheduling and cancellation;
 - evaluation covering slots, retrieval, task success and latency.
-

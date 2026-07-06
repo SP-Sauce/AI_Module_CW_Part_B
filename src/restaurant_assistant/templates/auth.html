@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if mode == "register" %}Create Account{% else %}Login{% endif %} - MultiWOZ Restaurant Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="auth-panel">
+        <div class="brand-mark">DR</div>
+        <h1>{% if mode == "register" %}Create your account{% else %}Welcome back{% endif %}</h1>
+        <p>
+          Sign in to access your restaurant conversations. Admin users are routed to the overseer dashboard from this same login page.
+        </p>
+
+        {% if error %}
+          <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+          {% if mode == "register" %}
+            <label>
+              Display name
+              <input name="display_name" type="text" autocomplete="name" placeholder="Demo User">
+            </label>
+          {% endif %}
+          <label>
+            Username
+            <input name="username" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="{% if mode == 'register' %}new-password{% else %}current-password{% endif %}" required>
+          </label>
+          <button class="primary-button" type="submit">
+            {% if mode == "register" %}Create account{% else %}Login{% endif %}
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          {% if mode == "register" %}
+            Already have an account? <a href="{{ url_for('login') }}">Login</a>
+          {% else %}
+            Demo users: user1 / pass123, user2 / pass123, admin / pass123. Need another account? <a href="{{ url_for('register') }}">Create one</a>
+          {% endif %}
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

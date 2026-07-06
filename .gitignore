@@ -15,6 +15,8 @@ data/raw/*
 data/processed/*
 !data/processed/README.md
 !data/processed/restaurants.jsonl
+data/runtime/*
+!data/runtime/README.md
 results/*
 !results/README.md
 
@@ -22,3 +24,5 @@ results/*
 models/
 .cache/
 *.log
+*.sqlite
+*.sqlite3

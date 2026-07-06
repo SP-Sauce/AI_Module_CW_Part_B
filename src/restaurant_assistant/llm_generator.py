@@ -61,7 +61,7 @@ class GroundedResponseGenerator:
         prompt = (
             "You are a restaurant support assistant. Use only the JSON restaurant evidence. "
             "Do not invent phone numbers, addresses, postcodes, food types, payments, live availability, "
-            "or verified dietary claims. If booking, say it is simulated. Keep the reply concise.\n"
+            "or verified dietary claims. If booking, describe only the session booking record. Keep the reply concise.\n"
             f"Intent: {intent}\n"
             f"Missing slots: {missing_slots or []}\n"
             f"State: {json.dumps(state.to_dict(), default=str)}\n"
@@ -97,7 +97,7 @@ class GroundedResponseGenerator:
         missing_slots: list[str] | None,
     ) -> str:
         if intent == "greeting":
-            return "Hello. I can help find MultiWOZ restaurant records and create simulated bookings."
+            return "Hello. I can help find MultiWOZ restaurant records and create booking records."
         if missing_slots:
             return self._clarification(state, missing_slots)
         if not ranked_results:
@@ -132,7 +132,7 @@ class GroundedResponseGenerator:
             detail = ""
             if state.selected_restaurant:
                 detail = self._format_restaurant(state.selected_restaurant) + ". "
-            return f"{detail}To create a simulated booking for {restaurant_name}, please provide: {missing_text}."
+            return f"{detail}To complete the booking for {restaurant_name}, please provide: {missing_text}."
         return f"Please tell me your preferred {missing_text}."
 
     def _format_restaurant(self, record: dict[str, Any]) -> str:

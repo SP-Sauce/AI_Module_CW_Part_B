@@ -30,7 +30,7 @@ The default evaluation checks safety properties of the fallback generator:
 
 - generated replies are grounded in retrieved records;
 - missing information is handled with clarification;
-- simulated booking language is used;
+- booking responses avoid claims about live restaurant availability;
 - unavailable details are not invented.
 
 Optional BLEU, ROUGE or BERTScore hooks can be added if the dependencies are
@@ -42,9 +42,30 @@ Scripted conversations test common demo flows:
 
 - restaurant search from food, area and price;
 - clarification for underspecified search;
-- simulated booking after a selected restaurant exists;
-- simulated rescheduling;
-- simulated cancellation.
+- booking after a selected restaurant exists;
+- rescheduling;
+- cancellation.
+
+## Web And Persistence Checks
+
+The test suite covers the Flask API flow and SQLite persistence:
+
+- users can register and log in before using the chat app;
+- a browser session receives a generated session id;
+- chat turns are stored against that account-owned session;
+- booking creation, rescheduling and cancellation update the SQLite booking
+  record for the same session;
+- account history is scoped so one user cannot see another user's sessions or
+  bookings through the normal chat APIs.
+
+The local admin dashboard supports the final demo and report by showing:
+
+- all local session transcripts;
+- booking records and status counts;
+- intent distribution for newly saved turns;
+- booking conversion as a task-success proxy;
+- average turns per session and latency for newly saved turns;
+- clarification, limitation and fallback counts for failure analysis.
 
 The script reports task success rate and latency per turn.
 
@@ -59,4 +80,3 @@ The script reports task success rate and latency per turn.
 
 The aim is not to claim production performance. It is to show that state
 tracking and retrieval each add measurable value over simpler baselines.
-
