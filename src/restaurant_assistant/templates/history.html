@@ -25,7 +25,7 @@
         <article class="history-panel">
           <h2>Conversations</h2>
           {% for item in history.sessions %}
-            <div class="history-item">
+            <a class="history-item history-item-link" href="{{ url_for('open_session_page', session_id=item.session_id) }}">
               <strong>{{ item.session_id }}</strong>
               <span>{{ item.turn_count }} turns - {{ item.booking_count }} bookings - {{ item.status }}</span>
               {% if item.last_user_message %}
@@ -33,7 +33,8 @@
               {% else %}
                 <p>No messages yet.</p>
               {% endif %}
-            </div>
+              <span class="history-open-label">Open conversation</span>
+            </a>
           {% else %}
             <p class="empty-state">No conversations yet.</p>
           {% endfor %}

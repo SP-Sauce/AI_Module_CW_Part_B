@@ -7,6 +7,7 @@ import json
 import statistics
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,7 @@ from restaurant_assistant.data_loader import load_restaurants
 from restaurant_assistant.dialogue_state import DialogueState
 from restaurant_assistant.ranking import rank_candidates
 from restaurant_assistant.retrieval import RestaurantRetriever
-from restaurant_assistant.slot_extraction import extract_slots
+from restaurant_assistant.slot_extraction import OptionalLLMSlotExtractor, RuleBasedSlotExtractor
 
 
 SLOT_FIXTURE = ROOT / "tests" / "fixtures" / "slot_cases.json"
@@ -28,26 +29,46 @@ SLOT_FIXTURE = ROOT / "tests" / "fixtures" / "slot_cases.json"
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate the restaurant assistant.")
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
+    parser.add_argument("--enable-llm", action="store_true", help="Evaluate with LLM extraction and generation enabled.")
+    parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
+    parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
     return parser
 
 
-def evaluate_slots() -> dict[str, Any]:
+def evaluate_slots(*, enable_llm: bool, slot_model_name: str) -> dict[str, Any]:
     with SLOT_FIXTURE.open("r", encoding="utf-8") as file:
         slot_cases = json.load(file)
+    extractor = OptionalLLMSlotExtractor(slot_model_name) if enable_llm else RuleBasedSlotExtractor()
     intent_correct = 0
     slot_total = 0
     slot_correct = 0
+    llm_used = 0
     details = []
     for case in slot_cases:
-        result = extract_slots(case["text"])
+        result = extractor.extract(case["text"])
+        llm_used += int(result.used_llm)
         intent_correct += int(result.intent == case["intent"])
         for key, expected in case["slots"].items():
             slot_total += 1
             slot_correct += int(result.slots.get(key) == expected)
-        details.append({"text": case["text"], "expected": case, "predicted": {"intent": result.intent, "slots": result.slots}})
+        details.append(
+            {
+                "text": case["text"],
+                "expected": case,
+                "predicted": {
+                    "intent": result.intent,
+                    "slots": result.slots,
+                    "used_llm": result.used_llm,
+                    "errors": result.errors,
+                },
+            }
+        )
     return {
         "intent_accuracy": round(intent_correct / len(slot_cases), 4),
         "slot_accuracy": round(slot_correct / slot_total, 4),
+        "llm_enabled": enable_llm,
+        "llm_used_cases": llm_used,
+        "slot_model_name": slot_model_name if enable_llm else None,
         "cases": details,
     }
 
@@ -82,7 +103,7 @@ def _query_from_record(record: dict[str, Any]) -> str:
     return f"I need a {record.get('pricerange')} {record.get('food')} restaurant in the {record.get('area')}"
 
 
-def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]]) -> dict[str, Any]:
+def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]], settings: Any, *, enable_llm: bool) -> dict[str, Any]:
     target = next(
         (
             record
@@ -112,17 +133,29 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]]) -> 
     latencies = []
     transcript = []
     for script in scripts:
-        assistant = RestaurantAssistant(use_sample=use_sample)
+        assistant = RestaurantAssistant(settings=settings, use_sample=use_sample, enable_llm=enable_llm)
         responses = []
+        llm_slot_turns = 0
+        generation_modes = []
         for turn in script["turns"]:
             start = time.perf_counter()
-            result = assistant.process(turn)
+            result = assistant.process(turn, debug=True)
             latencies.append(time.perf_counter() - start)
             responses.append(result.response)
+            llm_slot_turns += int(result.debug.get("slot_extraction_used_llm") is True)
+            generation_modes.append(result.debug.get("generation_mode"))
         combined = " ".join(responses).lower()
         success = all(term.lower() in combined for term in script["success_terms"])
         successes += int(success)
-        transcript.append({"name": script["name"], "success": success, "responses": responses})
+        transcript.append(
+            {
+                "name": script["name"],
+                "success": success,
+                "llm_slot_turns": llm_slot_turns,
+                "generation_modes": generation_modes,
+                "responses": responses,
+            }
+        )
     return {
         "task_success_rate": round(successes / len(scripts), 4),
         "latency_seconds_mean": round(statistics.mean(latencies), 4),
@@ -131,8 +164,8 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]]) -> 
     }
 
 
-def evaluate_response_safety(restaurants: list[dict[str, Any]]) -> dict[str, Any]:
-    assistant = RestaurantAssistant(restaurants=restaurants)
+def evaluate_response_safety(restaurants: list[dict[str, Any]], settings: Any, *, enable_llm: bool) -> dict[str, Any]:
+    assistant = RestaurantAssistant(restaurants=restaurants, settings=settings, enable_llm=enable_llm)
     target = next(
         (
             record
@@ -141,12 +174,14 @@ def evaluate_response_safety(restaurants: list[dict[str, Any]]) -> dict[str, Any
         ),
         restaurants[0],
     )
-    result = assistant.process(_query_from_record(target))
+    result = assistant.process(_query_from_record(target), debug=True)
     forbidden = ["live availability", "payment", "verified halal", "verified vegetarian"]
     lower = result.response.lower()
     return {
         "fallback_grounded_check": str(target.get("name", "")).lower() in lower,
         "forbidden_claims_present": [term for term in forbidden if term in lower],
+        "slot_extraction_used_llm": result.debug.get("slot_extraction_used_llm"),
+        "generation_mode": result.debug.get("generation_mode"),
         "optional_metrics": "BLEU/ROUGE/BERTScore hooks not installed for MVP",
     }
 
@@ -154,12 +189,18 @@ def evaluate_response_safety(restaurants: list[dict[str, Any]]) -> dict[str, Any
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     settings = get_settings()
+    if args.model_name:
+        settings = replace(settings, model_name=args.model_name)
+    if args.slot_model_name:
+        settings = replace(settings, slot_model_name=args.slot_model_name)
+    if args.enable_llm:
+        settings = replace(settings, enable_llm=True)
     restaurants = load_restaurants(settings, use_sample=args.sample_data)
     output = {
-        "slot_extraction": evaluate_slots(),
+        "slot_extraction": evaluate_slots(enable_llm=settings.enable_llm, slot_model_name=settings.slot_model_name),
         "retrieval": evaluate_retrieval(restaurants),
-        "response_generation": evaluate_response_safety(restaurants),
-        "end_to_end": evaluate_end_to_end(args.sample_data, restaurants),
+        "response_generation": evaluate_response_safety(restaurants, settings, enable_llm=settings.enable_llm),
+        "end_to_end": evaluate_end_to_end(args.sample_data, restaurants, settings, enable_llm=settings.enable_llm),
     }
     print(json.dumps(output, indent=2, default=str))
 

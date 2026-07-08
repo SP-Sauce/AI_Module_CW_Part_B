@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import sqlite3
 import uuid
@@ -11,7 +12,17 @@ from threading import Lock
 from time import perf_counter
 from typing import Any
 
-from flask import Flask, jsonify, make_response, redirect, render_template, request, session as flask_session, url_for
+from flask import (
+    Flask,
+    Response,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session as flask_session,
+    url_for,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from restaurant_assistant.assistant import RestaurantAssistant
@@ -22,6 +33,7 @@ from restaurant_assistant.storage import BookingStore
 
 
 SESSION_COOKIE = "restaurant_session_id"
+SELECTED_SESSION_KEY = "restaurant_selected_session_id"
 SESSION_PATTERN = re.compile(r"^[a-f0-9]{32}$")
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "pass123"
@@ -36,6 +48,7 @@ def create_app(
     settings: Settings | None = None,
     use_sample: bool = False,
     enable_llm: bool | None = None,
+    debug_turns: bool = False,
 ) -> Flask:
     """Create the local browser app."""
 
@@ -90,6 +103,16 @@ def create_app(
             return None
         return session
 
+    def get_selected_session(user_id: int) -> tuple[str | None, dict[str, Any] | None]:
+        selected = flask_session.get(SELECTED_SESSION_KEY)
+        if not isinstance(selected, str):
+            return None, None
+        session = get_owned_session(selected, user_id)
+        if not session:
+            flask_session.pop(SELECTED_SESSION_KEY, None)
+            return None, None
+        return selected, session
+
     def get_chat_session_id(user_id: int, requested_session_id: str | None) -> tuple[str, bool]:
         if requested_session_id:
             session = get_owned_session(requested_session_id, user_id)
@@ -125,7 +148,11 @@ def create_app(
         user = get_current_user()
         if not user:
             return redirect(url_for("login"))
-        session_id, is_new = get_session_id(user["id"])
+        selected_session_id, _ = get_selected_session(user["id"])
+        if selected_session_id:
+            session_id, is_new = selected_session_id, False
+        else:
+            session_id, is_new = get_session_id(user["id"])
         response = make_response(render_template("index.html", session_id=session_id, user=user))
         if is_new:
             response.set_cookie(SESSION_COOKIE, session_id, httponly=True, samesite="Lax")
@@ -198,11 +225,36 @@ def create_app(
             return redirect(url_for("login"))
         return render_template("history.html", user=user, history=account_history_payload(store, user["id"]))
 
+    @app.get("/session/<session_id>")
+    def open_session_page(session_id: str):
+        user = get_current_user()
+        if not user:
+            return redirect(url_for("login"))
+        session = get_owned_session(session_id, user["id"])
+        if not session:
+            return redirect(url_for("account_history"))
+
+        response = redirect(url_for("index"))
+        if session.get("status") == "closed":
+            flask_session[SELECTED_SESSION_KEY] = session_id
+            return response
+
+        flask_session.pop(SELECTED_SESSION_KEY, None)
+        store.ensure_session(session_id, user_id=user["id"])
+        response.set_cookie(SESSION_COOKIE, session_id, httponly=True, samesite="Lax")
+        return response
+
     @app.get("/api/session")
     def session_snapshot():
         user = get_current_user()
         if not user:
             return jsonify({"error": "Login required."}), 401
+        selected_session_id = flask_session.pop(SELECTED_SESSION_KEY, None)
+        if isinstance(selected_session_id, str):
+            selected_session = get_owned_session(selected_session_id, user["id"])
+            if selected_session:
+                get_assistant(selected_session_id, user_id=user["id"])
+                return jsonify(session_payload(store, selected_session_id, user=user))
         session_id, is_new = get_session_id(user["id"])
         get_assistant(session_id, user_id=user["id"])
         return json_with_cookie(session_payload(store, session_id, user=user), session_id, is_new)
@@ -232,13 +284,7 @@ def create_app(
         session_id, is_new = get_session_id(user["id"])
         get_assistant(session_id, user_id=user["id"])
         return json_with_cookie(
-            {
-                "session_id": session_id,
-                "account": public_user(user),
-                "transcript": store.export_session_text(session_id),
-                "messages": store.list_turns(session_id),
-                "bookings": store.list_bookings(session_id),
-            },
+            session_export_payload(store, session_id, user=user),
             session_id,
             is_new,
         )
@@ -251,15 +297,27 @@ def create_app(
         session = get_owned_session(session_id, user["id"])
         if not session:
             return jsonify({"error": "Conversation not found for this account."}), 404
-        return jsonify(
-            {
-                "session_id": session_id,
-                "account": public_user(user),
-                "transcript": store.export_session_text(session_id),
-                "messages": store.list_turns(session_id),
-                "bookings": store.list_bookings(session_id),
-            }
-        )
+        return jsonify(session_export_payload(store, session_id, user=user))
+
+    @app.get("/api/session/<session_id>/export.txt")
+    def export_named_session_text(session_id: str):
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Login required."}), 401
+        session = get_owned_session(session_id, user["id"])
+        if not session:
+            return jsonify({"error": "Conversation not found for this account."}), 404
+        return text_export_response(store.export_session_text(session_id), session_id)
+
+    @app.get("/api/session/<session_id>/export.json")
+    def export_named_session_json(session_id: str):
+        user = get_current_user()
+        if not user:
+            return jsonify({"error": "Login required."}), 401
+        session = get_owned_session(session_id, user["id"])
+        if not session:
+            return jsonify({"error": "Conversation not found for this account."}), 404
+        return json_export_response(session_export_payload(store, session_id, user=user), session_id)
 
     @app.post("/api/chat")
     def chat():
@@ -276,13 +334,29 @@ def create_app(
         started = perf_counter()
         result = assistant.process(message, debug=True)
         latency_ms = round((perf_counter() - started) * 1000, 1)
+        turn_metadata = build_turn_metadata(result.debug)
         store.save_turn(
             session_id,
             message,
             result.response,
-            metadata=build_turn_metadata(result.debug),
+            metadata=turn_metadata,
             latency_ms=latency_ms,
         )
+        if debug_turns:
+            print(
+                json.dumps(
+                    {
+                        "session_id": session_id,
+                        "user_message": message,
+                        "assistant_message": result.response,
+                        "latency_ms": latency_ms,
+                        "debug": result.debug,
+                    },
+                    indent=2,
+                    default=str,
+                ),
+                flush=True,
+            )
         return json_with_cookie(
             {
                 "session_id": session_id,
@@ -291,6 +365,7 @@ def create_app(
                 "response": result.response,
                 "bookings": store.list_user_bookings(user["id"]),
                 "history": account_history_payload(store, user["id"], current_session_id=session_id),
+                "export": session_export_payload(store, session_id, user=user),
             },
             session_id,
             is_new,
@@ -447,6 +522,10 @@ def build_turn_metadata(debug: dict[str, Any]) -> dict[str, Any]:
         "slots": debug.get("slots", {}),
         "unsupported_slots": debug.get("unsupported_slots", {}),
         "relative_day_resolution": debug.get("relative_day_resolution"),
+        "slot_extraction_attempted_llm": debug.get("slot_extraction_attempted_llm"),
+        "slot_extraction_used_llm": debug.get("slot_extraction_used_llm"),
+        "slot_extraction_errors": debug.get("slot_extraction_errors", []),
+        "slot_model_name": debug.get("slot_model_name"),
         "generation_mode": debug.get("generation_mode"),
         "retrieved_count": len(debug.get("retrieved_restaurants", [])),
         "ranked_count": len(debug.get("ranking", [])),
@@ -464,7 +543,34 @@ def session_payload(store: BookingStore, session_id: str, *, user: dict[str, Any
         "bookings": store.list_user_bookings(user["id"]),
         "session_bookings": store.list_bookings(session_id),
         "history": account_history_payload(store, user["id"], current_session_id=session_id),
+        "export": session_export_payload(store, session_id, user=user),
     }
+
+
+def session_export_payload(store: BookingStore, session_id: str, *, user: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "session_id": session_id,
+        "account": public_user(user),
+        "transcript": store.export_session_text(session_id),
+        "messages": store.list_turns(session_id, include_metadata=True),
+        "bookings": store.list_bookings(session_id),
+    }
+
+
+def text_export_response(transcript: str, session_id: str) -> Response:
+    return Response(
+        transcript,
+        mimetype="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename=conversation-{session_id}.txt"},
+    )
+
+
+def json_export_response(payload: dict[str, Any], session_id: str) -> Response:
+    return Response(
+        json.dumps(payload, indent=2, default=str),
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment; filename=conversation-{session_id}.json"},
+    )
 
 
 def valid_session_ids(session_ids: list[str]) -> list[str]:

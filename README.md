@@ -32,9 +32,23 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-The default tests and demo work without downloading an LLM. LLM generation mode
-uses Hugging Face Transformers if a supported backend/model is available. The
-safe fallback generator is used automatically if model loading fails.
+The default tests and demo work without downloading an LLM. With `--enable-llm`,
+the assistant uses Hugging Face Transformers for JSON intent/slot extraction and
+grounded response generation when a supported model is available. Validated
+rules, retrieval and booking safeguards remain active as guardrails.
+
+For local LLM mode, install the optional backend dependencies as well:
+
+```powershell
+pip install -r requirements-llm.txt
+```
+
+If an older PyTorch is already installed, upgrade it first or use the PyTorch
+CPU wheel index:
+
+```powershell
+python -m pip install --upgrade torch --index-url https://download.pytorch.org/whl/cpu
+```
 
 ## Dataset
 
@@ -155,6 +169,12 @@ Enable attempted Transformers generation:
 python scripts/run_chat.py --sample-data --enable-llm
 ```
 
+Use separate models or a fine-tuned adapter for slot extraction:
+
+```powershell
+python scripts/run_chat.py --enable-llm --model-name google/flan-t5-small --slot-model-name google/flan-t5-small
+```
+
 ## Run Tests
 
 ```powershell
@@ -174,6 +194,16 @@ The evaluation reports slot metrics, retrieval metrics, task success and
 latency. The ablation script compares the final stateful retrieval system with
 simpler baselines.
 
+Evaluate the LLM path:
+
+```powershell
+python scripts/evaluate.py --enable-llm
+python scripts/run_ablation.py --enable-llm
+```
+
+The JSON output includes whether slot extraction used the LLM and which
+generation mode answered each turn.
+
 ## Safety And Limitations
 
 - Booking records are proof-of-concept and session-only, with references such as `BK-AB12CD`.
@@ -190,8 +220,16 @@ simpler baselines.
 - The web app stores local session ids, chat turns and booking records in
   SQLite. The terminal chatbot keeps state only for the current process.
 
-## Optional Stretch Work
+## Optional QLoRA Fine-Tuning
 
-PEFT or QLoRA fine-tuning can be discussed as a future extension, but it is not
-required for the core prototype. The assessed MVP is designed around retrieval,
-state tracking and grounded response generation.
+The repository includes an optional LoRA/QLoRA training path for the LLM slot
+extractor:
+
+```powershell
+pip install -r requirements-qlora.txt
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small
+```
+
+The default adapter output is ignored under `models/`. See
+`docs/llm_and_qlora.md` for the LLM pipeline, QLoRA commands and recommended
+report wording.

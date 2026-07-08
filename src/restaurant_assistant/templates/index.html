@@ -47,7 +47,8 @@
             <div class="session-line">Conversation <span id="sessionId">{{ session_id }}</span></div>
           </div>
           <div class="topbar-actions">
-            <button id="copyHistoryButton" class="secondary-button" type="button" title="Copy this conversation's saved chat and bookings">Copy chat</button>
+            <button id="copyHistoryButton" class="secondary-button" type="button" title="Copy this conversation's saved chat and bookings">Copy history</button>
+            <button id="downloadJsonButton" class="secondary-button" type="button" title="Download this conversation's saved debug JSON">Download JSON</button>
             <button id="newSessionButton" class="secondary-button" type="button" title="Start a separate empty conversation">New chat</button>
             <form method="post" action="{{ url_for('logout') }}">
               <button class="secondary-button" type="submit">Logout</button>
@@ -91,6 +92,19 @@
           <button id="bookingModalCopy" class="secondary-button" type="button">Copy reference</button>
           <button id="bookingModalCalendar" class="primary-button" type="button">Download calendar</button>
           <button id="bookingModalClose" class="secondary-button" type="button">Close</button>
+        </div>
+      </section>
+    </div>
+    <div id="exportModal" class="modal-backdrop" hidden>
+      <section class="booking-modal export-modal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+        <div class="modal-kicker">Conversation export</div>
+        <h2 id="exportModalTitle">Conversation transcript</h2>
+        <textarea id="exportTextArea" class="export-text" readonly spellcheck="false"></textarea>
+        <div class="modal-actions">
+          <a id="exportDownloadTxt" class="secondary-link-button" href="#" download>Download TXT</a>
+          <a id="exportDownloadJson" class="secondary-link-button" href="#" download>Download JSON</a>
+          <button id="exportModalCopy" class="primary-button" type="button">Copy selected text</button>
+          <button id="exportModalClose" class="secondary-button" type="button">Close</button>
         </div>
       </section>
     </div>

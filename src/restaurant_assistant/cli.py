@@ -16,6 +16,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--debug", action="store_true", help="Print extraction, state, retrieval and ranking details.")
     parser.add_argument("--enable-llm", action="store_true", help="Attempt Hugging Face Transformers generation.")
     parser.add_argument("--model-name", default=None, help="Transformers model name for optional LLM mode.")
+    parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
     return parser
 
 
@@ -24,6 +25,8 @@ def main(argv: list[str] | None = None) -> None:
     settings = get_settings()
     if args.model_name:
         settings = replace(settings, model_name=args.model_name)
+    if args.slot_model_name:
+        settings = replace(settings, slot_model_name=args.slot_model_name)
     if args.enable_llm:
         settings = replace(settings, enable_llm=True)
     assistant = RestaurantAssistant(settings=settings, use_sample=args.sample_data, enable_llm=settings.enable_llm)
@@ -47,4 +50,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

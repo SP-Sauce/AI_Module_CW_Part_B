@@ -1,0 +1,9 @@
+# Optional dependencies for scripts/train_qlora_slot_extractor.py.
+# 4-bit QLoRA usually requires a CUDA-capable Linux/WSL/Colab environment.
+torch>=2.2
+transformers>=4.40,<5.0
+sentencepiece>=0.2
+datasets>=2.18
+accelerate>=0.29
+peft>=0.10
+bitsandbytes>=0.43

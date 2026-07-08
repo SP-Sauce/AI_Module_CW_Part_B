@@ -2,10 +2,11 @@
 
 ## Slot Extraction
 
-The evaluation script uses a small labelled fixture covering intent, food, area,
+The evaluation script uses a labelled fixture covering intent, food, area,
 price range, day, time and number of people. It reports exact slot accuracy and
-intent accuracy. This checks whether the system can interpret customer queries
-before state tracking or retrieval.
+intent accuracy. In LLM mode, it also reports how many cases used the LLM slot
+extractor and which slot model was used. This checks whether the system can
+interpret customer queries before state tracking or retrieval.
 
 ## Retrieval
 
@@ -26,12 +27,16 @@ restaurant records from grounded evidence.
 
 ## Response Generation
 
-The default evaluation checks safety properties of the fallback generator:
+The default evaluation checks safety properties of the grounded generator:
 
 - generated replies are grounded in retrieved records;
 - missing information is handled with clarification;
 - booking responses avoid claims about live restaurant availability;
 - unavailable details are not invented.
+
+In LLM mode, the response-generation output includes the active generation
+mode, such as `transformers:google/flan-t5-small`, or `template` if model
+loading fails and the safe fallback is used.
 
 Optional BLEU, ROUGE or BERTScore hooks can be added if the dependencies are
 installed, but they are not required for the runnable MVP.
@@ -80,3 +85,15 @@ The script reports task success rate and latency per turn.
 
 The aim is not to claim production performance. It is to show that state
 tracking and retrieval each add measurable value over simpler baselines.
+
+## QLoRA Adapter
+
+If a slot-extraction adapter is trained with
+`scripts/train_qlora_slot_extractor.py`, rerun:
+
+```powershell
+python scripts/evaluate.py --enable-llm --slot-model-name models/slot-extractor-qlora
+```
+
+The report should compare the base LLM extractor, the QLoRA adapter where
+available, and the rule fallback on the same labelled fixture.

@@ -56,6 +56,35 @@ def test_web_app_chat_creates_session_booking_record(tmp_path):
     assert "You: I need a cheap Italian restaurant in the south" in export_data["transcript"]
     assert "Assistant:" in export_data["transcript"]
     assert data["bookings"][0]["reference"] in export_data["transcript"]
+    assert export_data["messages"][0]["debug"]["effective_intent"] == "search"
+
+    text_download = client.get(f"/api/session/{session_id}/export.txt")
+    json_download = client.get(f"/api/session/{session_id}/export.json")
+
+    assert text_download.status_code == 200
+    assert text_download.mimetype == "text/plain"
+    assert "conversation-" in text_download.headers["Content-Disposition"]
+    assert "You: I need a cheap Italian restaurant in the south" in text_download.get_data(as_text=True)
+    assert json_download.status_code == 200
+    assert json_download.mimetype == "application/json"
+    assert "conversation-" in json_download.headers["Content-Disposition"]
+    assert '"effective_intent": "search"' in json_download.get_data(as_text=True)
+
+
+def test_web_app_debug_turns_prints_turn_json_to_terminal(tmp_path, capsys):
+    settings = replace(get_settings(), booking_db_path=tmp_path / "bookings.sqlite3")
+    app = create_app(settings=settings, use_sample=True, debug_turns=True)
+    app.config.update(TESTING=True)
+    client = app.test_client()
+    register(client)
+
+    response = client.post("/api/chat", json={"message": "hello"})
+    printed = capsys.readouterr().out
+
+    assert response.status_code == 200
+    assert '"user_message": "hello"' in printed
+    assert '"assistant_message"' in printed
+    assert '"debug"' in printed
 
 
 def test_web_app_new_session_returns_empty_context(tmp_path):
@@ -95,6 +124,29 @@ def test_web_app_can_open_user_conversation_history(tmp_path):
     assert opened_payload["history"]["sessions"][0]["is_current"] is True
     assert continued["session_id"] == first
     assert continued["session_id"] != second
+
+
+def test_account_history_links_open_saved_conversation(tmp_path):
+    settings = replace(get_settings(), booking_db_path=tmp_path / "bookings.sqlite3")
+    app = create_app(settings=settings, use_sample=True)
+    app.config.update(TESTING=True)
+    client = app.test_client()
+    register(client)
+
+    first = client.get("/api/session").get_json()["session_id"]
+    client.post("/api/chat", json={"message": "I need a cheap Italian restaurant in the south", "session_id": first})
+    client.post("/api/new-session")
+
+    history_page = client.get("/history")
+    open_response = client.get(f"/session/{first}")
+    opened = client.get("/api/session").get_json()
+
+    assert history_page.status_code == 200
+    assert f"/session/{first}".encode() in history_page.data
+    assert open_response.status_code == 302
+    assert open_response.headers["Location"] == "/"
+    assert opened["session_id"] == first
+    assert opened["messages"][0]["user_message"] == "I need a cheap Italian restaurant in the south"
 
 
 def test_web_app_bookings_are_account_level_across_chats(tmp_path):

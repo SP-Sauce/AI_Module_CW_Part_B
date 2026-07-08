@@ -103,6 +103,12 @@ def test_thanks_is_extracted():
     assert result.intent == "thanks"
 
 
+def test_greeting_typos_are_extracted():
+    result = extract_slots("hellow")
+
+    assert result.intent == "greeting"
+
+
 def test_table_followup_typo_is_extracted():
     result = extract_slots("as a tbale")
 
@@ -141,6 +147,10 @@ def test_cuisine_help_aliases_and_menu_item_limits_are_extracted():
     arabic = extract_slots("arabic food?")
     middle_eastern = extract_slots("can you list other middle eastern resturants?")
     tell_middle_eastern = extract_slots("can you tell me about any middle eastern resturants?")
+    south_asian = extract_slots("can you show me south asian restaurants?")
+    south_asian_west = extract_slots("any south asian food in the west?")
+    east_asian = extract_slots("list east asian restaurants please")
+    southeast_asian = extract_slots("show me south east asian restaurants")
     mixed_booking_list = extract_slots(
         "I am looking to book a resturant that serves lamb and rice. what arabic resturants are there?"
     )
@@ -148,6 +158,9 @@ def test_cuisine_help_aliases_and_menu_item_limits_are_extracted():
     egyptian = extract_slots("egyption?")
     no_pizza = extract_slots("no pizza, list other resurants in city center")
     not_italian = extract_slots("not italion other cuisines")
+    west_african = extract_slots("can tell about west african resutrants in the area?")
+    north_american = extract_slots("can you find north american restaurants?")
+    moroccan = extract_slots("im looking for morccan resturants")
 
     assert cuisine_help.intent == "cuisine_help"
     assert cuisine_options.intent == "cuisine_help"
@@ -161,16 +174,29 @@ def test_cuisine_help_aliases_and_menu_item_limits_are_extracted():
     assert cake.intent == "dish_preference"
     assert cake.slots["dish"] == "cake or dessert"
     assert "british" in cake.slots["food_candidates"]
-    assert arab.slots["food"] == "lebanese"
-    assert arabic.slots["food"] == "lebanese"
+    assert arab.slots["cuisine_group"] == "Middle Eastern"
+    assert arab.slots["food_candidates"] == ["lebanese", "turkish", "mediterranean"]
+    assert arabic.slots["cuisine_group"] == "Middle Eastern"
     assert middle_eastern.intent == "alternative"
     assert middle_eastern.slots["cuisine_group"] == "Middle Eastern"
     assert middle_eastern.slots["food_candidates"] == ["lebanese", "turkish", "mediterranean"]
     assert "area" not in middle_eastern.slots
     assert tell_middle_eastern.intent == "list"
     assert tell_middle_eastern.slots["cuisine_group"] == "Middle Eastern"
+    assert south_asian.intent == "list"
+    assert south_asian.slots["cuisine_group"] == "South Asian"
+    assert south_asian.slots["food_candidates"] == ["indian"]
+    assert "area" not in south_asian.slots
+    assert south_asian_west.slots["cuisine_group"] == "South Asian"
+    assert south_asian_west.slots["area"] == "west"
+    assert east_asian.slots["cuisine_group"] == "East Asian"
+    assert "chinese" in east_asian.slots["food_candidates"]
+    assert "area" not in east_asian.slots
+    assert southeast_asian.slots["cuisine_group"] == "Southeast Asian"
+    assert "thai" in southeast_asian.slots["food_candidates"]
+    assert "vietnamese" in southeast_asian.slots["food_candidates"]
     assert mixed_booking_list.intent == "list"
-    assert mixed_booking_list.slots["food"] == "lebanese"
+    assert mixed_booking_list.slots["cuisine_group"] == "Middle Eastern"
     assert duplicate_booking.intent == "book"
     assert egyptian.unsupported_slots == {"food": "egyptian"}
     assert no_pizza.intent == "alternative"
@@ -178,6 +204,13 @@ def test_cuisine_help_aliases_and_menu_item_limits_are_extracted():
     assert no_pizza.slots["area"] == "centre"
     assert not_italian.intent == "list"
     assert not_italian.slots["food"] == "italian"
+    assert west_african.intent == "list"
+    assert west_african.slots["cuisine_group"] == "West African"
+    assert west_african.slots["food_candidates"] == ["african"]
+    assert "area" not in west_african.slots
+    assert north_american.slots["food"] == "north american"
+    assert "area" not in north_american.slots
+    assert moroccan.unsupported_slots == {"food": "moroccan"}
 
 
 def test_action_intent_wins_over_booking_info():
@@ -189,6 +222,17 @@ def test_action_intent_wins_over_booking_info():
     assert reschedule.slots["day"] == "tuesday"
     assert cancel.intent == "cancel"
     assert info.intent == "booking_info"
+
+
+def test_booking_intent_wins_over_dish_words_in_restaurant_names():
+    complete = extract_slots("book the golden curry for tomorrow, 6pm, 4 people")
+    typo = extract_slots('book the resturant, "the goldern curry".')
+
+    assert complete.intent == "book"
+    assert complete.slots["relative_day"] == "tomorrow"
+    assert complete.slots["time"] == "18:00"
+    assert complete.slots["people"] == 4
+    assert typo.intent == "book"
 
 
 def test_restaurant_detail_intents_are_extracted():

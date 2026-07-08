@@ -1,0 +1,5 @@
+# Optional local LLM runtime dependencies.
+# Install these after requirements.txt when using --enable-llm locally.
+torch>=2.4
+transformers>=4.40,<5.0
+sentencepiece>=0.2

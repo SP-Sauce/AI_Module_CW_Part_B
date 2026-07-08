@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from difflib import SequenceMatcher
 from typing import Any
 from collections.abc import Callable
 
@@ -22,7 +23,7 @@ from restaurant_assistant.dialogue_state import BOOKING_SLOTS, DialogueState
 from restaurant_assistant.llm_generator import GroundedResponseGenerator
 from restaurant_assistant.ranking import RankedRestaurant, rank_candidates
 from restaurant_assistant.retrieval import RestaurantRetriever, RetrievedRestaurant
-from restaurant_assistant.slot_extraction import extract_slots
+from restaurant_assistant.slot_extraction import OptionalLLMSlotExtractor, RuleBasedSlotExtractor
 from restaurant_assistant.storage import BookingStore
 
 
@@ -53,16 +54,16 @@ class RestaurantAssistant:
         self.restaurants = restaurants if restaurants is not None else load_restaurants(self.settings, use_sample=use_sample)
         self.retriever = RestaurantRetriever().fit(self.restaurants)
         llm_enabled = self.settings.enable_llm if enable_llm is None else enable_llm
+        self.llm_enabled = llm_enabled
+        self.slot_extractor = (
+            OptionalLLMSlotExtractor(self.settings.slot_model_name) if llm_enabled else RuleBasedSlotExtractor()
+        )
         self.generator = GroundedResponseGenerator(enable_llm=llm_enabled, model_name=self.settings.model_name)
         self.booking = BookingManager(store=booking_store, session_id=session_id, user_id=user_id)
 
     def process(self, user_message: str, *, debug: bool = False) -> AssistantResponse:
         turn_time = self.clock()
-        extraction = extract_slots(
-            user_message,
-            use_llm=False,
-            model_name=self.settings.model_name,
-        )
+        extraction = self.slot_extractor.extract(user_message)
         if self._mentions_next_week_without_day(user_message, extraction.slots):
             self.state.pending_day_modifier = "next_week"
         relative_resolution = self._resolve_temporal_slots(extraction.slots, turn_time, extraction.intent)
@@ -337,7 +338,8 @@ class RestaurantAssistant:
     def _find_named_restaurant(self, user_message: str) -> dict[str, Any] | None:
         normalized_message = user_message.lower()
         normalized_message = re.sub(r"\bpecking\b", "peking", normalized_message)
-        matches = []
+        message_tokens = re.findall(r"[a-z0-9]+", normalized_message)
+        matches: list[tuple[float, dict[str, Any]]] = []
         for record in self.restaurants:
             name = str(record.get("name", "")).lower().strip()
             if not name:
@@ -346,11 +348,46 @@ class RestaurantAssistant:
             if name in normalized_message or (
                 significant_tokens and all(token in normalized_message for token in significant_tokens)
             ):
-                matches.append(record)
-        matches.sort(key=lambda record: len(str(record.get("name", ""))), reverse=True)
+                matches.append((1.0, record))
+
+        if not matches and re.search(r"\b(book|reserve|restaurant|resturant)\b", normalized_message):
+            for record in self.restaurants:
+                name = str(record.get("name", "")).lower().strip()
+                significant_tokens = [
+                    token for token in re.findall(r"[a-z0-9]+", name)
+                    if token not in {"the", "restaurant", "and", "bar"}
+                ]
+                if not significant_tokens:
+                    continue
+                token_scores = [
+                    self._closest_name_token_score(token, message_tokens)
+                    for token in significant_tokens
+                ]
+                if token_scores and min(token_scores) >= 0.84:
+                    matches.append((sum(token_scores) / len(token_scores), record))
+
+        matches.sort(
+            key=lambda match: (match[0], len(str(match[1].get("name", "")))),
+            reverse=True,
+        )
         if matches:
-            return matches[0]
+            return matches[0][1]
         return None
+
+    @staticmethod
+    def _closest_name_token_score(name_token: str, message_tokens: list[str]) -> float:
+        if name_token in message_tokens:
+            return 1.0
+        if len(name_token) < 5:
+            return 0.0
+        candidates = [
+            token for token in message_tokens
+            if abs(len(token) - len(name_token)) <= 2
+        ]
+        return max(
+            (SequenceMatcher(None, name_token, token).ratio() for token in candidates),
+            default=0.0,
+        )
 
     def _is_explicit_full_list_request(self, user_message: str) -> bool:
         text = user_message.lower()
@@ -845,6 +882,11 @@ class RestaurantAssistant:
                     f"I do not have {food.title()} as a cuisine category in the loaded MultiWOZ restaurant data. "
                     "The closest supported Middle Eastern-style category here is Lebanese; you can also search Turkish or Mediterranean."
                 )
+            if food == "moroccan":
+                return (
+                    "I do not have Moroccan as a cuisine category in the loaded MultiWOZ restaurant data. "
+                    "The closest supported categories here are African and Mediterranean."
+                )
             return (
                 f"I do not have dish-level menu data for '{food}'. "
                 "The MultiWOZ restaurant records are organised by cuisine, such as Italian, Indian, Chinese, Turkish, Lebanese or Mediterranean."
@@ -875,7 +917,10 @@ class RestaurantAssistant:
             "slots": extraction.slots,
             "unsupported_slots": extraction.unsupported_slots,
             "relative_day_resolution": relative_resolution,
+            "slot_extraction_attempted_llm": self.llm_enabled,
             "slot_extraction_used_llm": extraction.used_llm,
+            "slot_extraction_errors": extraction.errors,
+            "slot_model_name": self.settings.slot_model_name if self.llm_enabled else None,
             "dialogue_state": self.state.to_dict(),
             "retrieved_restaurants": [
                 {"name": item.record.get("name"), "similarity": round(item.similarity, 4)} for item in retrieved

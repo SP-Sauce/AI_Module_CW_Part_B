@@ -213,6 +213,50 @@ def test_assistant_handles_reported_transcript_edges():
     assert "pizza hut city centre" not in off_topic.response
 
 
+def test_assistant_handles_regional_african_cuisine_without_stale_area_filter():
+    restaurants = [
+        {
+            "source_id": "r1",
+            "name": "bedouin",
+            "food": "african",
+            "area": "centre",
+            "pricerange": "expensive",
+            "address": "100 Mill Road",
+            "postcode": "cb12bd",
+            "phone": "01223367660",
+        },
+        {
+            "source_id": "r2",
+            "name": "ali baba",
+            "food": "lebanese",
+            "area": "centre",
+            "pricerange": "moderate",
+            "address": "59 Hills Road City Centre",
+            "postcode": "cb21nt",
+            "phone": "01462432565",
+        },
+    ]
+    assistant = RestaurantAssistant(restaurants=restaurants)
+
+    west_african = assistant.process("can tell about west african resutrants in the area?")
+    assert "West African is not a direct cuisine label" in west_african.response
+    assert "bedouin" in west_african.response
+    assert assistant.state.food is None
+    assert assistant.state.area is None
+
+    moroccan = assistant.process("im looking for morccan resturants")
+    assert "do not have Moroccan" in moroccan.response
+    assert "African and Mediterranean" in moroccan.response
+
+    african = assistant.process("are there any african cuisines?")
+    assert "bedouin" in african.response
+    assert assistant.state.area is None
+
+    lebanese = assistant.process("can you help me find lebanese then?")
+    assert "ali baba" in lebanese.response
+    assert "could not find" not in lebanese.response.lower()
+
+
 def test_assistant_booking_correction_and_reschedule_details():
     assistant = RestaurantAssistant(use_sample=True)
 
@@ -371,6 +415,45 @@ def test_assistant_clears_stale_restaurant_context_between_searches_and_bookings
     assert "clowns cafe" in new_booking.response
     assert "day" in new_booking.response.lower()
     assert "panahar" not in new_booking.response
+
+
+def test_assistant_books_named_restaurant_when_name_contains_dish_word_or_typo():
+    restaurants = [
+        {
+            "source_id": "r1",
+            "name": "pipasha restaurant",
+            "food": "indian",
+            "area": "east",
+            "pricerange": "expensive",
+            "address": "Newmarket Road",
+            "postcode": "cb58pa",
+            "phone": "01223577786",
+        },
+        {
+            "source_id": "r2",
+            "name": "the golden curry",
+            "food": "indian",
+            "area": "centre",
+            "pricerange": "expensive",
+            "address": "10 Curry Road",
+            "postcode": "cb12xx",
+            "phone": "01223000000",
+        },
+    ]
+    assistant = RestaurantAssistant(restaurants=restaurants)
+    assistant.process("find me a good indian restaurant")
+
+    booked = assistant.process("book the golden curry for tomorrow, 6pm, 4 people")
+
+    assert "created a booking record for the golden curry" in booked.response.lower()
+    assert assistant.state.selected_restaurant["name"] == "the golden curry"
+
+    typo_assistant = RestaurantAssistant(restaurants=restaurants)
+    typo_assistant.process("find me a good indian restaurant")
+    pending = typo_assistant.process('book the resturant, "the goldern curry".')
+
+    assert "complete the booking for the golden curry" in pending.response.lower()
+    assert typo_assistant.state.selected_restaurant["name"] == "the golden curry"
 
 
 def test_assistant_answers_restaurant_details_and_broadens_cuisine_context():
@@ -728,7 +811,8 @@ def test_assistant_keeps_middle_eastern_and_price_filters_grounded():
     arabic = assistant.process(
         "I am looking to book a resturant that serves dishes like lamb and rice, chicken and rice, or lamd mandhi. what arabic resturants are there?"
     )
-    assert arabic.response.startswith("Matching restaurants:")
+    assert "Middle Eastern is not a direct cuisine label" in arabic.response
+    assert "Matching restaurants:" in arabic.response
     assert "ali baba" in arabic.response
     assert "To complete the booking" not in arabic.response
 
@@ -741,8 +825,8 @@ def test_assistant_keeps_middle_eastern_and_price_filters_grounded():
     middle_eastern = assistant.process("can you list other middle eastern resturants?")
     assert "Middle Eastern is not a direct cuisine label" in middle_eastern.response
     assert "efes restaurant" in middle_eastern.response
-    assert "the gardenia" in middle_eastern.response
-    assert "ali baba" not in middle_eastern.response
+    assert "the gardenia" not in middle_eastern.response
+    assert "ali baba" in middle_eastern.response
     assert "pipasha restaurant" not in middle_eastern.response
     assert "royal standard" not in middle_eastern.response
 

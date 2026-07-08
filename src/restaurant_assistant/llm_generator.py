@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import Any, Iterable
 
 from restaurant_assistant.dialogue_state import DialogueState
+from restaurant_assistant.llm_runtime import llm_backend_error
 from restaurant_assistant.ranking import RankedRestaurant
 
 
@@ -24,6 +26,7 @@ class GroundedResponseGenerator:
         self.enable_llm = enable_llm
         self.model_name = model_name
         self._pipeline = None
+        self._load_error: str | None = None
 
     def generate(
         self,
@@ -35,15 +38,14 @@ class GroundedResponseGenerator:
         missing_slots: list[str] | None = None,
     ) -> GenerationResult:
         results = list(ranked_results or [])
+        template_text = self._template_response(state, results, intent=intent, missing_slots=missing_slots)
+        if missing_slots:
+            return GenerationResult(text=template_text, used_llm=False, mode="template")
         if self.enable_llm:
             llm_result = self._try_llm(user_message, state, results, intent=intent, missing_slots=missing_slots)
             if llm_result is not None:
                 return llm_result
-        return GenerationResult(
-            text=self._template_response(state, results, intent=intent, missing_slots=missing_slots),
-            used_llm=False,
-            mode="template",
-        )
+        return GenerationResult(text=template_text, used_llm=False, mode="template")
 
     def _try_llm(
         self,
@@ -75,16 +77,48 @@ class GroundedResponseGenerator:
             return None
         if not output:
             return None
+        output = self._clean_llm_output(output)
+        if not output or self._looks_like_prompt_leak(output):
+            return None
         return GenerationResult(text=output, used_llm=True, mode=f"transformers:{self.model_name}")
+
+    def _clean_llm_output(self, output: str) -> str:
+        text = output.strip()
+        if "Assistant:" in text:
+            text = text.rsplit("Assistant:", 1)[-1].strip()
+        return text
+
+    def _looks_like_prompt_leak(self, output: str) -> bool:
+        text = output.strip()
+        lowered = text.lower()
+        if text.startswith(("{", "[")):
+            return True
+        leak_patterns = [
+            r'"\s*user\s*"\s*:',
+            r'"\s*assistant\s*"\s*:',
+            r'"\s*timestamp\s*"\s*:',
+            r'"\s*conversation_history\s*"\s*:',
+            r"\bstate\s*:",
+            r"\bevidence\s*:",
+            r"\bmissing slots\s*:",
+            r"\bintent\s*:",
+        ]
+        return any(re.search(pattern, lowered) for pattern in leak_patterns)
 
     def _load_pipeline(self) -> Any:
         if self._pipeline is not None:
+            return self._pipeline
+        backend_error = llm_backend_error()
+        if backend_error:
+            self._load_error = backend_error
+            self._pipeline = False
             return self._pipeline
         try:
             from transformers import pipeline
 
             self._pipeline = pipeline("text2text-generation", model=self.model_name)
-        except Exception:
+        except Exception as exc:
+            self._load_error = str(exc)
             self._pipeline = False
         return self._pipeline
 

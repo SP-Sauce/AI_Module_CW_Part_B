@@ -1,0 +1,230 @@
+{"text":"I need a cheap Italian restaurant in the south","intent":"search","slots":{"food":"italian","area":"south","pricerange":"cheap"}}
+{"text":"Find a moderate Chinese place in the centre","intent":"search","slots":{"food":"chinese","area":"centre","pricerange":"moderate"}}
+{"text":"I want Indian food","intent":"search","slots":{"food":"indian"}}
+{"text":"Can you tell me about west african restaurants in the area?","intent":"list","slots":{"cuisine_group":"West African","food_candidates":["african"]}}
+{"text":"Can you find north american restaurants?","intent":"search","slots":{"food":"north american"}}
+{"text":"I'm looking for morccan restaurants","intent":"unsupported","slots":{}}
+{"text":"Can you help me find lebanese then?","intent":"search","slots":{"food":"lebanese"}}
+{"text":"Can you show restaurants in the west?","intent":"list","slots":{"area":"west"}}
+{"text":"List all expensive restaurants","intent":"list","slots":{"pricerange":"expensive"}}
+{"text":"Can you show me south asian restaurants?","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"]}}
+{"text":"Any south asian food in the west?","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"],"area":"west"}}
+{"text":"List east asian restaurants please","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"]}}
+{"text":"Show me south east asian restaurants","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"]}}
+{"text":"Can you tell me about north african restaurants?","intent":"list","slots":{"cuisine_group":"North African","food_candidates":["african"]}}
+{"text":"Could you help me find some arab restaurants in the east?","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"east"}}
+{"text":"Arabic food?","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"Can you book it for Friday at 7pm for 2 people?","intent":"book","slots":{"day":"friday","time":"19:00","people":2}}
+{"text":"Reserve that restaurant tomorrow at 8pm for four people","intent":"book","slots":{"relative_day":"tomorrow","time":"20:00","people":4}}
+{"text":"I want to book pizza express for midnight this monday for 4 people","intent":"book","slots":{"food":"italian","day":"monday","time":"00:00","people":4}}
+{"text":"I would like to book pipasha restaurant","intent":"book","slots":{}}
+{"text":"Book it","intent":"book","slots":{}}
+{"text":"Book the restaurant please","intent":"book","slots":{}}
+{"text":"Can you reserve that place for tomorrow?","intent":"book","slots":{"relative_day":"tomorrow"}}
+{"text":"I want to book that restaurant at 6pm","intent":"book","slots":{"time":"18:00"}}
+{"text":"I would like to reserve it for five people","intent":"book","slots":{"people":5}}
+{"text":"Book pipasha restaurant for tomorrow, 5 people 6pm","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":5}}
+{"text":"Huh what was that man. I would like to book pipasha restaurant for tomorrow, 5 people 6pm","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":5}}
+{"text":"Book the golden curry for tomorrow, 6pm, 4 people","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":4}}
+{"text":"Book the restaurant, \"the golden curry\".","intent":"book","slots":{}}
+{"text":"Book the resturant, \"the goldern curry\".","intent":"book","slots":{}}
+{"text":"Please reserve curry garden for Friday at 7pm for two people","intent":"book","slots":{"day":"friday","time":"19:00","people":2}}
+{"text":"Move the booking to Saturday","intent":"reschedule","slots":{"day":"saturday"}}
+{"text":"Change it to 10:00","intent":"reschedule","slots":{"time":"10:00"}}
+{"text":"Actually make it for five people","intent":"correct","slots":{"people":5}}
+{"text":"Cancel it please","intent":"cancel","slots":{}}
+{"text":"Cancel BK-ABC123","intent":"cancel","slots":{"booking_reference":"BK-ABC123"}}
+{"text":"What bookings do I have?","intent":"booking_list","slots":{}}
+{"text":"Tell me about booking SIM-ROFNYN","intent":"booking_info","slots":{"booking_reference":"SIM-ROFNYN"}}
+{"text":"What is the address?","intent":"restaurant_info","slots":{}}
+{"text":"How far is Hakka from the south?","intent":"distance_info","slots":{"area":"south"}}
+{"text":"What areas can I filter through?","intent":"filter_info","slots":{}}
+{"text":"I like chicken and rice where can I find somewhere that serves that?","intent":"dish_preference","slots":{"dish":"chicken and rice","food_candidates":["indian","chinese","thai","lebanese","turkish"]}}
+{"text":"Can you list other middle eastern restaurants?","intent":"alternative","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"I want to buy a gun","intent":"unsupported","slots":{}}
+{"text":"Thanks for your help","intent":"thanks","slots":{}}
+{"text":"Hi","intent":"greeting","slots":{}}
+{"text":"I want to go eat somewhere south, provide me restaurants","intent":"list","slots":{"area":"south"}}
+{"text":"I want to be go eat somewhere south, provide me resurants","intent":"list","slots":{"area":"south"}}
+{"text":"restaurants south please","intent":"list","slots":{"area":"south"}}
+{"text":"show me places in the north","intent":"list","slots":{"area":"north"}}
+{"text":"any restaurants in the east?","intent":"list","slots":{"area":"east"}}
+{"text":"west side restaurants please","intent":"list","slots":{"area":"west"}}
+{"text":"central restaurants please","intent":"list","slots":{"area":"centre"}}
+{"text":"city center food places","intent":"list","slots":{"area":"centre"}}
+{"text":"I need somewhere cheap to eat","intent":"search","slots":{"pricerange":"cheap"}}
+{"text":"cheap restaurants in the west","intent":"list","slots":{"area":"west","pricerange":"cheap"}}
+{"text":"moderate places in the north","intent":"list","slots":{"area":"north","pricerange":"moderate"}}
+{"text":"expensive food in the centre","intent":"list","slots":{"area":"centre","pricerange":"expensive"}}
+{"text":"find a budget restaurant","intent":"search","slots":{"pricerange":"cheap"}}
+{"text":"find me an upmarket restaurant in the south","intent":"search","slots":{"area":"south","pricerange":"expensive"}}
+{"text":"I can pay around 15 pounds","intent":"list","slots":{"pricerange":"moderate"}}
+{"text":"show restaurants under 10 pounds","intent":"list","slots":{"pricerange":"cheap"}}
+{"text":"any restaurants around 30 pounds","intent":"list","slots":{"pricerange":"expensive"}}
+{"text":"all restaurants in the south","intent":"list","slots":{"area":"south"}}
+{"text":"list every restaurant in west","intent":"list","slots":{"area":"west"}}
+{"text":"what restaurants are available in the north?","intent":"list","slots":{"area":"north"}}
+{"text":"somewhere to eat in the east","intent":"search","slots":{"area":"east"}}
+{"text":"I do not mind the area, anywhere is fine","intent":"list","slots":{}}
+{"text":"any area is okay just show the options","intent":"list","slots":{}}
+{"text":"list all of them please","intent":"list","slots":{}}
+{"text":"show all the restaurants you have","intent":"list","slots":{}}
+{"text":"Indian please","intent":"search","slots":{"food":"indian"}}
+{"text":"show all Indian restaurants","intent":"list","slots":{"food":"indian"}}
+{"text":"cheap indian in east","intent":"search","slots":{"food":"indian","area":"east","pricerange":"cheap"}}
+{"text":"moderate indian in west","intent":"search","slots":{"food":"indian","area":"west","pricerange":"moderate"}}
+{"text":"Chinese in centre","intent":"search","slots":{"food":"chinese","area":"centre"}}
+{"text":"any thai restaurants?","intent":"list","slots":{"food":"thai"}}
+{"text":"lebanese places","intent":"list","slots":{"food":"lebanese"}}
+{"text":"turkish resturants list","intent":"list","slots":{"food":"turkish"}}
+{"text":"mediterranean restaurants west","intent":"list","slots":{"food":"mediterranean","area":"west"}}
+{"text":"Italian around town","intent":"search","slots":{"food":"italian"}}
+{"text":"pizza places in centre","intent":"list","slots":{"food":"italian","area":"centre"}}
+{"text":"pasta restaurant north","intent":"search","slots":{"food":"italian","area":"north"}}
+{"text":"vegetarian options south","intent":"list","slots":{"food":"vegetarian","area":"south"}}
+{"text":"seafood anywhere","intent":"search","slots":{"food":"seafood"}}
+{"text":"japanese in centre","intent":"search","slots":{"food":"japanese","area":"centre"}}
+{"text":"korean food please","intent":"search","slots":{"food":"korean"}}
+{"text":"gastropub north","intent":"search","slots":{"food":"gastropub","area":"north"}}
+{"text":"british restaurant west","intent":"search","slots":{"food":"british","area":"west"}}
+{"text":"can you show me Portuguese restaurants?","intent":"list","slots":{"food":"portuguese"}}
+{"text":"mexican food in Cambridge","intent":"search","slots":{"food":"mexican"}}
+{"text":"modern european restaurants in the centre","intent":"list","slots":{"food":"modern european","area":"centre"}}
+{"text":"asian oriental places please","intent":"list","slots":{"food":"asian oriental"}}
+{"text":"Middle Eastern restaurants please","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"middle eastern in west Cambridge","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"west"}}
+{"text":"arab food in east","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"east"}}
+{"text":"arabic restaurants around centre","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"centre"}}
+{"text":"show me turkish or lebanese style places","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"are there any halal middle eastern restaurants?","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"south asian restaurants","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"]}}
+{"text":"south asian in the west","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"],"area":"west"}}
+{"text":"desi food places please","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"]}}
+{"text":"east asian restaurants","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"]}}
+{"text":"east asian in centre","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"],"area":"centre"}}
+{"text":"chinese japanese or korean places","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"]}}
+{"text":"south east asian restaurants","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"]}}
+{"text":"southeast asian in the south","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"],"area":"south"}}
+{"text":"thai or vietnamese restaurants","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"]}}
+{"text":"north african restaurants","intent":"list","slots":{"cuisine_group":"North African","food_candidates":["african"]}}
+{"text":"north african food in centre","intent":"list","slots":{"cuisine_group":"North African","food_candidates":["african"],"area":"centre"}}
+{"text":"west african food","intent":"list","slots":{"cuisine_group":"West African","food_candidates":["african"]}}
+{"text":"west african restaurants in the east","intent":"list","slots":{"cuisine_group":"West African","food_candidates":["african"],"area":"east"}}
+{"text":"african restaurants west","intent":"list","slots":{"food":"african","area":"west"}}
+{"text":"moroccan restaurants please","intent":"unsupported","slots":{}}
+{"text":"egyption restaurants?","intent":"unsupported","slots":{}}
+{"text":"yemeni food places","intent":"unsupported","slots":{}}
+{"text":"I like chicken and rice, what restaurants would fit that?","intent":"dish_preference","slots":{"dish":"chicken and rice","food_candidates":["indian","chinese","thai","lebanese","turkish"]}}
+{"text":"where can I get rice and chicken?","intent":"dish_preference","slots":{"dish":"chicken and rice","food_candidates":["indian","chinese","thai","lebanese","turkish"]}}
+{"text":"I want lamb and rice","intent":"dish_preference","slots":{"dish":"lamb and rice","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"lamd mandhi sounds nice, what cuisine should I try?","intent":"dish_preference","slots":{"dish":"mandi","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"I fancy mandi or lamb mandi","intent":"dish_preference","slots":{"dish":"mandi","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"I want curry but not sure which cuisine","intent":"dish_preference","slots":{"dish":"curry","food_candidates":["indian","thai"]}}
+{"text":"rice and curry options please","intent":"dish_preference","slots":{"dish":"curry","food_candidates":["indian","thai"]}}
+{"text":"I feel like noodles","intent":"dish_preference","slots":{"dish":"noodles","food_candidates":["chinese","asian oriental","thai","vietnamese"]}}
+{"text":"noodle restaurants please","intent":"dish_preference","slots":{"dish":"noodles","food_candidates":["chinese","asian oriental","thai","vietnamese"]}}
+{"text":"sushi places?","intent":"dish_preference","slots":{"dish":"sushi","food_candidates":["japanese"]}}
+{"text":"burger places please","intent":"dish_preference","slots":{"dish":"burger","food_candidates":["north american","gastropub"]}}
+{"text":"I want cake or dessert after dinner","intent":"dish_preference","slots":{"dish":"cake or dessert","food_candidates":["british","european","french","international"]}}
+{"text":"dessert restaurants please","intent":"dish_preference","slots":{"dish":"cake or dessert","food_candidates":["british","european","french","international"]}}
+{"text":"I like spicy food what cuisine should I try?","intent":"dish_preference","slots":{"dish":"spicy food","food_candidates":["indian","thai","chinese","turkish"]}}
+{"text":"I want grilled meat or kebab","intent":"dish_preference","slots":{"dish":"grilled meat or kebab","food_candidates":["turkish","lebanese","mediterranean"]}}
+{"text":"shawarma or falafel sounds good","intent":"dish_preference","slots":{"dish":"shawarma or falafel","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"hummus and flatbread kind of food","intent":"dish_preference","slots":{"dish":"hummus and flatbread","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"dumplings or noodles would be nice","intent":"dish_preference","slots":{"dish":"dumplings or noodles","food_candidates":["chinese","asian oriental","thai","vietnamese"]}}
+{"text":"fish and chips type food","intent":"dish_preference","slots":{"dish":"fish and chips","food_candidates":["british","seafood"]}}
+{"text":"book this one","intent":"book","slots":{}}
+{"text":"book that one","intent":"book","slots":{}}
+{"text":"reserve this place","intent":"book","slots":{}}
+{"text":"that restaurant please book it","intent":"book","slots":{}}
+{"text":"book the first one","intent":"book","slots":{}}
+{"text":"book the second option","intent":"book","slots":{}}
+{"text":"can you reserve the restaurant you found?","intent":"book","slots":{}}
+{"text":"yeah book it","intent":"book","slots":{}}
+{"text":"yes reserve it","intent":"book","slots":{}}
+{"text":"book it tomorrow","intent":"book","slots":{"relative_day":"tomorrow"}}
+{"text":"book it today","intent":"book","slots":{"relative_day":"today"}}
+{"text":"book it for day after tomorrow","intent":"book","slots":{"relative_day":"day_after_tomorrow"}}
+{"text":"reserve it next friday","intent":"book","slots":{"day":"friday","day_modifier":"next"}}
+{"text":"book it next week thursday","intent":"book","slots":{"day":"thursday","day_modifier":"next_week"}}
+{"text":"book it friday at 7","intent":"book","slots":{"day":"friday","time":"19:00"}}
+{"text":"book it at 5pm","intent":"book","slots":{"time":"17:00"}}
+{"text":"book it for 5 people","intent":"book","slots":{"people":5}}
+{"text":"reserve for two people","intent":"book","slots":{"people":2}}
+{"text":"table for 4","intent":"book","slots":{"people":4}}
+{"text":"party of six","intent":"book","slots":{"people":6}}
+{"text":"book efes restaurant for tomorrow at 5pm for 5 people","intent":"book","slots":{"relative_day":"tomorrow","time":"17:00","people":5}}
+{"text":"reserve ali baba on friday at 8pm for two people","intent":"book","slots":{"day":"friday","time":"20:00","people":2}}
+{"text":"book meze bar saturday 7:30pm party of 3","intent":"book","slots":{"day":"saturday","time":"19:30","people":3}}
+{"text":"book the good luck chinese food takeaway for tomorrow at 6pm for 2 people","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":2}}
+{"text":"reserve curry prince for friday at 9pm for four people","intent":"book","slots":{"day":"friday","time":"21:00","people":4}}
+{"text":"book curry garden tomorrow 8pm 3 people","intent":"book","slots":{"relative_day":"tomorrow","time":"20:00","people":3}}
+{"text":"book rice house at 6pm for 2 people","intent":"book","slots":{"time":"18:00","people":2}}
+{"text":"book golden curry tomorow 6pm 4 people","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":4}}
+{"text":"reserve the goldern curry for tomorrow at six pm for four people","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":4}}
+{"text":"book stazione restaurant and coffee bar for noon monday for 2 people","intent":"book","slots":{"day":"monday","time":"12:00","people":2}}
+{"text":"book pizza express for midnight monday for 4 people","intent":"book","slots":{"day":"monday","time":"00:00","people":4}}
+{"text":"make a reservation at the indian place","intent":"book","slots":{"food":"indian"}}
+{"text":"book a cheap chinese place in centre for tomorrow at 6pm for 4","intent":"book","slots":{"food":"chinese","area":"centre","pricerange":"cheap","relative_day":"tomorrow","time":"18:00","people":4}}
+{"text":"book me a turkish restaurant","intent":"book","slots":{"food":"turkish"}}
+{"text":"reserve a lebanese place for saturday at 7pm","intent":"book","slots":{"food":"lebanese","day":"saturday","time":"19:00"}}
+{"text":"book a moderate italian restaurant for three people","intent":"book","slots":{"food":"italian","pricerange":"moderate","people":3}}
+{"text":"I want a table at a west indian restaurant tomorrow","intent":"book","slots":{"food":"indian","area":"west","relative_day":"tomorrow"}}
+{"text":"book the restraunt for tommorow at 6 for 5 people","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":5}}
+{"text":"reserve the resturant for friday 7pm four guests","intent":"book","slots":{"day":"friday","time":"19:00","people":4}}
+{"text":"can u book it tmrw 8pm 2 people","intent":"book","slots":{"relative_day":"tomorrow","time":"20:00","people":2}}
+{"text":"I would like to book it for this sunday around 9am for 4 people","intent":"book","slots":{"day":"sunday","day_modifier":"this","time":"09:00","people":4}}
+{"text":"same restaurant same time same people again","intent":"book","slots":{}}
+{"text":"create another booking for the same restaurant","intent":"book","slots":{}}
+{"text":"make one more booking there","intent":"book","slots":{}}
+{"text":"move it to saturday at 8pm","intent":"reschedule","slots":{"day":"saturday","time":"20:00"}}
+{"text":"reschedule my booking to tomorrow","intent":"reschedule","slots":{"relative_day":"tomorrow"}}
+{"text":"change the table to 6 people","intent":"reschedule","slots":{"people":6}}
+{"text":"make the booking for 3 people instead","intent":"correct","slots":{"people":3}}
+{"text":"actually I meant 7pm not 6pm","intent":"correct","slots":{"time":"19:00"}}
+{"text":"no make it next week Tuesday","intent":"correct","slots":{"day":"tuesday","day_modifier":"next_week"}}
+{"text":"push it to the day after","intent":"reschedule","slots":{"relative_day":"day_after"}}
+{"text":"change SIM-ABC123 to friday at 6pm","intent":"reschedule","slots":{"booking_reference":"SIM-ABC123","day":"friday","time":"18:00"}}
+{"text":"cancel this booking","intent":"cancel","slots":{}}
+{"text":"delete my reservation","intent":"cancel","slots":{}}
+{"text":"remove booking BK-Z9X8C7","intent":"cancel","slots":{"booking_reference":"BK-Z9X8C7"}}
+{"text":"cancel SIM-ROFNYN please","intent":"cancel","slots":{"booking_reference":"SIM-ROFNYN"}}
+{"text":"can you cancel all my bookings apart from nandos?","intent":"cancel","slots":{}}
+{"text":"show my bookings","intent":"booking_list","slots":{}}
+{"text":"list my reservations","intent":"booking_list","slots":{}}
+{"text":"what have I booked?","intent":"booking_list","slots":{}}
+{"text":"do I have any current bookings?","intent":"booking_list","slots":{}}
+{"text":"tell me about my booking","intent":"booking_info","slots":{}}
+{"text":"booking details please","intent":"booking_info","slots":{}}
+{"text":"status of BK-Q1W2E3","intent":"booking_info","slots":{"booking_reference":"BK-Q1W2E3"}}
+{"text":"what is the postcode?","intent":"restaurant_info","slots":{}}
+{"text":"phone number for that restaurant","intent":"restaurant_info","slots":{}}
+{"text":"where is meze bar located?","intent":"restaurant_info","slots":{}}
+{"text":"what is the address of the golden curry?","intent":"restaurant_info","slots":{}}
+{"text":"how far is it from the west?","intent":"distance_info","slots":{"area":"west"}}
+{"text":"distance from centre to efes restaurant","intent":"distance_info","slots":{"area":"centre"}}
+{"text":"is hakka near south Cambridge?","intent":"distance_info","slots":{"area":"south"}}
+{"text":"what prices can I filter by?","intent":"filter_info","slots":{}}
+{"text":"which areas are supported?","intent":"filter_info","slots":{}}
+{"text":"what cuisines can I search for?","intent":"cuisine_help","slots":{}}
+{"text":"I do not know what to eat, suggest cuisines","intent":"cuisine_help","slots":{}}
+{"text":"what food types are available?","intent":"cuisine_help","slots":{}}
+{"text":"show it as a table","intent":"table_view","slots":{}}
+{"text":"can you put that in table format?","intent":"table_view","slots":{}}
+{"text":"as a tbale please","intent":"table_view","slots":{}}
+{"text":"more options please","intent":"alternative","slots":{}}
+{"text":"any other restaurants?","intent":"alternative","slots":{}}
+{"text":"not pizza, other restaurants","intent":"alternative","slots":{"food":"italian"}}
+{"text":"no italian, show other cuisines","intent":"list","slots":{"food":"italian"}}
+{"text":"other middle eastern restaurants please","intent":"alternative","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"]}}
+{"text":"another south asian option","intent":"alternative","slots":{"cuisine_group":"South Asian","food_candidates":["indian"]}}
+{"text":"hello there","intent":"greeting","slots":{}}
+{"text":"hey dineAI","intent":"greeting","slots":{}}
+{"text":"good evening","intent":"greeting","slots":{}}
+{"text":"cheers thanks","intent":"thanks","slots":{}}
+{"text":"thank u","intent":"thanks","slots":{}}
+{"text":"thanks mate","intent":"thanks","slots":{}}
+{"text":"can you help me get a passport?","intent":"unsupported","slots":{}}
+{"text":"I want to buy drugs","intent":"unsupported","slots":{}}
+{"text":"give me a credit card number","intent":"unsupported","slots":{}}
+{"text":"book a flight to London","intent":"unsupported","slots":{}}

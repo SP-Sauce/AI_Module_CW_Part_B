@@ -7,6 +7,7 @@ const messageInput = document.getElementById("messageInput");
 const sendButton = document.getElementById("sendButton");
 const newSessionButton = document.getElementById("newSessionButton");
 const copyHistoryButton = document.getElementById("copyHistoryButton");
+const downloadJsonButton = document.getElementById("downloadJsonButton");
 const historyList = document.getElementById("historyList");
 const historyCount = document.getElementById("historyCount");
 const bookingModal = document.getElementById("bookingModal");
@@ -15,10 +16,18 @@ const bookingModalDetails = document.getElementById("bookingModalDetails");
 const bookingModalCopy = document.getElementById("bookingModalCopy");
 const bookingModalCalendar = document.getElementById("bookingModalCalendar");
 const bookingModalClose = document.getElementById("bookingModalClose");
+const exportModal = document.getElementById("exportModal");
+const exportModalTitle = document.getElementById("exportModalTitle");
+const exportTextArea = document.getElementById("exportTextArea");
+const exportModalCopy = document.getElementById("exportModalCopy");
+const exportModalClose = document.getElementById("exportModalClose");
+const exportDownloadTxt = document.getElementById("exportDownloadTxt");
+const exportDownloadJson = document.getElementById("exportDownloadJson");
 
 let currentSessionId = sessionId?.textContent?.trim() || "";
 let currentSessionStatus = "active";
 let selectedBooking = null;
+let currentSessionExport = null;
 
 function appendMessage(role, text, options = {}) {
   const row = document.createElement("div");
@@ -36,6 +45,39 @@ function appendMessage(role, text, options = {}) {
   messages.appendChild(row);
   messages.scrollTop = messages.scrollHeight;
   return row;
+}
+
+function appendThinkingIndicator() {
+  const row = document.createElement("div");
+  row.className = "message assistant thinking-message";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble thinking-bubble";
+  bubble.setAttribute("role", "status");
+  bubble.setAttribute("aria-label", "DineAI is coming up with a response");
+
+  const label = document.createElement("span");
+  label.className = "thinking-label";
+  label.textContent = "DineAI is coming up with a response";
+
+  const dots = document.createElement("span");
+  dots.className = "thinking-dots";
+  ["", "", ""].forEach(() => {
+    const dot = document.createElement("span");
+    dot.textContent = ".";
+    dots.appendChild(dot);
+  });
+
+  bubble.appendChild(label);
+  bubble.appendChild(dots);
+  row.appendChild(bubble);
+  messages.appendChild(row);
+  messages.scrollTop = messages.scrollHeight;
+  return row;
+}
+
+function removeThinkingIndicator(row) {
+  row?.remove();
 }
 
 function renderAssistantContent(bubble, text) {
@@ -415,6 +457,117 @@ function downloadTextFile(filename, content, mimeType) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function updateSessionExport(data) {
+  if (data?.export) {
+    currentSessionExport = data.export;
+    return;
+  }
+  if (data?.transcript) {
+    currentSessionExport = data;
+  }
+}
+
+function sessionExportFilename(extension) {
+  return `conversation-${safeFilename(currentSessionId || "session")}.${extension}`;
+}
+
+function sessionExportUrl(extension) {
+  return `/api/session/${encodeURIComponent(currentSessionId)}/export.${extension}`;
+}
+
+function sessionExportJson(exportData) {
+  return JSON.stringify(exportData || {}, null, 2);
+}
+
+function visibleSessionExport() {
+  return {
+    session_id: currentSessionId || "current-session",
+    account: {
+      display_name: document.getElementById("accountName")?.textContent || "",
+      username: document.getElementById("accountUsername")?.textContent || "",
+    },
+    transcript: visibleTranscript(),
+    messages: [],
+    bookings: [],
+    export_source: "visible_page_fallback",
+  };
+}
+
+function visibleTranscript() {
+  const lines = [`Session: ${currentSessionId || "current-session"}`, "", "Conversation:"];
+  const rows = Array.from(messages.querySelectorAll(".message:not(.thinking-message)"));
+  if (!rows.length) {
+    lines.push("(No messages visible.)");
+    return lines.join("\n");
+  }
+  rows.forEach((row) => {
+    const role = row.classList.contains("user") ? "You" : "Assistant";
+    const bubble = row.querySelector(".bubble");
+    const text = normalizeExportText(bubble?.innerText || bubble?.textContent || "");
+    lines.push(`${role}: ${text || "(empty message)"}`);
+  });
+  return lines.join("\n");
+}
+
+function normalizeExportText(value) {
+  return String(value || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function refreshExportDownloadLinks() {
+  if (exportDownloadTxt) {
+    exportDownloadTxt.href = sessionExportUrl("txt");
+    exportDownloadTxt.download = sessionExportFilename("txt");
+  }
+  if (exportDownloadJson) {
+    exportDownloadJson.href = sessionExportUrl("json");
+    exportDownloadJson.download = sessionExportFilename("json");
+  }
+}
+
+async function fetchSessionExport() {
+  const response = await fetch(`/api/session/${encodeURIComponent(currentSessionId)}/export`);
+  if (response.status === 401) {
+    window.location.href = "/login";
+    return null;
+  }
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "Conversation export failed.");
+  }
+  updateSessionExport(data);
+  return data;
+}
+
+function showExportModal(content, title = "Conversation transcript") {
+  if (!exportModal || !exportTextArea) {
+    return;
+  }
+  refreshExportDownloadLinks();
+  exportModalTitle.textContent = title;
+  exportTextArea.value = content || "";
+  exportModal.hidden = false;
+  selectExportText();
+}
+
+function selectExportText() {
+  if (!exportTextArea) {
+    return;
+  }
+  exportTextArea.focus();
+  exportTextArea.select();
+  exportTextArea.setSelectionRange(0, exportTextArea.value.length);
+}
+
+function hideExportModal() {
+  if (!exportModal) {
+    return;
+  }
+  exportModal.hidden = true;
+}
+
 function showBookingModal(item) {
   if (!bookingModal) {
     return;
@@ -461,6 +614,8 @@ function hideBookingModal() {
 function applySessionPayload(data) {
   currentSessionId = data.session_id || currentSessionId;
   currentSessionStatus = data.session_status || "active";
+  updateSessionExport(data);
+  refreshExportDownloadLinks();
   sessionId.textContent = currentSessionId;
   renderHistory(data.messages || [], data.greeting);
   renderBookings(data.bookings || []);
@@ -503,7 +658,7 @@ function renderAccountHistory(history) {
     empty.textContent = "No conversations yet.";
     historyList.appendChild(empty);
   } else {
-    sessions.slice(0, 8).forEach((item) => {
+    sessions.forEach((item) => {
       const row = document.createElement("button");
       row.type = "button";
       row.className = `sidebar-history-item history-thread${item.is_current ? " active" : ""}`;
@@ -617,18 +772,22 @@ async function openConversation(conversationId) {
   if (!conversationId) {
     return;
   }
-  const response = await fetch(`/api/session/${encodeURIComponent(conversationId)}`, { method: "POST" });
-  if (response.status === 401) {
-    window.location.href = "/login";
-    return;
+  try {
+    const response = await fetch(`/api/session/${encodeURIComponent(conversationId)}`, { method: "POST" });
+    if (response.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    const data = await response.json();
+    if (!response.ok) {
+      appendMessage("assistant", data.error || "I could not open that conversation.");
+      return;
+    }
+    applySessionPayload(data);
+    messageInput.focus();
+  } catch {
+    appendMessage("assistant", "I could not open that conversation. Please refresh the page and try again.");
   }
-  const data = await response.json();
-  if (!response.ok) {
-    appendMessage("assistant", data.error || "I could not open that conversation.");
-    return;
-  }
-  applySessionPayload(data);
-  messageInput.focus();
 }
 
 async function sendMessage(message) {
@@ -636,6 +795,7 @@ async function sendMessage(message) {
     return;
   }
   appendMessage("user", message);
+  const thinkingRow = appendThinkingIndicator();
   sendButton.disabled = true;
   messageInput.disabled = true;
   try {
@@ -649,16 +809,22 @@ async function sendMessage(message) {
       window.location.href = "/login";
       return;
     }
+    removeThinkingIndicator(thinkingRow);
     if (!response.ok) {
       appendMessage("assistant", data.error || "I could not process that message.");
       return;
     }
     currentSessionId = data.session_id || currentSessionId;
     currentSessionStatus = data.session_status || "active";
+    updateSessionExport(data);
+    refreshExportDownloadLinks();
     sessionId.textContent = currentSessionId;
     appendMessage("assistant", data.response);
     renderBookings(data.bookings || []);
     renderAccountHistory(data.history || {});
+  } catch {
+    removeThinkingIndicator(thinkingRow);
+    appendMessage("assistant", "I could not reach DineAI. Please check the server and try again.");
   } finally {
     setComposerState();
     if (currentSessionStatus !== "closed") {
@@ -668,19 +834,32 @@ async function sendMessage(message) {
 }
 
 async function copyText(text) {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    return;
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch {
+      // Fall through to the selection-based copy path.
+    }
   }
   const textarea = document.createElement("textarea");
   textarea.value = text;
   textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
-  textarea.style.left = "-9999px";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.width = "1px";
+  textarea.style.height = "1px";
+  textarea.style.opacity = "0";
   document.body.appendChild(textarea);
+  textarea.focus({ preventScroll: true });
   textarea.select();
-  document.execCommand("copy");
+  textarea.setSelectionRange(0, textarea.value.length);
+  const copied = document.execCommand("copy");
   document.body.removeChild(textarea);
+  if (!copied) {
+    throw new Error("Clipboard copy command was rejected.");
+  }
 }
 
 chatForm.addEventListener("submit", (event) => {
@@ -708,20 +887,26 @@ copyHistoryButton.addEventListener("click", async () => {
   copyHistoryButton.disabled = true;
   const originalText = copyHistoryButton.textContent;
   try {
-    const response = await fetch(`/api/session/${encodeURIComponent(currentSessionId)}/export`);
-    if (response.status === 401) {
-      window.location.href = "/login";
-      return;
+    let exportData = currentSessionExport?.transcript ? currentSessionExport : visibleSessionExport();
+    if (!exportData?.transcript) {
+      exportData = visibleSessionExport();
     }
-    const data = await response.json();
-    if (!response.ok || !data.transcript) {
-      copyHistoryButton.textContent = "Copy failed";
-      return;
+    currentSessionExport = exportData;
+    try {
+      await copyText(exportData.transcript);
+      copyHistoryButton.textContent = "Copied";
+    } catch {
+      copyHistoryButton.textContent = "Selected";
     }
-    await copyText(data.transcript);
-    copyHistoryButton.textContent = "Copied";
+    showExportModal(exportData.transcript);
+    if (exportData.export_source === "visible_page_fallback") {
+      fetchSessionExport().catch(() => {});
+    }
   } catch {
-    copyHistoryButton.textContent = "Copy failed";
+    const exportData = visibleSessionExport();
+    currentSessionExport = exportData;
+    showExportModal(exportData.transcript);
+    copyHistoryButton.textContent = "Selected";
   } finally {
     window.setTimeout(() => {
       copyHistoryButton.textContent = originalText;
@@ -730,7 +915,54 @@ copyHistoryButton.addEventListener("click", async () => {
   }
 });
 
+downloadJsonButton?.addEventListener("click", async () => {
+  downloadJsonButton.disabled = true;
+  const originalText = downloadJsonButton.textContent;
+  try {
+    const exportData = currentSessionExport || (await fetchSessionExport());
+    showExportModal(sessionExportJson(exportData), "Conversation debug JSON");
+    window.location.href = sessionExportUrl("json");
+    downloadJsonButton.textContent = "Downloaded";
+  } catch {
+    downloadJsonButton.textContent = "Download failed";
+  } finally {
+    window.setTimeout(() => {
+      downloadJsonButton.textContent = originalText;
+      downloadJsonButton.disabled = false;
+    }, 1400);
+  }
+});
+
 bookingModalClose?.addEventListener("click", hideBookingModal);
+
+exportModalClose?.addEventListener("click", hideExportModal);
+
+exportModal?.addEventListener("click", (event) => {
+  if (event.target === exportModal) {
+    hideExportModal();
+  }
+});
+
+exportModalCopy?.addEventListener("click", async () => {
+  if (!exportTextArea) {
+    return;
+  }
+  const original = exportModalCopy.textContent;
+  exportModalCopy.disabled = true;
+  selectExportText();
+  try {
+    await copyText(exportTextArea.value);
+    exportModalCopy.textContent = "Copied";
+  } catch {
+    selectExportText();
+    exportModalCopy.textContent = "Press Ctrl+C";
+  } finally {
+    window.setTimeout(() => {
+      exportModalCopy.textContent = original;
+      exportModalCopy.disabled = false;
+    }, 1400);
+  }
+});
 
 bookingModal?.addEventListener("click", (event) => {
   if (event.target === bookingModal) {
@@ -741,6 +973,9 @@ bookingModal?.addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && bookingModal && !bookingModal.hidden) {
     hideBookingModal();
+  }
+  if (event.key === "Escape" && exportModal && !exportModal.hidden) {
+    hideExportModal();
   }
 });
 

@@ -19,10 +19,11 @@ test path.
 
 ## Components
 
-`slot_extraction.py` detects intents and extracts restaurant slots using
-validated rules. It supports food type, area, price range, day, time and number
-of people. Optional LLM extraction can be added later, but rule extraction is the
-tested baseline.
+`slot_extraction.py` detects intents and extracts restaurant slots. In default
+CPU mode it uses validated rules. In LLM mode it uses a Transformers model to
+produce compact JSON intent/slot output, then validates and merges that output
+with the same rule safeguards. It supports food type, area, price range, day,
+time and number of people.
 
 `dialogue_state.py` stores session-level context. The state object has food,
 area, price range, booking day, concrete booking date, booking time, people,
@@ -40,6 +41,10 @@ constraints and a short explanation.
 a local/downloadable model are available, it can use a small encoder-decoder
 model such as `google/flan-t5-small`. Otherwise it uses safe templates. Both
 paths are instructed to use only retrieved restaurant evidence.
+
+`scripts/train_qlora_slot_extractor.py` is an optional PEFT/QLoRA training path
+for the JSON slot-extraction model. It saves adapters under `models/`, which can
+then be supplied with `--slot-model-name`.
 
 `booking.py` creates booking references such as `BK-AB12CD`, supports
 rescheduling and cancellation, and avoids any claim about live restaurant

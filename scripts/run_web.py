@@ -20,6 +20,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--port", type=int, default=5000, help="Port to bind.")
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
     parser.add_argument("--enable-llm", action="store_true", help="Attempt Hugging Face Transformers generation.")
+    parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
+    parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
     parser.add_argument("--debug", action="store_true", help="Run Flask in debug mode.")
     return parser
 
@@ -27,9 +29,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     settings = get_settings()
+    if args.model_name:
+        settings = replace(settings, model_name=args.model_name)
+    if args.slot_model_name:
+        settings = replace(settings, slot_model_name=args.slot_model_name)
     if args.enable_llm:
         settings = replace(settings, enable_llm=True)
-    app = create_app(settings=settings, use_sample=args.sample_data, enable_llm=settings.enable_llm)
+    app = create_app(
+        settings=settings,
+        use_sample=args.sample_data,
+        enable_llm=settings.enable_llm,
+        debug_turns=args.debug,
+    )
     app.run(host=args.host, port=args.port, debug=args.debug)
 
 

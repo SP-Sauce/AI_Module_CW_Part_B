@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from restaurant_assistant.date_utils import DAY_MODIFIERS, RELATIVE_DAYS
+from restaurant_assistant.llm_runtime import llm_backend_error
 from restaurant_assistant.preprocessing import normalize_area, normalize_food, normalize_price, normalize_time
 
 
@@ -52,6 +55,14 @@ FOOD_ALIASES = {
     "spaghetti": "italian",
     "pasta": "italian",
     "portugese": "portuguese",
+    "west african": "african",
+    "east african": "african",
+    "north african": "african",
+    "south african": "african",
+    "south asian": "indian",
+    "east asian": "asian oriental",
+    "south east asian": "asian oriental",
+    "southeast asian": "asian oriental",
     "asian": "asian oriental",
     "veggie": "vegetarian",
     "mediteranian": "mediterranean",
@@ -64,8 +75,28 @@ FOOD_ALIASES = {
 
 CUISINE_GROUP_SUGGESTIONS = {
     "Middle Eastern": {
-        "patterns": [r"\bmiddle[- ]eastern\b"],
+        "patterns": [r"\bmiddle[- ]eastern\b", r"\barab(?:ic|s)?\b"],
         "foods": ["lebanese", "turkish", "mediterranean"],
+    },
+    "South Asian": {
+        "patterns": [r"\bsouth[- ]asian\b"],
+        "foods": ["indian"],
+    },
+    "Southeast Asian": {
+        "patterns": [r"\bsouth[- ]?east[- ]asian\b|\bsoutheast[- ]asian\b"],
+        "foods": ["thai", "vietnamese", "asian oriental"],
+    },
+    "East Asian": {
+        "patterns": [r"\beast[- ]asian\b"],
+        "foods": ["chinese", "cantonese", "japanese", "korean", "asian oriental"],
+    },
+    "North African": {
+        "patterns": [r"\bnorth[- ]african\b"],
+        "foods": ["african"],
+    },
+    "West African": {
+        "patterns": [r"\bwest[- ]african\b"],
+        "foods": ["african"],
     },
 }
 
@@ -113,6 +144,7 @@ DISH_CUISINE_SUGGESTIONS = {
 
 UNSUPPORTED_FOOD_PATTERNS = {
     "egyptian": r"\begyptian\b|\begyption\b",
+    "moroccan": r"\bmorocc?an\b|\bmorccan\b|\bmorocan\b",
     "yemeni": r"\byemeni\b|\byemen\b",
 }
 
@@ -139,6 +171,42 @@ NUMBER_WORDS = {
     "eight": 8,
     "nine": 9,
     "ten": 10,
+}
+
+ALLOWED_INTENTS = {
+    "search",
+    "book",
+    "reschedule",
+    "cancel",
+    "greeting",
+    "thanks",
+    "alternative",
+    "list",
+    "correct",
+    "booking_info",
+    "booking_list",
+    "table_view",
+    "restaurant_info",
+    "filter_info",
+    "cuisine_help",
+    "dish_preference",
+    "distance_info",
+    "date_clarification",
+    "unsupported",
+    "unknown",
+}
+
+RULE_GUARDED_INTENTS = {
+    "booking_info",
+    "booking_list",
+    "cuisine_help",
+    "date_clarification",
+    "dish_preference",
+    "distance_info",
+    "filter_info",
+    "restaurant_info",
+    "table_view",
+    "unsupported",
 }
 
 
@@ -247,6 +315,7 @@ class RuleBasedSlotExtractor:
             (r"\bmoderatley\b", "moderately"),
             (r"\bmoderatly\b", "moderately"),
             (r"\bplese\b", "please"),
+            (r"\bhellow\b|\bhelo\b|\bhelllo\b", "hello"),
             (r"\btbale\b", "table"),
             (r"\bitalion\b", "italian"),
             (r"\begyption\b", "egyptian"),
@@ -301,6 +370,9 @@ class RuleBasedSlotExtractor:
 
     def _extract_area(self, text: str) -> str | None:
         text = re.sub(r"\bmiddle[- ]eastern\b", "middleeastern", text)
+        text = re.sub(r"\b(?:south|east|south[- ]?east|southeast)\s+asian\b", "regionalasian", text)
+        text = re.sub(r"\b(?:west|east|north|south)\s+african\b", "african", text)
+        text = re.sub(r"\bnorth\s+american\b", "northamerican", text)
         area_patterns = {
             "centre": [
                 r"\bcentre\b",
@@ -442,12 +514,16 @@ class RuleBasedSlotExtractor:
     def _detect_intent(self, text: str, slots: dict[str, Any]) -> str:
         if re.search(r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card)\b", text):
             return "unsupported"
-        if slots.get("dish") and slots.get("food_candidates"):
-            return "dish_preference"
         if slots.get("cuisine_group"):
             if re.search(r"\b(other|another|alternatives?|else|anymore|any more|more options?|more restaurants?)\b", text):
                 return "alternative"
             return "list"
+        if re.search(r"\b(book|reserve)\b", text):
+            return "book"
+        if re.search(r"\b(make|create|set up)\s+(?:a\s+|another\s+|one\s+more\s+|new\s+)?(booking|reservation)\b", text):
+            return "book"
+        if slots.get("dish") and slots.get("food_candidates"):
+            return "dish_preference"
         if re.search(r"\bwhat\b.*\brestaurants?\b.*\b(?:are there|available)\b", text):
             return "list"
         if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b", text):
@@ -492,10 +568,6 @@ class RuleBasedSlotExtractor:
             text,
         ) and any(slot in slots for slot in ("day", "relative_day", "time", "people")):
             return "correct"
-        if re.search(r"\b(book|reserve)\b", text):
-            return "book"
-        if re.search(r"\b(make|create|set up)\s+(?:a\s+|another\s+|one\s+more\s+|new\s+)?(booking|reservation)\b", text):
-            return "book"
         if text.strip() in {"hi", "hello", "hey", "good morning", "good afternoon", "good evening"}:
             return "greeting"
         if re.search(r"\b(thanks|thank you|cheers|ta)\b", text):
@@ -597,60 +669,94 @@ class OptionalLLMSlotExtractor:
     def __init__(self, model_name: str = "google/flan-t5-small") -> None:
         self.model_name = model_name
         self._pipeline = None
+        self._load_error: str | None = None
         self.rule_extractor = RuleBasedSlotExtractor()
 
     def _load_pipeline(self) -> Any:
         if self._pipeline is not None:
             return self._pipeline
+        backend_error = llm_backend_error()
+        if backend_error:
+            self._load_error = backend_error
+            self._pipeline = False
+            return self._pipeline
         try:
             from transformers import pipeline
 
-            self._pipeline = pipeline("text2text-generation", model=self.model_name)
-        except Exception:
+            model_path = Path(self.model_name)
+            if model_path.exists() and (model_path / "adapter_config.json").exists():
+                from peft import AutoPeftModelForSeq2SeqLM
+                from transformers import AutoTokenizer
+
+                tokenizer = AutoTokenizer.from_pretrained(model_path)
+                model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_path)
+                self._pipeline = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
+            else:
+                self._pipeline = pipeline("text2text-generation", model=self.model_name)
+        except Exception as exc:
+            self._load_error = str(exc)
             self._pipeline = False
         return self._pipeline
 
     def extract(self, message: str) -> SlotExtractionResult:
+        rule_result = self.rule_extractor.extract(message)
         pipe = self._load_pipeline()
         if not pipe:
-            return self.rule_extractor.extract(message)
+            if self._load_error and self._load_error not in rule_result.errors:
+                rule_result.errors.append(self._load_error)
+            return rule_result
         prompt = (
-            "Extract restaurant assistant intent and slots as compact JSON. "
-            "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, correct, booking_info, booking_list, table_view, restaurant_info, filter_info, cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
-            "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, relative_day, day_modifier, time, people. "
-            f"User: {message}"
+            "You are the language-understanding component for a MultiWOZ restaurant assistant. "
+            "Return only compact JSON. Do not explain.\n"
+            "Schema: "
+            '{"intent":"<intent>","slots":{...}}. '
+            "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
+            "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
+            "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
+            "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
+            "relative_day, day_modifier, time, people, booking_reference. "
+            "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
+            "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
+            "For incomplete booking requests, return intent book with only the booking slots the user gave. "
+            "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
+            "word such as curry; do not reinterpret the restaurant name as a dish preference. "
+            "Use only restaurant-domain values. Do not invent unsupported areas, cuisines, dates, "
+            "booking references, addresses or phone numbers.\n"
+            'User: hello\nJSON: {"intent":"greeting","slots":{}}\n'
+            'User: I need a cheap Italian restaurant in the south\nJSON: {"intent":"search","slots":{"food":"italian","area":"south","pricerange":"cheap"}}\n'
+            'User: book it for Friday at 7pm for 2 people\nJSON: {"intent":"book","slots":{"day":"friday","time":"19:00","people":2}}\n'
+            'User: cancel BK-ABC123\nJSON: {"intent":"cancel","slots":{"booking_reference":"BK-ABC123"}}\n'
+            f"User: {message}\nJSON:"
         )
         try:
             output = pipe(prompt, max_new_tokens=96, do_sample=False)[0]["generated_text"]
             parsed = self._parse_json(output)
             intent = parsed.get("intent", "unknown")
-            slots = validate_slots(parsed.get("slots", {}))
-            if intent not in {
-                "search",
-                "book",
-                "reschedule",
-                "cancel",
-                "greeting",
-                "thanks",
-                "alternative",
-                "list",
-                "correct",
-                "booking_info",
-                "booking_list",
-                "table_view",
-                "restaurant_info",
-                "filter_info",
-                "cuisine_help",
-                "dish_preference",
-                "distance_info",
-                "date_clarification",
-                "unsupported",
-                "unknown",
-            }:
+            if intent not in ALLOWED_INTENTS:
                 intent = "unknown"
-            return SlotExtractionResult(intent=intent, slots=slots, used_llm=True)
+            llm_slots = validate_slots(parsed.get("slots", {}))
+            merged_slots = dict(rule_result.slots)
+            merged_slots.update(llm_slots)
+            merged_slots = validate_slots(merged_slots)
+
+            if rule_result.intent == "unsupported":
+                intent = "unsupported"
+            elif rule_result.intent in {"book", "cancel", "reschedule"}:
+                intent = rule_result.intent
+            elif intent in {"unknown", "search"} and rule_result.intent in RULE_GUARDED_INTENTS:
+                intent = rule_result.intent
+            elif intent == "unknown" and rule_result.intent != "unknown":
+                intent = rule_result.intent
+
+            return SlotExtractionResult(
+                intent=intent,
+                slots=merged_slots,
+                confidence=0.9,
+                used_llm=True,
+                unsupported_slots=dict(rule_result.unsupported_slots),
+            )
         except Exception as exc:
-            fallback = self.rule_extractor.extract(message)
+            fallback = rule_result
             fallback.errors.append(str(exc))
             return fallback
 
@@ -659,7 +765,13 @@ class OptionalLLMSlotExtractor:
         end = text.rfind("}")
         if start == -1 or end == -1 or end <= start:
             raise ValueError("LLM output did not contain JSON")
-        parsed = json.loads(text[start : end + 1])
+        try:
+            parsed = json.loads(text[start : end + 1])
+        except json.JSONDecodeError:
+            try:
+                parsed = ast.literal_eval(text[start : end + 1])
+            except (SyntaxError, ValueError) as exc:
+                raise ValueError("LLM output did not contain valid JSON") from exc
         if not isinstance(parsed, dict):
             raise ValueError("LLM output JSON was not an object")
         return parsed

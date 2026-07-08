@@ -28,6 +28,7 @@ class Settings:
     top_k: int = 3
     enable_llm: bool = False
     model_name: str = "google/flan-t5-small"
+    slot_model_name: str = "google/flan-t5-small"
     timezone: str = "Europe/London"
 
 
@@ -36,11 +37,13 @@ def get_settings() -> Settings:
 
     raw_path = Path(os.getenv("MULTIWOZ_PATH", str(PROJECT_ROOT / "data" / "raw")))
     top_k = int(os.getenv("TOP_K", "3"))
+    generation_model = os.getenv("HF_MODEL_NAME", "google/flan-t5-small")
     return Settings(
         raw_multiwoz_path=raw_path,
         booking_db_path=Path(os.getenv("BOOKING_DB_PATH", str(PROJECT_ROOT / "data" / "runtime" / "bookings.sqlite3"))),
         top_k=top_k,
         enable_llm=_env_bool("ENABLE_LLM", False),
-        model_name=os.getenv("HF_MODEL_NAME", "google/flan-t5-small"),
+        model_name=generation_model,
+        slot_model_name=os.getenv("HF_SLOT_MODEL_NAME", generation_model),
         timezone=os.getenv("ASSISTANT_TIMEZONE", "Europe/London"),
     )
