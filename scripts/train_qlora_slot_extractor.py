@@ -16,6 +16,11 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from restaurant_assistant.slot_extraction import adapter_slot_prompt
+
+
 DEFAULT_TRAIN_FILE = ROOT / "data" / "training" / "slot_instruction_examples.jsonl"
 DEFAULT_OUTPUT_DIR = ROOT / "models" / "slot-extractor-qlora"
 
@@ -43,22 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def slot_prompt(text: str) -> str:
-    return (
-        "You are the language-understanding component for a MultiWOZ restaurant assistant. "
-        "Return only compact JSON with this schema: "
-        '{"intent":"<intent>","slots":{...}}. '
-        "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
-        "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
-        "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
-        "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
-        "relative_day, day_modifier, time, people, booking_reference. "
-        "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
-        "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
-        "For incomplete booking requests, return intent book with only the booking slots the user gave. "
-        "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
-        "word such as curry; do not reinterpret the restaurant name as a dish preference. "
-        f"User: {text}"
-    )
+    return adapter_slot_prompt(text)
 
 
 def load_examples(path: Path) -> list[dict[str, str]]:

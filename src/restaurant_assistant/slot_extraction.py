@@ -14,6 +14,26 @@ from restaurant_assistant.llm_runtime import llm_backend_error
 from restaurant_assistant.preprocessing import normalize_area, normalize_food, normalize_price, normalize_time
 
 
+def adapter_slot_prompt(text: str) -> str:
+    """Return the instruction format used to train the slot adapter."""
+    return (
+        "You are the language-understanding component for a MultiWOZ restaurant assistant. "
+        "Return only compact JSON with this schema: "
+        '{"intent":"<intent>","slots":{...}}. '
+        "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
+        "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
+        "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
+        "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
+        "relative_day, day_modifier, time, people, booking_reference. "
+        "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
+        "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
+        "For incomplete booking requests, return intent book with only the booking slots the user gave. "
+        "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
+        "word such as curry; do not reinterpret the restaurant name as a dish preference. "
+        f"User: {text}"
+    )
+
+
 SUPPORTED_AREAS = {"centre", "north", "south", "east", "west"}
 SUPPORTED_PRICES = {"cheap", "moderate", "expensive"}
 SUPPORTED_FOODS = {
@@ -685,6 +705,7 @@ class OptionalLLMSlotExtractor:
         self.model_name = model_name
         self._pipeline = None
         self._load_error: str | None = None
+        self._uses_adapter = False
         self.rule_extractor = RuleBasedSlotExtractor()
 
     def _load_pipeline(self) -> Any:
@@ -703,6 +724,7 @@ class OptionalLLMSlotExtractor:
                 from peft import AutoPeftModelForSeq2SeqLM
                 from transformers import AutoTokenizer
 
+                self._uses_adapter = True
                 tokenizer = AutoTokenizer.from_pretrained(model_path)
                 model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_path)
                 self._pipeline = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
@@ -720,29 +742,32 @@ class OptionalLLMSlotExtractor:
             if self._load_error and self._load_error not in rule_result.errors:
                 rule_result.errors.append(self._load_error)
             return rule_result
-        prompt = (
-            "You are the language-understanding component for a MultiWOZ restaurant assistant. "
-            "Return only compact JSON. Do not explain.\n"
-            "Schema: "
-            '{"intent":"<intent>","slots":{...}}. '
-            "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
-            "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
-            "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
-            "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
-            "relative_day, day_modifier, time, people, booking_reference. "
-            "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
-            "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
-            "For incomplete booking requests, return intent book with only the booking slots the user gave. "
-            "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
-            "word such as curry; do not reinterpret the restaurant name as a dish preference. "
-            "Use only restaurant-domain values. Do not invent unsupported areas, cuisines, dates, "
-            "booking references, addresses or phone numbers.\n"
-            'User: hello\nJSON: {"intent":"greeting","slots":{}}\n'
-            'User: I need a cheap Italian restaurant in the south\nJSON: {"intent":"search","slots":{"food":"italian","area":"south","pricerange":"cheap"}}\n'
-            'User: book it for Friday at 7pm for 2 people\nJSON: {"intent":"book","slots":{"day":"friday","time":"19:00","people":2}}\n'
-            'User: cancel BK-ABC123\nJSON: {"intent":"cancel","slots":{"booking_reference":"BK-ABC123"}}\n'
-            f"User: {message}\nJSON:"
-        )
+        if self._uses_adapter:
+            prompt = adapter_slot_prompt(message)
+        else:
+            prompt = (
+                "You are the language-understanding component for a MultiWOZ restaurant assistant. "
+                "Return only compact JSON. Do not explain.\n"
+                "Schema: "
+                '{"intent":"<intent>","slots":{...}}. '
+                "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
+                "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
+                "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
+                "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
+                "relative_day, day_modifier, time, people, booking_reference. "
+                "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
+                "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
+                "For incomplete booking requests, return intent book with only the booking slots the user gave. "
+                "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
+                "word such as curry; do not reinterpret the restaurant name as a dish preference. "
+                "Use only restaurant-domain values. Do not invent unsupported areas, cuisines, dates, "
+                "booking references, addresses or phone numbers.\n"
+                'User: hello\nJSON: {"intent":"greeting","slots":{}}\n'
+                'User: I need a cheap Italian restaurant in the south\nJSON: {"intent":"search","slots":{"food":"italian","area":"south","pricerange":"cheap"}}\n'
+                'User: book it for Friday at 7pm for 2 people\nJSON: {"intent":"book","slots":{"day":"friday","time":"19:00","people":2}}\n'
+                'User: cancel BK-ABC123\nJSON: {"intent":"cancel","slots":{"booking_reference":"BK-ABC123"}}\n'
+                f"User: {message}\nJSON:"
+            )
         try:
             output = pipe(prompt, max_new_tokens=96, do_sample=False)[0]["generated_text"]
             parsed = self._parse_json(output)
