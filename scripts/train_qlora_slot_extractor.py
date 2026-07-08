@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -130,11 +131,17 @@ def main(argv: list[str] | None = None) -> None:
     dataset = Dataset.from_list(examples)
     eval_dataset = Dataset.from_list(eval_examples) if eval_examples else None
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
+    bf16_supported = bool(
+        torch.cuda.is_available()
+        and hasattr(torch.cuda, "is_bf16_supported")
+        and torch.cuda.is_bf16_supported()
+    )
+    qlora_compute_dtype = torch.bfloat16 if bf16_supported else torch.float32
     quantization_config = (
         BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_compute_dtype=qlora_compute_dtype,
             bnb_4bit_use_double_quant=True,
         )
         if args.load_in_4bit
@@ -178,8 +185,10 @@ def main(argv: list[str] | None = None) -> None:
         learning_rate=args.learning_rate,
         max_steps=args.max_steps,
         logging_steps=10,
-        save_steps=max(args.max_steps, 1),
-        fp16=torch.cuda.is_available(),
+        save_strategy="no",
+        fp16=False,
+        bf16=bf16_supported,
+        logging_nan_inf_filter=False,
         report_to="none",
     )
     collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
@@ -192,11 +201,22 @@ def main(argv: list[str] | None = None) -> None:
         tokenizer=tokenizer,
     )
     train_result = trainer.train()
+    train_loss = float(train_result.metrics.get("train_loss", math.nan))
+    if not math.isfinite(train_loss) or train_loss <= 0:
+        raise SystemExit(
+            f"Training produced an invalid train_loss ({train_loss}); no adapter was saved. "
+            "Try a fresh runtime and verify the CUDA/package setup."
+        )
     eval_metrics: dict[str, Any] = {}
     if tokenized_eval is not None:
         eval_metrics = trainer.evaluate()
         if "eval_loss" in eval_metrics:
             print(f"eval_loss: {eval_metrics['eval_loss']}")
+            eval_loss = float(eval_metrics["eval_loss"])
+            if not math.isfinite(eval_loss):
+                raise SystemExit(
+                    f"Evaluation produced an invalid eval_loss ({eval_loss}); no adapter was saved."
+                )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(args.output_dir)
     tokenizer.save_pretrained(args.output_dir)
@@ -211,6 +231,8 @@ def main(argv: list[str] | None = None) -> None:
             "lora_r": args.lora_r,
             "lora_alpha": args.lora_alpha,
             "load_in_4bit": args.load_in_4bit,
+            "compute_dtype": str(qlora_compute_dtype),
+            "bf16_enabled": bf16_supported,
             "cuda_available": torch.cuda.is_available(),
             "train_metrics": train_result.metrics,
             "eval_metrics": eval_metrics,
