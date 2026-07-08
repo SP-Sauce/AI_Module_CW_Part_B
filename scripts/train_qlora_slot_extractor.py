@@ -23,7 +23,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Train a LoRA/QLoRA adapter for JSON slot extraction.")
     parser.add_argument("--base-model", default="google/flan-t5-small", help="Seq2seq base model to adapt.")
     parser.add_argument("--train-file", type=Path, default=DEFAULT_TRAIN_FILE, help="JSONL instruction examples.")
+    parser.add_argument("--eval-file", type=Path, default=None, help="Optional JSONL evaluation examples for eval_loss.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help="Directory for the adapter.")
+    parser.add_argument("--metrics-output", type=Path, default=None, help="Optional JSON file for training metadata.")
     parser.add_argument("--max-steps", type=int, default=120, help="Training steps for the adapter.")
     parser.add_argument("--batch-size", type=int, default=2, help="Per-device training batch size.")
     parser.add_argument("--gradient-accumulation-steps", type=int, default=4)
@@ -124,7 +126,9 @@ def main(argv: list[str] | None = None) -> None:
         )
 
     examples = load_examples(args.train_file)
+    eval_examples = load_examples(args.eval_file) if args.eval_file else None
     dataset = Dataset.from_list(examples)
+    eval_dataset = Dataset.from_list(eval_examples) if eval_examples else None
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
     quantization_config = (
         BitsAndBytesConfig(
@@ -162,6 +166,11 @@ def main(argv: list[str] | None = None) -> None:
         return inputs
 
     tokenized = dataset.map(tokenize, batched=True, remove_columns=dataset.column_names)
+    tokenized_eval = (
+        eval_dataset.map(tokenize, batched=True, remove_columns=eval_dataset.column_names)
+        if eval_dataset is not None
+        else None
+    )
     training_args = Seq2SeqTrainingArguments(
         output_dir=str(args.output_dir),
         per_device_train_batch_size=args.batch_size,
@@ -178,13 +187,37 @@ def main(argv: list[str] | None = None) -> None:
         model=model,
         args=training_args,
         train_dataset=tokenized,
+        eval_dataset=tokenized_eval,
         data_collator=collator,
         tokenizer=tokenizer,
     )
-    trainer.train()
+    train_result = trainer.train()
+    eval_metrics: dict[str, Any] = {}
+    if tokenized_eval is not None:
+        eval_metrics = trainer.evaluate()
+        if "eval_loss" in eval_metrics:
+            print(f"eval_loss: {eval_metrics['eval_loss']}")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(args.output_dir)
     tokenizer.save_pretrained(args.output_dir)
+    if args.metrics_output:
+        metrics = {
+            "base_model": args.base_model,
+            "train_file": str(args.train_file),
+            "eval_file": str(args.eval_file) if args.eval_file else None,
+            "output_dir": str(args.output_dir),
+            "max_steps": args.max_steps,
+            "batch_size": args.batch_size,
+            "lora_r": args.lora_r,
+            "lora_alpha": args.lora_alpha,
+            "load_in_4bit": args.load_in_4bit,
+            "cuda_available": torch.cuda.is_available(),
+            "train_metrics": train_result.metrics,
+            "eval_metrics": eval_metrics,
+        }
+        args.metrics_output.parent.mkdir(parents=True, exist_ok=True)
+        args.metrics_output.write_text(json.dumps(metrics, indent=2, default=str), encoding="utf-8")
+        print(f"Saved training metadata to {args.metrics_output}")
     print(f"Saved LoRA adapter to {args.output_dir}")
     print("Use it for extraction with:")
     print(f"  python scripts/run_chat.py --enable-llm --slot-model-name {args.output_dir}")

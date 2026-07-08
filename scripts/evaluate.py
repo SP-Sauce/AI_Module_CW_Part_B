@@ -32,25 +32,91 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--enable-llm", action="store_true", help="Evaluate with LLM extraction and generation enabled.")
     parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
     parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
+    parser.add_argument(
+        "--slot-fixture",
+        type=Path,
+        default=SLOT_FIXTURE,
+        help="Labelled slot fixture as JSON array or JSONL records.",
+    )
     return parser
 
 
-def evaluate_slots(*, enable_llm: bool, slot_model_name: str) -> dict[str, Any]:
-    with SLOT_FIXTURE.open("r", encoding="utf-8") as file:
-        slot_cases = json.load(file)
+def load_slot_cases(path: Path) -> list[dict[str, Any]]:
+    raw = path.read_text(encoding="utf-8")
+    if not raw.strip():
+        return []
+    if raw.lstrip().startswith("["):
+        data = json.loads(raw)
+        if not isinstance(data, list):
+            raise ValueError(f"Expected a JSON array in {path}")
+        return [case for case in data if isinstance(case, dict)]
+
+    cases: list[dict[str, Any]] = []
+    for line_number, line in enumerate(raw.splitlines(), start=1):
+        if not line.strip():
+            continue
+        case = json.loads(line)
+        if not isinstance(case, dict):
+            raise ValueError(f"Expected JSON object at {path}:{line_number}")
+        cases.append(case)
+    return cases
+
+
+def _canonical_slot_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        return tuple(sorted((key, _canonical_slot_value(item)) for key, item in value.items()))
+    if isinstance(value, list):
+        return tuple(_canonical_slot_value(item) for item in value)
+    return value
+
+
+def _slot_pairs(slots: dict[str, Any]) -> set[tuple[str, Any]]:
+    return {(key, _canonical_slot_value(value)) for key, value in slots.items()}
+
+
+def _safe_divide(numerator: int | float, denominator: int | float) -> float:
+    return round(numerator / denominator, 4) if denominator else 0.0
+
+
+def _has_json_or_parse_error(errors: list[str]) -> bool:
+    return any("json" in error.lower() or "parse" in error.lower() for error in errors)
+
+
+def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path) -> dict[str, Any]:
+    slot_cases = load_slot_cases(slot_fixture)
+    if not slot_cases:
+        raise ValueError(f"No slot evaluation cases found in {slot_fixture}")
     extractor = OptionalLLMSlotExtractor(slot_model_name) if enable_llm else RuleBasedSlotExtractor()
     intent_correct = 0
-    slot_total = 0
-    slot_correct = 0
+    exact_slot_objects = 0
+    expected_slot_total = 0
+    expected_slot_correct = 0
+    true_positive_slots = 0
+    false_positive_slots = 0
+    false_negative_slots = 0
+    invalid_json_or_parse_errors = 0
     llm_used = 0
+    latencies = []
     details = []
     for case in slot_cases:
+        start = time.perf_counter()
         result = extractor.extract(case["text"])
+        latency = time.perf_counter() - start
+        latencies.append(latency)
         llm_used += int(result.used_llm)
         intent_correct += int(result.intent == case["intent"])
-        for key, expected in case["slots"].items():
-            slot_total += 1
-            slot_correct += int(result.slots.get(key) == expected)
+        expected_slots = case.get("slots", {})
+        predicted_slots = result.slots
+        exact_slot_objects += int(predicted_slots == expected_slots)
+        expected_pairs = _slot_pairs(expected_slots)
+        predicted_pairs = _slot_pairs(predicted_slots)
+        matched_pairs = predicted_pairs & expected_pairs
+        expected_slot_total += len(expected_pairs)
+        expected_slot_correct += len(matched_pairs)
+        true_positive_slots += len(matched_pairs)
+        false_positive_slots += len(predicted_pairs - expected_pairs)
+        false_negative_slots += len(expected_pairs - predicted_pairs)
+        invalid_json_or_parse_errors += int(_has_json_or_parse_error(result.errors))
         details.append(
             {
                 "text": case["text"],
@@ -61,11 +127,27 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str) -> dict[str, Any]:
                     "used_llm": result.used_llm,
                     "errors": result.errors,
                 },
+                "latency_seconds": round(latency, 6),
             }
         )
+    slot_precision = _safe_divide(true_positive_slots, true_positive_slots + false_positive_slots)
+    slot_recall = _safe_divide(true_positive_slots, true_positive_slots + false_negative_slots)
+    slot_f1 = (
+        round(2 * slot_precision * slot_recall / (slot_precision + slot_recall), 4)
+        if slot_precision + slot_recall
+        else 0.0
+    )
     return {
+        "fixture": str(slot_fixture),
+        "case_count": len(slot_cases),
         "intent_accuracy": round(intent_correct / len(slot_cases), 4),
-        "slot_accuracy": round(slot_correct / slot_total, 4),
+        "slot_accuracy": _safe_divide(expected_slot_correct, expected_slot_total),
+        "exact_slot_object_accuracy": round(exact_slot_objects / len(slot_cases), 4),
+        "slot_precision": slot_precision,
+        "slot_recall": slot_recall,
+        "slot_f1": slot_f1,
+        "invalid_json_or_parse_error_count": invalid_json_or_parse_errors,
+        "mean_slot_latency_seconds": round(statistics.mean(latencies), 6),
         "llm_enabled": enable_llm,
         "llm_used_cases": llm_used,
         "slot_model_name": slot_model_name if enable_llm else None,
@@ -186,22 +268,43 @@ def evaluate_response_safety(restaurants: list[dict[str, Any]], settings: Any, *
     }
 
 
-def main(argv: list[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
+def run_evaluation(
+    *,
+    sample_data: bool,
+    enable_llm: bool,
+    model_name: str | None = None,
+    slot_model_name: str | None = None,
+    slot_fixture: Path = SLOT_FIXTURE,
+) -> dict[str, Any]:
     settings = get_settings()
-    if args.model_name:
-        settings = replace(settings, model_name=args.model_name)
-    if args.slot_model_name:
-        settings = replace(settings, slot_model_name=args.slot_model_name)
-    if args.enable_llm:
+    if model_name:
+        settings = replace(settings, model_name=model_name)
+    if slot_model_name:
+        settings = replace(settings, slot_model_name=slot_model_name)
+    if enable_llm:
         settings = replace(settings, enable_llm=True)
-    restaurants = load_restaurants(settings, use_sample=args.sample_data)
-    output = {
-        "slot_extraction": evaluate_slots(enable_llm=settings.enable_llm, slot_model_name=settings.slot_model_name),
+    restaurants = load_restaurants(settings, use_sample=sample_data)
+    return {
+        "slot_extraction": evaluate_slots(
+            enable_llm=settings.enable_llm,
+            slot_model_name=settings.slot_model_name,
+            slot_fixture=slot_fixture,
+        ),
         "retrieval": evaluate_retrieval(restaurants),
         "response_generation": evaluate_response_safety(restaurants, settings, enable_llm=settings.enable_llm),
-        "end_to_end": evaluate_end_to_end(args.sample_data, restaurants, settings, enable_llm=settings.enable_llm),
+        "end_to_end": evaluate_end_to_end(sample_data, restaurants, settings, enable_llm=settings.enable_llm),
     }
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
+    output = run_evaluation(
+        sample_data=args.sample_data,
+        enable_llm=args.enable_llm,
+        model_name=args.model_name,
+        slot_model_name=args.slot_model_name,
+        slot_fixture=args.slot_fixture,
+    )
     print(json.dumps(output, indent=2, default=str))
 
 

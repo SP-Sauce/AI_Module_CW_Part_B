@@ -2,11 +2,27 @@
 
 ## Slot Extraction
 
-The evaluation script uses a labelled fixture covering intent, food, area,
-price range, day, time and number of people. It reports exact slot accuracy and
-intent accuracy. In LLM mode, it also reports how many cases used the LLM slot
-extractor and which slot model was used. This checks whether the system can
-interpret customer queries before state tracking or retrieval.
+The evaluation script can use either the original small fixture in
+`tests/fixtures/slot_cases.json` or the hold-out file in
+`data/evaluation/slot_eval_cases.jsonl`. The hold-out file contains fresh
+natural restaurant-assistant turns that are not duplicated from the training
+JSONL.
+
+Final slot metrics:
+
+- intent accuracy;
+- exact slot-object accuracy;
+- micro slot precision, recall and F1 over key/value slot pairs;
+- invalid JSON or parse-error count where an LLM extractor is active;
+- mean slot-extraction latency;
+- LLM enabled flag, LLM-used case count and slot model name.
+
+The main report should compare the same hold-out fixture across:
+
+- `baseline_rule_based`: deterministic rules only;
+- `base_llm`: `google/flan-t5-small` prompted JSON extraction;
+- `qlora_adapter`: the optional `models/slot-extractor-qlora` adapter when it
+  has been trained.
 
 ## Retrieval
 
@@ -74,6 +90,35 @@ The local admin dashboard supports the final demo and report by showing:
 
 The script reports task success rate and latency per turn.
 
+## Hold-Out Evaluation Design
+
+`data/evaluation/slot_eval_cases.jsonl` uses the same schema as the training
+file:
+
+```json
+{"text":"...","intent":"...","slots":{}}
+```
+
+It covers search, list, booking, reschedule, correction, cancellation, booking
+lookup, booking lists, restaurant details, filter help, cuisine help, dish
+preference, distance questions, table view requests, greetings, thanks and
+unsupported requests. The examples include typos and natural phrasing so the
+evaluation is not just a copy of the rule patterns or the training examples.
+
+## Leakage Prevention
+
+Before reporting hold-out results, run:
+
+```powershell
+python scripts/check_data_leakage.py
+```
+
+The checker compares normalized `text` fields between
+`data/training/slot_instruction_examples.jsonl` and
+`data/evaluation/slot_eval_cases.jsonl`. It exits with a non-zero status if an
+evaluation turn is an exact duplicate after lowercasing, punctuation removal and
+whitespace normalization.
+
 ## Ablation
 
 `scripts/run_ablation.py` compares:
@@ -92,8 +137,24 @@ If a slot-extraction adapter is trained with
 `scripts/train_qlora_slot_extractor.py`, rerun:
 
 ```powershell
-python scripts/evaluate.py --enable-llm --slot-model-name models/slot-extractor-qlora
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora
 ```
 
 The report should compare the base LLM extractor, the QLoRA adapter where
 available, and the rule fallback on the same labelled fixture.
+
+Use the matrix command for reproducible JSON and Markdown outputs:
+
+```powershell
+python scripts/run_evaluation_matrix.py --sample-data
+```
+
+## Limitations
+
+The hold-out set is intentionally small enough for coursework inspection, so it
+does not estimate production accuracy. Base LLM results may fall back to the
+rule extractor if local model dependencies or model files are unavailable. QLoRA
+results should be labelled as skipped unless `models/slot-extractor-qlora`
+exists in the local or Colab runtime. Booking evaluation remains
+proof-of-concept: it verifies state changes and references, not real restaurant
+availability.

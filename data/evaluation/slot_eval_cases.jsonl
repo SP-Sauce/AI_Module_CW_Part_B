@@ -1,0 +1,50 @@
+{"text":"Could you find me a low cost Chinese restaurant near the centre of town?","intent":"search","slots":{"food":"chinese","area":"centre","pricerange":"cheap"}}
+{"text":"I'm after somewhere upmarket for Italian food on the north side","intent":"search","slots":{"food":"italian","area":"north","pricerange":"expensive"}}
+{"text":"Need a reasonable priced thai place please","intent":"search","slots":{"food":"thai","pricerange":"moderate"}}
+{"text":"Look for vegetarian restaurants around the south of Cambridge","intent":"search","slots":{"food":"vegetarian","area":"south"}}
+{"text":"Show every restaurant you know about in the east","intent":"list","slots":{"area":"east"}}
+{"text":"Can I see the cheap options only?","intent":"list","slots":{"pricerange":"cheap"}}
+{"text":"List the lebanese places in west Cambridge","intent":"list","slots":{"food":"lebanese","area":"west"}}
+{"text":"What places do you have for south asian food?","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"]}}
+{"text":"Please reserve it for next Tuesday at 7:30pm for 3 guests","intent":"book","slots":{"day":"tuesday","day_modifier":"next","time":"19:30","people":3}}
+{"text":"Book this restaurant for today at noon, table for two","intent":"book","slots":{"relative_day":"today","time":"12:00","people":2}}
+{"text":"Can u reserve it tmrw at 6pm for five people?","intent":"book","slots":{"time":"18:00","people":5}}
+{"text":"Make a booking at a moderate chinese restaurant for 4 people","intent":"book","slots":{"food":"chinese","pricerange":"moderate","people":4}}
+{"text":"Please move my reservation to next week Thursday at 8pm","intent":"reschedule","slots":{"day":"thursday","day_modifier":"next_week","time":"20:00"}}
+{"text":"Reschedule BK-7GHT92 for Friday evening at 6","intent":"reschedule","slots":{"booking_reference":"BK-7GHT92","day":"friday","time":"18:00"}}
+{"text":"Change the booking to a party of six","intent":"reschedule","slots":{"people":6}}
+{"text":"Actually it should be for Sunday not Saturday","intent":"correct","slots":{"day":"sunday"}}
+{"text":"No, make that 8 people instead please","intent":"correct","slots":{"people":8}}
+{"text":"I meant 9am, not the evening","intent":"correct","slots":{"time":"09:00"}}
+{"text":"Cancel my table booking now","intent":"cancel","slots":{}}
+{"text":"Delete reservation SIM-A1B2C3 for me","intent":"cancel","slots":{"booking_reference":"SIM-A1B2C3"}}
+{"text":"Please remove booking BK-X9Y8Z7","intent":"cancel","slots":{"booking_reference":"BK-X9Y8Z7"}}
+{"text":"Can you show me all the reservations I made?","intent":"booking_list","slots":{}}
+{"text":"Which bookings are still on my account?","intent":"booking_list","slots":{}}
+{"text":"Give me the details for booking BK-LM45NO","intent":"booking_info","slots":{"booking_reference":"BK-LM45NO"}}
+{"text":"What are the details of that reservation?","intent":"booking_info","slots":{}}
+{"text":"Do you have the phone number for this place?","intent":"restaurant_info","slots":{}}
+{"text":"Where exactly is that restaurant located?","intent":"restaurant_info","slots":{}}
+{"text":"What's the postcode for the restaurant you found?","intent":"restaurant_info","slots":{}}
+{"text":"What price ranges can I filter restaurants by?","intent":"filter_info","slots":{}}
+{"text":"Which parts of Cambridge are searchable?","intent":"filter_info","slots":{}}
+{"text":"I'm not sure what cuisine to choose, what types are available?","intent":"cuisine_help","slots":{}}
+{"text":"Suggest some cuisines I can search for","intent":"cuisine_help","slots":{}}
+{"text":"I fancy noodles tonight, which cuisine fits?","intent":"dish_preference","slots":{"dish":"noodles","food_candidates":["chinese","asian oriental","thai","vietnamese"]}}
+{"text":"Where could I get kebab or grilled meat?","intent":"dish_preference","slots":{"dish":"grilled meat or kebab","food_candidates":["turkish","lebanese","mediterranean"]}}
+{"text":"Sushi sounds good, show me the right kind of place","intent":"dish_preference","slots":{"dish":"sushi","food_candidates":["japanese"]}}
+{"text":"How far is that place from north Cambridge?","intent":"distance_info","slots":{"area":"north"}}
+{"text":"Distance from the centre to this restaurant please","intent":"distance_info","slots":{"area":"centre"}}
+{"text":"Is the restaurant near the east side?","intent":"distance_info","slots":{"area":"east"}}
+{"text":"Put those results in a table please","intent":"table_view","slots":{}}
+{"text":"Can you display the options as a tbale?","intent":"table_view","slots":{}}
+{"text":"Hi there assistant","intent":"greeting","slots":{}}
+{"text":"Good afternoon","intent":"greeting","slots":{}}
+{"text":"Thanks, that helps a lot","intent":"thanks","slots":{}}
+{"text":"Cheers for sorting that","intent":"thanks","slots":{}}
+{"text":"Can you book a taxi to the station?","intent":"unsupported","slots":{}}
+{"text":"Find me somewhere selling fireworks","intent":"unsupported","slots":{}}
+{"text":"I need a dentist appointment tomorrow","intent":"unsupported","slots":{"relative_day":"tomorrow"}}
+{"text":"Are there middle eastern restaurants in the centre?","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"centre"}}
+{"text":"Any east asian options around town?","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"]}}
+{"text":"Show me south east asian food in the west","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"],"area":"west"}}

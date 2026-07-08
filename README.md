@@ -187,22 +187,49 @@ All tests run against the sample dataset and do not require internet access.
 
 ```powershell
 python scripts/evaluate.py --sample-data
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl
 python scripts/run_ablation.py --sample-data
 ```
 
-The evaluation reports slot metrics, retrieval metrics, task success and
-latency. The ablation script compares the final stateful retrieval system with
-simpler baselines.
+The first command keeps the original small fixture for backwards compatibility.
+The second command evaluates the fresh hold-out slot set in
+`data/evaluation/slot_eval_cases.jsonl`. Before using the hold-out set in the
+report, check for train/evaluation leakage:
+
+```powershell
+python scripts/check_data_leakage.py
+```
+
+The evaluation reports intent accuracy, exact slot-object accuracy, slot
+precision, recall and F1, parse-error counts, slot latency, retrieval metrics,
+response safety and end-to-end task success. The ablation script compares the
+final stateful retrieval system with simpler baselines.
 
 Evaluate the LLM path:
 
 ```powershell
-python scripts/evaluate.py --enable-llm
+python scripts/evaluate.py --sample-data --enable-llm --slot-model-name google/flan-t5-small
 python scripts/run_ablation.py --enable-llm
 ```
 
 The JSON output includes whether slot extraction used the LLM and which
 generation mode answered each turn.
+
+Run the report-ready experiment matrix:
+
+```powershell
+python scripts/run_evaluation_matrix.py --sample-data
+```
+
+This runs:
+
+- `baseline_rule_based`: deterministic rule extractor, no `--enable-llm`;
+- `base_llm`: `--enable-llm --slot-model-name google/flan-t5-small`;
+- `qlora_adapter`: `--enable-llm --slot-model-name models/slot-extractor-qlora`.
+
+If the adapter folder is missing, the QLoRA row is marked as skipped. Outputs
+are written to `outputs/evaluation/evaluation_matrix.json` and
+`outputs/evaluation/evaluation_matrix.md`.
 
 ## Safety And Limitations
 
@@ -230,6 +257,25 @@ pip install -r requirements-qlora.txt
 python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small
 ```
 
-The default adapter output is ignored under `models/`. See
-`docs/llm_and_qlora.md` for the LLM pipeline, QLoRA commands and recommended
-report wording.
+For a short local CPU smoke test of the LoRA path, disable 4-bit loading and
+use a tiny number of steps:
+
+```powershell
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small --no-4bit --max-steps 5 --output-dir models/slot-extractor-smoke
+```
+
+For the Colab/GPU coursework run:
+
+```powershell
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small --eval-file data/evaluation/slot_eval_cases.jsonl --metrics-output outputs/evaluation/qlora_training_metadata.json
+python scripts/run_evaluation_matrix.py --sample-data
+```
+
+`notebooks/train_qlora_colab.ipynb` contains the Colab workflow: clone the repo,
+install requirements, check the GPU, train the adapter, run the matrix and
+optionally copy `outputs/evaluation` to Google Drive.
+
+The default adapter output is ignored under `models/`. The fine-tuned adapter
+changes only the slot extractor. Retrieval, slot validation, dialogue state and
+booking logic remain deterministic guardrails. See `docs/llm_and_qlora.md` for
+the LLM pipeline and recommended report wording.

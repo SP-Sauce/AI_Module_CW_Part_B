@@ -140,6 +140,10 @@ DISH_CUISINE_SUGGESTIONS = {
         "patterns": [r"\bmandi\b|\bmandhi\b|\bmandy\b"],
         "foods": ["lebanese", "turkish", "mediterranean"],
     },
+    "grilled meat or kebab": {
+        "patterns": [r"\bgrilled\s+meat\b|\bkebabs?\b"],
+        "foods": ["turkish", "lebanese", "mediterranean"],
+    },
 }
 
 UNSUPPORTED_FOOD_PATTERNS = {
@@ -148,17 +152,8 @@ UNSUPPORTED_FOOD_PATTERNS = {
     "yemeni": r"\byemeni\b|\byemen\b",
 }
 
-DAY_VALUES = {
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-    "today",
-    "tomorrow",
-}
+WEEKDAY_VALUES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+DAY_VALUES = set(WEEKDAY_VALUES) | {"today", "tomorrow"}
 
 NUMBER_WORDS = {
     "one": 1,
@@ -440,11 +435,13 @@ class RuleBasedSlotExtractor:
         return None
 
     def _extract_day(self, text: str) -> str | None:
-        for day in DAY_VALUES:
-            if day in {"today", "tomorrow"}:
-                continue
-            if re.search(rf"\b{day}\b", text):
-                return day
+        matches = []
+        for day in WEEKDAY_VALUES:
+            match = re.search(rf"\b{day}\b", text)
+            if match:
+                matches.append((match.start(), day))
+        if matches:
+            return min(matches)[1]
         return None
 
     def _extract_relative_day(self, text: str) -> str | None:
@@ -512,8 +509,15 @@ class RuleBasedSlotExtractor:
         return match.group(1).upper() if match else None
 
     def _detect_intent(self, text: str, slots: dict[str, Any]) -> str:
-        if re.search(r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card)\b", text):
+        if re.search(r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card|taxi|flight|fireworks?|dentist)\b", text):
             return "unsupported"
+        if re.search(r"^(hi|hello|hey|good morning|good afternoon|good evening)\b", text) and not re.search(
+            r"\b(book|reserve|find|search|restaurants?|cuisines?|food|what to eat|suggest)\b",
+            text,
+        ):
+            return "greeting"
+        if re.search(r"\b(thanks|thank you|cheers|ta)\b", text):
+            return "thanks"
         if slots.get("cuisine_group"):
             if re.search(r"\b(other|another|alternatives?|else|anymore|any more|more options?|more restaurants?)\b", text):
                 return "alternative"
@@ -526,9 +530,16 @@ class RuleBasedSlotExtractor:
             return "dish_preference"
         if re.search(r"\bwhat\b.*\brestaurants?\b.*\b(?:are there|available)\b", text):
             return "list"
-        if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b", text):
+        if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b", text) or (
+            "area" in slots and re.search(r"\b(?:is|are)\b.*\bnear\b", text)
+        ):
             return "distance_info"
-        if re.search(r"\bwhat\s+areas?\b|\bwhich\s+areas?\b|\bareas?\s+(?:are|can|to)\b|\bfilter\s+through\b", text):
+        if re.search(
+            r"\bwhat\s+areas?\b|\bwhich\s+areas?\b|\bareas?\s+(?:are|can|to)\b|\bfilter\s+through\b|"
+            r"\bwhat\s+price\s+ranges?\b|\bprice\s+ranges?.*\bfilter\b|"
+            r"\bwhich\s+(?:parts|areas)\b.*\b(?:searchable|supported|filter)\b",
+            text,
+        ):
             return "filter_info"
         if re.search(
             r"\b(what\s+(?:food\s+)?cuisines?|cuisines?.*look for|food types?.*(?:available|can|look)|what to eat|unsure what to eat|suggest.*cuisines?)\b",
@@ -552,6 +563,10 @@ class RuleBasedSlotExtractor:
             text,
         ):
             return "restaurant_info"
+        if re.search(r"\b(tell me about|details?|status|show|what are|what is|what's|about)\b", text) and (
+            slots.get("booking_reference") or re.search(r"\b(booking|reservation|reference|it|this)\b", text)
+        ):
+            return "booking_info"
         if re.search(
             r"\b(list|show|view|what|which|any|all)\b.*\b(bookings?|reservations?)\b|\b(bookings?|reservations?)\b.*\b(there|current|made|have)\b",
             text,
@@ -568,15 +583,15 @@ class RuleBasedSlotExtractor:
             text,
         ) and any(slot in slots for slot in ("day", "relative_day", "time", "people")):
             return "correct"
-        if text.strip() in {"hi", "hello", "hey", "good morning", "good afternoon", "good evening"}:
-            return "greeting"
-        if re.search(r"\b(thanks|thank you|cheers|ta)\b", text):
-            return "thanks"
         if re.fullmatch(r"(?:next|following)\s+week", text):
             return "date_clarification"
-        if re.search(r"\ball\s+of\s+them\b|\blist\s+all\b|\ball\b.*\brestaurants?\b|\brestaurants?\b.*\blist\s+all\b", text):
+        if re.search(
+            r"\ball\s+of\s+them\b|\blist\s+all\b|\ball\b.*\brestaurants?\b|"
+            r"\bshow\s+every\s+restaurants?\b|\brestaurants?\b.*\blist\s+all\b",
+            text,
+        ):
             return "list"
-        if "pricerange" in slots and re.search(r"\b(that are|which are|ones that|around|about|priced?)\b", text):
+        if "pricerange" in slots and re.search(r"\b(that are|which are|ones that|around|about)\b", text):
             return "list"
         if re.search(r"\b(other|different|another)\s+cuisines?\b|\bnot\s+(?:just|only)\b", text) and re.search(
             r"\b(list|restaurants?|cuisines?|places?)\b", text
