@@ -57,3 +57,41 @@ def test_matrix_skips_base_adapter_evaluation_when_folder_is_missing(tmp_path, m
     assert base_row["status"] == "skipped"
     assert "slot-extractor-qlora-base" in base_row["reason"]
     assert len(calls) == 3
+
+
+def test_main_writes_separate_challenge_matrix_outputs(tmp_path, monkeypatch):
+    main_fixture = tmp_path / "main.jsonl"
+    challenge_fixture = tmp_path / "challenge.jsonl"
+    output_dir = tmp_path / "reports"
+    main_fixture.write_text("", encoding="utf-8")
+    challenge_fixture.write_text("", encoding="utf-8")
+
+    def fake_run_matrix(args):
+        return [
+            {
+                "name": f"fixture:{args.slot_fixture.name}",
+                "status": "completed",
+                "command": "test",
+                "metrics": {},
+            }
+        ]
+
+    monkeypatch.setattr(matrix, "run_matrix", fake_run_matrix)
+
+    matrix.main(
+        [
+            "--slot-fixture",
+            str(main_fixture),
+            "--challenge-fixture",
+            str(challenge_fixture),
+            "--output-dir",
+            str(output_dir),
+        ]
+    )
+
+    main_payload = (output_dir / "evaluation_matrix.json").read_text(encoding="utf-8")
+    challenge_payload = (output_dir / "challenge_evaluation_matrix.json").read_text(encoding="utf-8")
+    assert "fixture:main.jsonl" in main_payload
+    assert "fixture:challenge.jsonl" in challenge_payload
+    assert (output_dir / "evaluation_matrix.md").exists()
+    assert (output_dir / "challenge_evaluation_matrix.md").exists()

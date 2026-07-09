@@ -281,3 +281,89 @@ def test_llm_slots_fill_missing_values_but_do_not_override_rule_slots():
     assert result.llm_slots_trusted is True
     assert result.llm_meaningful_slot_contribution is True
     assert result.slots == {"area": "east", "food": "thai"}
+
+
+@pytest.mark.parametrize(
+    ("message", "raw_output", "expected_slots"),
+    [
+        (
+            "What places do you have for south asian food?",
+            '"intent":"restaurant_info","slots":"food":"indian"',
+            {
+                "cuisine_group": "South Asian",
+                "food_candidates": ["indian"],
+            },
+        ),
+        (
+            "Book this restaurant for today at noon, table for two",
+            '"intent":"book","slots":"day":"today","people":2',
+            {"relative_day": "today", "time": "12:00", "people": 2},
+        ),
+        (
+            "Are there middle eastern restaurants in the centre?",
+            '"intent":"restaurant_info","slots":"food":"lebanese","area":"centre"',
+            {
+                "cuisine_group": "Middle Eastern",
+                "food_candidates": ["lebanese", "turkish", "mediterranean"],
+                "area": "centre",
+            },
+        ),
+        (
+            "Any east asian options around town?",
+            '"intent":"filter_info","slots":"food":"asian oriental","area":"town"',
+            {
+                "cuisine_group": "East Asian",
+                "food_candidates": [
+                    "chinese",
+                    "cantonese",
+                    "japanese",
+                    "korean",
+                    "asian oriental",
+                ],
+            },
+        ),
+    ],
+)
+def test_semantic_duplicate_llm_slots_do_not_reduce_rule_exactness(
+    message,
+    raw_output,
+    expected_slots,
+):
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(raw_output)
+
+    result = extractor.extract(message)
+
+    assert result.slots == expected_slots
+    assert result.llm_meaningful_slot_contribution is False
+
+
+@pytest.mark.parametrize("area", ["Cambridge", "town", "around town", "city"])
+def test_vague_llm_area_values_are_not_merged(area):
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        {"intent": "search", "slots": {"area": area}}
+    )
+
+    result = extractor.extract("Find me a restaurant")
+
+    assert "area" not in result.slots
+    assert result.llm_slots_trusted is False
+
+
+def test_invalid_llm_price_and_booking_reference_are_not_merged():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        {
+            "intent": "search",
+            "slots": {
+                "pricerange": "less than",
+                "booking_reference": "BOOKING-123",
+            },
+        }
+    )
+
+    result = extractor.extract("Find a restaurant")
+
+    assert result.slots == {}
+    assert result.llm_slots_trusted is False

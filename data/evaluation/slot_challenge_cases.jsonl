@@ -1,0 +1,80 @@
+{"text":"Need summat cheap and Italian out east, ta","intent":"search","slots":{"food":"italian","area":"east","pricerange":"cheap"}}
+{"text":"Any upmarket Japanese grub near the north?","intent":"search","slots":{"food":"japanese","area":"north","pricerange":"expensive"}}
+{"text":"reasonable veggie resturant in west pls","intent":"search","slots":{"food":"vegetarian","area":"west","pricerange":"moderate"}}
+{"text":"Could I get Thai food somewhere south and cheap?","intent":"search","slots":{"food":"thai","area":"south","pricerange":"cheap"}}
+{"text":"I'm after British cooking in the centre, nothing pricey","intent":"search","slots":{"food":"british","area":"centre","pricerange":"cheap"}}
+{"text":"Find Chinese around east Cambridge at a reasonable price","intent":"search","slots":{"food":"chinese","area":"east","pricerange":"moderate"}}
+{"text":"Lebanese, north side, make it upmarket","intent":"search","slots":{"food":"lebanese","area":"north","pricerange":"expensive"}}
+{"text":"Show me Indian food down south on a budget","intent":"search","slots":{"food":"indian","area":"south","pricerange":"cheap"}}
+{"text":"Find me a resturant, not sure what kind yet","intent":"search","slots":{}}
+{"text":"I just want somewhere nice to eat pls","intent":"search","slots":{}}
+{"text":"Could you search for food around town?","intent":"search","slots":{}}
+{"text":"Need a place for dinner, any ideas?","intent":"search","slots":{}}
+{"text":"List the cheap Chinese choices on the west side","intent":"list","slots":{"food":"chinese","area":"west","pricerange":"cheap"}}
+{"text":"all Italian options east of town please","intent":"list","slots":{"food":"italian","area":"east"}}
+{"text":"What Thai resturants are in the centre?","intent":"list","slots":{"food":"thai","area":"centre"}}
+{"text":"show every moderate Indian place in north Cambridge","intent":"list","slots":{"food":"indian","area":"north","pricerange":"moderate"}}
+{"text":"Any Lebanese listings for the south?","intent":"list","slots":{"food":"lebanese","area":"south"}}
+{"text":"Fancy something Middle-Eastern around west Cambridge","intent":"list","slots":{"cuisine_group":"Middle Eastern","food_candidates":["lebanese","turkish","mediterranean"],"area":"west"}}
+{"text":"What South-Asian choices are there in the east?","intent":"list","slots":{"cuisine_group":"South Asian","food_candidates":["indian"],"area":"east"}}
+{"text":"Show East-Asian food near the north side","intent":"list","slots":{"cuisine_group":"East Asian","food_candidates":["chinese","cantonese","japanese","korean","asian oriental"],"area":"north"}}
+{"text":"Any Southeast-Asian places down south?","intent":"list","slots":{"cuisine_group":"Southeast Asian","food_candidates":["thai","vietnamese","asian oriental"],"area":"south"}}
+{"text":"West-African cuisine around central Cambridge please","intent":"list","slots":{"cuisine_group":"West African","food_candidates":["african"],"area":"centre"}}
+{"text":"Craving curry but dunno which cuisine","intent":"dish_preference","slots":{"dish":"curry","food_candidates":["indian","thai"]}}
+{"text":"Where might I find proper noodles?","intent":"dish_preference","slots":{"dish":"noodles","food_candidates":["chinese","thai","vietnamese"]}}
+{"text":"Pizza sounds good, suggest a cuisine","intent":"dish_preference","slots":{"dish":"pizza","food_candidates":["italian"]}}
+{"text":"I fancy mezze tonight, what food type is that?","intent":"dish_preference","slots":{"dish":"mezze","food_candidates":["lebanese","mediterranean","turkish"]}}
+{"text":"Got anywhere doing sushi?","intent":"dish_preference","slots":{"dish":"sushi","food_candidates":["japanese"]}}
+{"text":"book a tbale tmrw at 18:00 for a party of 2, challenge 1","intent":"book","slots":{"relative_day":"tomorrow","time":"18:00","people":2}}
+{"text":"book a tbale today at 20:00 for a party of 4, challenge 2","intent":"book","slots":{"relative_day":"today","time":"20:00","people":4}}
+{"text":"book a tbale tomorrow at 19:30 for a party of 6, challenge 3","intent":"book","slots":{"relative_day":"tomorrow","time":"19:30","people":6}}
+{"text":"book a tbale today at 12:30 for a party of 3, challenge 4","intent":"book","slots":{"relative_day":"today","time":"12:30","people":3}}
+{"text":"book a tbale tmrw at 17:45 for a party of 5, challenge 5","intent":"book","slots":{"relative_day":"tomorrow","time":"17:45","people":5}}
+{"text":"book a tbale today at 21:00 for a party of 8, challenge 6","intent":"book","slots":{"relative_day":"today","time":"21:00","people":8}}
+{"text":"Can you start a booking for tomorrow?","intent":"book","slots":{"relative_day":"tomorrow"}}
+{"text":"I'd like to reserve a table but haven't picked a time","intent":"book","slots":{}}
+{"text":"shift BK-C7D8E9 to monday at 6:30pm","intent":"reschedule","slots":{"booking_reference":"BK-C7D8E9","day":"monday","time":"18:30"}}
+{"text":"SIM-F1G2H3 needs moving to thursday, 20:00","intent":"reschedule","slots":{"booking_reference":"SIM-F1G2H3","day":"thursday","time":"20:00"}}
+{"text":"pls change BK-J4K5L6 to saturday noon","intent":"reschedule","slots":{"booking_reference":"BK-J4K5L6","day":"saturday","time":"12:00"}}
+{"text":"rescheduel SIM-M7N8P9 for friday at quarter past seven","intent":"reschedule","slots":{"booking_reference":"SIM-M7N8P9","day":"friday","time":"19:15"}}
+{"text":"Move my booking to Tuesday, I don't know the ref","intent":"reschedule","slots":{"day":"tuesday"}}
+{"text":"cancle BK-Q1R2S3 right away","intent":"cancel","slots":{"booking_reference":"BK-Q1R2S3"}}
+{"text":"please scrap reservation SIM-T4U5V6","intent":"cancel","slots":{"booking_reference":"SIM-T4U5V6"}}
+{"text":"I no longer need BK-W7X8Y9","intent":"cancel","slots":{"booking_reference":"BK-W7X8Y9"}}
+{"text":"cancel my current table, ref SIM-Z1A2B3","intent":"cancel","slots":{"booking_reference":"SIM-Z1A2B3"}}
+{"text":"Can you cancel it? I lost the reference","intent":"cancel","slots":{}}
+{"text":"What's the address for the place you just showed?","intent":"restaurant_info","slots":{}}
+{"text":"Does that resturant have a phone number?","intent":"restaurant_info","slots":{}}
+{"text":"Tell me the postcode for my selected place","intent":"restaurant_info","slots":{}}
+{"text":"More details about this restaurant pls","intent":"restaurant_info","slots":{}}
+{"text":"look up booking BK-D4E5F6","intent":"booking_info","slots":{"booking_reference":"BK-D4E5F6"}}
+{"text":"What time is SIM-G7H8J9 booked for?","intent":"booking_info","slots":{"booking_reference":"SIM-G7H8J9"}}
+{"text":"show details of BK-K1L2M3","intent":"booking_info","slots":{"booking_reference":"BK-K1L2M3"}}
+{"text":"I need info on my current booking","intent":"booking_info","slots":{}}
+{"text":"what reservations are in this session?","intent":"booking_list","slots":{}}
+{"text":"show all the tables I've booked here","intent":"booking_list","slots":{}}
+{"text":"booking history for this chat pls","intent":"booking_list","slots":{}}
+{"text":"remind me which filters are on","intent":"filter_info","slots":{}}
+{"text":"what criteria narrowed these results?","intent":"filter_info","slots":{}}
+{"text":"put the current choices into a tbale","intent":"table_view","slots":{}}
+{"text":"switch these booking results to table format","intent":"table_view","slots":{}}
+{"text":"order me a taxi to the station","intent":"unsupported","slots":{}}
+{"text":"find a hotel with late checkout","intent":"unsupported","slots":{}}
+{"text":"when is the next train to London?","intent":"unsupported","slots":{}}
+{"text":"need a dentist open tonight","intent":"unsupported","slots":{}}
+{"text":"take payment for this booking","intent":"unsupported","slots":{}}
+{"text":"I want a refund on my meal","intent":"unsupported","slots":{}}
+{"text":"place a takeaway order for curry","intent":"unsupported","slots":{}}
+{"text":"where can I buy fireworks nearby?","intent":"unsupported","slots":{}}
+{"text":"book me a flight for the weekend","intent":"unsupported","slots":{}}
+{"text":"store my credit card for later","intent":"unsupported","slots":{}}
+{"text":"hiya, you alright?","intent":"greeting","slots":{}}
+{"text":"morning bot, let's find some food","intent":"greeting","slots":{}}
+{"text":"cheers mate, sorted","intent":"thanks","slots":{}}
+{"text":"ta very much, that's everything","intent":"thanks","slots":{}}
+{"text":"How far is that from the west side of Cambridge?","intent":"distance_info","slots":{"area":"west"}}
+{"text":"Is this place walkable from the centre?","intent":"distance_info","slots":{"area":"centre"}}
+{"text":"distance from the north, roughly?","intent":"distance_info","slots":{"area":"north"}}
+{"text":"Actually west, not east","intent":"correct","slots":{"area":"west"}}
+{"text":"Oops make that expensive rather than cheap","intent":"correct","slots":{"pricerange":"expensive"}}
+{"text":"No, I said 8pm not 8am","intent":"correct","slots":{"time":"20:00"}}

@@ -184,6 +184,17 @@ Use the matrix command for reproducible JSON and Markdown outputs:
 python scripts/run_evaluation_matrix.py --sample-data
 ```
 
+For broader robustness testing, add the independent 80-case challenge fixture:
+
+```powershell
+python scripts/run_evaluation_matrix.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --challenge-fixture data/evaluation/slot_challenge_cases.jsonl
+```
+
+This keeps the 50-case fixture as the primary report and writes separate
+`challenge_evaluation_matrix.json` and `challenge_evaluation_matrix.md`
+artifacts. Challenge texts are validated against both training files and the
+main fixture to prevent exact normalized overlap.
+
 ## Limitations
 
 The hold-out set is intentionally small enough for coursework inspection, so it

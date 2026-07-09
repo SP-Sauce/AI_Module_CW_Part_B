@@ -24,6 +24,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the coursework evaluation matrix.")
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
     parser.add_argument("--slot-fixture", type=Path, default=DEFAULT_SLOT_FIXTURE)
+    parser.add_argument(
+        "--challenge-fixture",
+        type=Path,
+        default=None,
+        help="Optional second slot fixture written to separate challenge matrix reports.",
+    )
     parser.add_argument("--model-name", default=None, help="Optional response-generation model override.")
     parser.add_argument(
         "--adapter-path",
@@ -216,22 +222,50 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
     return rows
 
 
-def main(argv: list[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
-    rows = run_matrix(args)
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+def _write_matrix_outputs(
+    *,
+    rows: list[dict[str, Any]],
+    args: argparse.Namespace,
+    slot_fixture: Path,
+    json_name: str,
+    markdown_name: str,
+) -> None:
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "sample_data": args.sample_data,
-        "slot_fixture": str(args.slot_fixture),
+        "slot_fixture": str(slot_fixture),
         "results": rows,
     }
-    json_path = args.output_dir / "evaluation_matrix.json"
-    markdown_path = args.output_dir / "evaluation_matrix.md"
+    json_path = args.output_dir / json_name
+    markdown_path = args.output_dir / markdown_name
     json_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
     markdown_path.write_text(_markdown_table(rows), encoding="utf-8")
     print(f"Saved evaluation matrix JSON to {json_path}")
     print(f"Saved evaluation matrix Markdown to {markdown_path}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
+    rows = run_matrix(args)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    _write_matrix_outputs(
+        rows=rows,
+        args=args,
+        slot_fixture=args.slot_fixture,
+        json_name="evaluation_matrix.json",
+        markdown_name="evaluation_matrix.md",
+    )
+    if args.challenge_fixture is not None:
+        challenge_args = argparse.Namespace(**vars(args))
+        challenge_args.slot_fixture = args.challenge_fixture
+        challenge_rows = run_matrix(challenge_args)
+        _write_matrix_outputs(
+            rows=challenge_rows,
+            args=args,
+            slot_fixture=args.challenge_fixture,
+            json_name="challenge_evaluation_matrix.json",
+            markdown_name="challenge_evaluation_matrix.md",
+        )
 
 
 if __name__ == "__main__":

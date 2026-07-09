@@ -147,6 +147,7 @@ def _repaired_slots_shape(text: str) -> tuple[bool, bool]:
 
 SUPPORTED_AREAS = {"centre", "north", "south", "east", "west"}
 SUPPORTED_PRICES = {"cheap", "moderate", "expensive"}
+VAGUE_LLM_AREAS = {"cambridge", "town", "around town", "city"}
 SUPPORTED_FOODS = {
     "african",
     "asian oriental",
@@ -824,6 +825,68 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
     return valid
 
 
+def validate_llm_slots(slots: Any) -> dict[str, Any]:
+    """Validate generated slots with stricter rules for vague ontology values."""
+    if not isinstance(slots, dict):
+        return {}
+    candidates = dict(slots)
+    if "area" in candidates:
+        raw_area = " ".join(str(candidates["area"]).strip().casefold().split())
+        if raw_area in VAGUE_LLM_AREAS or normalize_area(raw_area) not in SUPPORTED_AREAS:
+            candidates.pop("area")
+    if "pricerange" in candidates:
+        if normalize_price(candidates["pricerange"]) not in SUPPORTED_PRICES:
+            candidates.pop("pricerange")
+    if "booking_reference" in candidates:
+        reference = str(candidates["booking_reference"]).strip().upper()
+        if not re.fullmatch(r"(?:BK|SIM)-[A-Z0-9]{6}", reference):
+            candidates.pop("booking_reference")
+    return validate_slots(candidates)
+
+
+def _explicitly_named_food(message: str, food: Any, cuisine_group: Any) -> bool:
+    """Return whether a single cuisine name appears outside the broad group phrase."""
+    normalized_message = re.sub(r"[^a-z0-9]+", " ", message.casefold()).strip()
+    normalized_food = re.sub(r"[^a-z0-9]+", " ", str(food).casefold()).strip()
+    normalized_group = re.sub(r"[^a-z0-9]+", " ", str(cuisine_group).casefold()).strip()
+    if not normalized_food:
+        return False
+    if normalized_group:
+        normalized_message = re.sub(
+            rf"\b{re.escape(normalized_group)}\b",
+            " ",
+            normalized_message,
+        )
+    return re.search(rf"\b{re.escape(normalized_food)}\b", normalized_message) is not None
+
+
+def merge_llm_slots(
+    message: str,
+    rule_slots: dict[str, Any],
+    llm_slots: dict[str, Any],
+) -> tuple[dict[str, Any], bool]:
+    """Add only genuinely missing, non-duplicative generated slot values."""
+    merged = dict(rule_slots)
+    meaningful_contribution = False
+    for key, value in llm_slots.items():
+        if key in merged:
+            continue
+        if key == "food" and {"cuisine_group", "food_candidates"}.issubset(rule_slots):
+            if not _explicitly_named_food(message, value, rule_slots["cuisine_group"]):
+                continue
+        if key in {"cuisine_group", "food_candidates"} and "food" in rule_slots:
+            continue
+        if key == "day" and "relative_day" in rule_slots:
+            if str(value).strip().casefold() in {"today", "tomorrow", "tonight"}:
+                continue
+        if key == "relative_day" and "day" in rule_slots:
+            if str(value).strip().casefold() in {"today", "tomorrow", "tonight"}:
+                continue
+        merged[key] = value
+        meaningful_contribution = True
+    return validate_slots(merged), meaningful_contribution
+
+
 class OptionalLLMSlotExtractor:
     """Strict JSON LLM extractor with rule-based fallback."""
 
@@ -924,7 +987,7 @@ class OptionalLLMSlotExtractor:
             raw_intent = parsed.get("intent")
             intent_is_valid = isinstance(raw_intent, str) and raw_intent in ALLOWED_INTENTS
             candidate_intent = raw_intent if intent_is_valid else "unknown"
-            llm_slots = validate_slots(parsed.get("slots", {}))
+            llm_slots = validate_llm_slots(parsed.get("slots", {}))
 
             rule_intent_confident = rule_result.intent != "unknown"
             intent_conflict = (
@@ -958,13 +1021,11 @@ class OptionalLLMSlotExtractor:
                     intent = candidate_intent
                     llm_intent_trusted = True
 
-            merged_slots = dict(rule_result.slots)
-            meaningful_slot_contribution = False
-            for key, value in llm_slots.items():
-                if key not in merged_slots:
-                    merged_slots[key] = value
-                    meaningful_slot_contribution = True
-            merged_slots = validate_slots(merged_slots)
+            merged_slots, meaningful_slot_contribution = merge_llm_slots(
+                message,
+                rule_result.slots,
+                llm_slots,
+            )
             llm_slots_trusted = bool(llm_slots)
 
             return SlotExtractionResult(

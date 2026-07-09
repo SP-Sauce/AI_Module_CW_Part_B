@@ -228,6 +228,18 @@ Run the report-ready experiment matrix:
 python scripts/run_evaluation_matrix.py --sample-data
 ```
 
+Optionally run the same configurations against the separate 80-case challenge
+fixture:
+
+```powershell
+python scripts/run_evaluation_matrix.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --challenge-fixture data/evaluation/slot_challenge_cases.jsonl
+```
+
+Challenge results are written to
+`outputs/evaluation/challenge_evaluation_matrix.json` and
+`outputs/evaluation/challenge_evaluation_matrix.md`; the main 50-case report
+filenames remain unchanged.
+
 This runs:
 
 - `baseline_rule_based`: deterministic rule extractor, no `--enable-llm`;
