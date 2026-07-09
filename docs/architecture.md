@@ -48,6 +48,9 @@ then be supplied with `--slot-model-name`. FLAN-T5-small is the lightweight
 baseline; the Colab workflow can additionally train the stronger
 FLAN-T5-base adapter under `models/slot-extractor-qlora-base`. Both use the same
 validation, constrained JSON repair, weak-repair detection and rule fallback.
+The base-model experiment trains on deterministic template augmentation from
+`scripts/augment_slot_training_data.py`; the generator validates compact JSON
+targets and rejects normalized overlap with the separate hold-out fixture.
 
 `booking.py` creates booking references such as `BK-AB12CD`, supports
 rescheduling and cancellation, and avoids any claim about live restaurant

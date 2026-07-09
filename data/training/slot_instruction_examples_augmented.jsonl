@@ -1,0 +1,992 @@
+{"text":"I need a cheap Italian restaurant in the south","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\",\"area\":\"south\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find a moderate Chinese place in the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"chinese\",\"area\":\"centre\",\"pricerange\":\"moderate\"}}"}
+{"text":"I want Indian food","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"Can you tell me about west african restaurants in the area?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"West African\",\"food_candidates\":[\"african\"]}}"}
+{"text":"Can you find north american restaurants?","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"north american\"}}"}
+{"text":"I'm looking for morccan restaurants","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you help me find lebanese then?","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"Can you show restaurants in the west?","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"List all expensive restaurants","output":"{\"intent\":\"list\",\"slots\":{\"pricerange\":\"expensive\"}}"}
+{"text":"Can you show me south asian restaurants?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"text":"Any south asian food in the west?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"],\"area\":\"west\"}}"}
+{"text":"List east asian restaurants please","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"text":"Show me south east asian restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"]}}"}
+{"text":"Can you tell me about north african restaurants?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"]}}"}
+{"text":"Could you help me find some arab restaurants in the east?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"east\"}}"}
+{"text":"Arabic food?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"Can you book it for Friday at 7pm for 2 people?","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"19:00\",\"people\":2}}"}
+{"text":"Reserve that restaurant tomorrow at 8pm for four people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"20:00\",\"people\":4}}"}
+{"text":"I want to book pizza express for midnight this monday for 4 people","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"italian\",\"day\":\"monday\",\"time\":\"00:00\",\"people\":4}}"}
+{"text":"I would like to book pipasha restaurant","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"Book it","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"Book the restaurant please","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"Can you reserve that place for tomorrow?","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\"}}"}
+{"text":"I want to book that restaurant at 6pm","output":"{\"intent\":\"book\",\"slots\":{\"time\":\"18:00\"}}"}
+{"text":"I would like to reserve it for five people","output":"{\"intent\":\"book\",\"slots\":{\"people\":5}}"}
+{"text":"Book pipasha restaurant for tomorrow, 5 people 6pm","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":5}}"}
+{"text":"Huh what was that man. I would like to book pipasha restaurant for tomorrow, 5 people 6pm","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":5}}"}
+{"text":"Book the golden curry for tomorrow, 6pm, 4 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":4}}"}
+{"text":"Book the restaurant, \"the golden curry\".","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"Book the resturant, \"the goldern curry\".","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"Please reserve curry garden for Friday at 7pm for two people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"19:00\",\"people\":2}}"}
+{"text":"Move the booking to Saturday","output":"{\"intent\":\"reschedule\",\"slots\":{\"day\":\"saturday\"}}"}
+{"text":"Change it to 10:00","output":"{\"intent\":\"reschedule\",\"slots\":{\"time\":\"10:00\"}}"}
+{"text":"Actually make it for five people","output":"{\"intent\":\"correct\",\"slots\":{\"people\":5}}"}
+{"text":"Cancel it please","output":"{\"intent\":\"cancel\",\"slots\":{}}"}
+{"text":"Cancel BK-ABC123","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-ABC123\"}}"}
+{"text":"What bookings do I have?","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Tell me about booking SIM-ROFNYN","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\"}}"}
+{"text":"What is the address?","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"How far is Hakka from the south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"What areas can I filter through?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"I like chicken and rice where can I find somewhere that serves that?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"chicken and rice\",\"food_candidates\":[\"indian\",\"chinese\",\"thai\",\"lebanese\",\"turkish\"]}}"}
+{"text":"Can you list other middle eastern restaurants?","output":"{\"intent\":\"alternative\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"I want to buy a gun","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Thanks for your help","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Hi","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"I want to go eat somewhere south, provide me restaurants","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"I want to be go eat somewhere south, provide me resurants","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"restaurants south please","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"show me places in the north","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"any restaurants in the east?","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"west side restaurants please","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"central restaurants please","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"city center food places","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"I need somewhere cheap to eat","output":"{\"intent\":\"search\",\"slots\":{\"pricerange\":\"cheap\"}}"}
+{"text":"cheap restaurants in the west","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"pricerange\":\"cheap\"}}"}
+{"text":"moderate places in the north","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"pricerange\":\"moderate\"}}"}
+{"text":"expensive food in the centre","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"pricerange\":\"expensive\"}}"}
+{"text":"find a budget restaurant","output":"{\"intent\":\"search\",\"slots\":{\"pricerange\":\"cheap\"}}"}
+{"text":"find me an upmarket restaurant in the south","output":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"pricerange\":\"expensive\"}}"}
+{"text":"I can pay around 15 pounds","output":"{\"intent\":\"list\",\"slots\":{\"pricerange\":\"moderate\"}}"}
+{"text":"show restaurants under 10 pounds","output":"{\"intent\":\"list\",\"slots\":{\"pricerange\":\"cheap\"}}"}
+{"text":"any restaurants around 30 pounds","output":"{\"intent\":\"list\",\"slots\":{\"pricerange\":\"expensive\"}}"}
+{"text":"all restaurants in the south","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"list every restaurant in west","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"what restaurants are available in the north?","output":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"somewhere to eat in the east","output":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"I do not mind the area, anywhere is fine","output":"{\"intent\":\"list\",\"slots\":{}}"}
+{"text":"any area is okay just show the options","output":"{\"intent\":\"list\",\"slots\":{}}"}
+{"text":"list all of them please","output":"{\"intent\":\"list\",\"slots\":{}}"}
+{"text":"show all the restaurants you have","output":"{\"intent\":\"list\",\"slots\":{}}"}
+{"text":"Indian please","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"show all Indian restaurants","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"cheap indian in east","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\",\"area\":\"east\",\"pricerange\":\"cheap\"}}"}
+{"text":"moderate indian in west","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\",\"area\":\"west\",\"pricerange\":\"moderate\"}}"}
+{"text":"Chinese in centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"chinese\",\"area\":\"centre\"}}"}
+{"text":"any thai restaurants?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"lebanese places","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"turkish resturants list","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"turkish\"}}"}
+{"text":"mediterranean restaurants west","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"mediterranean\",\"area\":\"west\"}}"}
+{"text":"Italian around town","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"pizza places in centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"italian\",\"area\":\"centre\"}}"}
+{"text":"pasta restaurant north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\",\"area\":\"north\"}}"}
+{"text":"vegetarian options south","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"vegetarian\",\"area\":\"south\"}}"}
+{"text":"seafood anywhere","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"seafood\"}}"}
+{"text":"japanese in centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"japanese\",\"area\":\"centre\"}}"}
+{"text":"korean food please","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"korean\"}}"}
+{"text":"gastropub north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"gastropub\",\"area\":\"north\"}}"}
+{"text":"british restaurant west","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"british\",\"area\":\"west\"}}"}
+{"text":"can you show me Portuguese restaurants?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"portuguese\"}}"}
+{"text":"mexican food in Cambridge","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"mexican\"}}"}
+{"text":"modern european restaurants in the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"modern european\",\"area\":\"centre\"}}"}
+{"text":"asian oriental places please","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"asian oriental\"}}"}
+{"text":"Middle Eastern restaurants please","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"middle eastern in west Cambridge","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"west\"}}"}
+{"text":"arab food in east","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"east\"}}"}
+{"text":"arabic restaurants around centre","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"centre\"}}"}
+{"text":"show me turkish or lebanese style places","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"are there any halal middle eastern restaurants?","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"south asian restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"text":"south asian in the west","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"],\"area\":\"west\"}}"}
+{"text":"desi food places please","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"text":"east asian restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"text":"east asian in centre","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"],\"area\":\"centre\"}}"}
+{"text":"chinese japanese or korean places","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"text":"south east asian restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"]}}"}
+{"text":"southeast asian in the south","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"],\"area\":\"south\"}}"}
+{"text":"thai or vietnamese restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"]}}"}
+{"text":"north african restaurants","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"]}}"}
+{"text":"north african food in centre","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"],\"area\":\"centre\"}}"}
+{"text":"west african food","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"West African\",\"food_candidates\":[\"african\"]}}"}
+{"text":"west african restaurants in the east","output":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"West African\",\"food_candidates\":[\"african\"],\"area\":\"east\"}}"}
+{"text":"african restaurants west","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"african\",\"area\":\"west\"}}"}
+{"text":"moroccan restaurants please","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"egyption restaurants?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"yemeni food places","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I like chicken and rice, what restaurants would fit that?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"chicken and rice\",\"food_candidates\":[\"indian\",\"chinese\",\"thai\",\"lebanese\",\"turkish\"]}}"}
+{"text":"where can I get rice and chicken?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"chicken and rice\",\"food_candidates\":[\"indian\",\"chinese\",\"thai\",\"lebanese\",\"turkish\"]}}"}
+{"text":"I want lamb and rice","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"lamb and rice\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"lamd mandhi sounds nice, what cuisine should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"mandi\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"I fancy mandi or lamb mandi","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"mandi\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"I want curry but not sure which cuisine","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"rice and curry options please","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"I feel like noodles","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"asian oriental\",\"thai\",\"vietnamese\"]}}"}
+{"text":"noodle restaurants please","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"asian oriental\",\"thai\",\"vietnamese\"]}}"}
+{"text":"sushi places?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"burger places please","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"burger\",\"food_candidates\":[\"north american\",\"gastropub\"]}}"}
+{"text":"I want cake or dessert after dinner","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"cake or dessert\",\"food_candidates\":[\"british\",\"european\",\"french\",\"international\"]}}"}
+{"text":"dessert restaurants please","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"cake or dessert\",\"food_candidates\":[\"british\",\"european\",\"french\",\"international\"]}}"}
+{"text":"I like spicy food what cuisine should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"spicy food\",\"food_candidates\":[\"indian\",\"thai\",\"chinese\",\"turkish\"]}}"}
+{"text":"I want grilled meat or kebab","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"grilled meat or kebab\",\"food_candidates\":[\"turkish\",\"lebanese\",\"mediterranean\"]}}"}
+{"text":"shawarma or falafel sounds good","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"shawarma or falafel\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"hummus and flatbread kind of food","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"hummus and flatbread\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"dumplings or noodles would be nice","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"dumplings or noodles\",\"food_candidates\":[\"chinese\",\"asian oriental\",\"thai\",\"vietnamese\"]}}"}
+{"text":"fish and chips type food","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"fish and chips\",\"food_candidates\":[\"british\",\"seafood\"]}}"}
+{"text":"book this one","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"book that one","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"reserve this place","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"that restaurant please book it","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"book the first one","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"book the second option","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"can you reserve the restaurant you found?","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"yeah book it","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"yes reserve it","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"book it tomorrow","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\"}}"}
+{"text":"book it today","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"today\"}}"}
+{"text":"book it for day after tomorrow","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"day_after_tomorrow\"}}"}
+{"text":"reserve it next friday","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"day_modifier\":\"next\"}}"}
+{"text":"book it next week thursday","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"day_modifier\":\"next_week\"}}"}
+{"text":"book it friday at 7","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"19:00\"}}"}
+{"text":"book it at 5pm","output":"{\"intent\":\"book\",\"slots\":{\"time\":\"17:00\"}}"}
+{"text":"book it for 5 people","output":"{\"intent\":\"book\",\"slots\":{\"people\":5}}"}
+{"text":"reserve for two people","output":"{\"intent\":\"book\",\"slots\":{\"people\":2}}"}
+{"text":"table for 4","output":"{\"intent\":\"book\",\"slots\":{\"people\":4}}"}
+{"text":"party of six","output":"{\"intent\":\"book\",\"slots\":{\"people\":6}}"}
+{"text":"book efes restaurant for tomorrow at 5pm for 5 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"17:00\",\"people\":5}}"}
+{"text":"reserve ali baba on friday at 8pm for two people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"20:00\",\"people\":2}}"}
+{"text":"book meze bar saturday 7:30pm party of 3","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"time\":\"19:30\",\"people\":3}}"}
+{"text":"book the good luck chinese food takeaway for tomorrow at 6pm for 2 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":2}}"}
+{"text":"reserve curry prince for friday at 9pm for four people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"21:00\",\"people\":4}}"}
+{"text":"book curry garden tomorrow 8pm 3 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"20:00\",\"people\":3}}"}
+{"text":"book rice house at 6pm for 2 people","output":"{\"intent\":\"book\",\"slots\":{\"time\":\"18:00\",\"people\":2}}"}
+{"text":"book golden curry tomorow 6pm 4 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":4}}"}
+{"text":"reserve the goldern curry for tomorrow at six pm for four people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":4}}"}
+{"text":"book stazione restaurant and coffee bar for noon monday for 2 people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"time\":\"12:00\",\"people\":2}}"}
+{"text":"book pizza express for midnight monday for 4 people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"time\":\"00:00\",\"people\":4}}"}
+{"text":"make a reservation at the indian place","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"book a cheap chinese place in centre for tomorrow at 6pm for 4","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"chinese\",\"area\":\"centre\",\"pricerange\":\"cheap\",\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":4}}"}
+{"text":"book me a turkish restaurant","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"turkish\"}}"}
+{"text":"reserve a lebanese place for saturday at 7pm","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"lebanese\",\"day\":\"saturday\",\"time\":\"19:00\"}}"}
+{"text":"book a moderate italian restaurant for three people","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"italian\",\"pricerange\":\"moderate\",\"people\":3}}"}
+{"text":"I want a table at a west indian restaurant tomorrow","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"indian\",\"area\":\"west\",\"relative_day\":\"tomorrow\"}}"}
+{"text":"book the restraunt for tommorow at 6 for 5 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"18:00\",\"people\":5}}"}
+{"text":"reserve the resturant for friday 7pm four guests","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"19:00\",\"people\":4}}"}
+{"text":"can u book it tmrw 8pm 2 people","output":"{\"intent\":\"book\",\"slots\":{\"relative_day\":\"tomorrow\",\"time\":\"20:00\",\"people\":2}}"}
+{"text":"I would like to book it for this sunday around 9am for 4 people","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"day_modifier\":\"this\",\"time\":\"09:00\",\"people\":4}}"}
+{"text":"same restaurant same time same people again","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"create another booking for the same restaurant","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"make one more booking there","output":"{\"intent\":\"book\",\"slots\":{}}"}
+{"text":"move it to saturday at 8pm","output":"{\"intent\":\"reschedule\",\"slots\":{\"day\":\"saturday\",\"time\":\"20:00\"}}"}
+{"text":"reschedule my booking to tomorrow","output":"{\"intent\":\"reschedule\",\"slots\":{\"relative_day\":\"tomorrow\"}}"}
+{"text":"change the table to 6 people","output":"{\"intent\":\"reschedule\",\"slots\":{\"people\":6}}"}
+{"text":"make the booking for 3 people instead","output":"{\"intent\":\"correct\",\"slots\":{\"people\":3}}"}
+{"text":"actually I meant 7pm not 6pm","output":"{\"intent\":\"correct\",\"slots\":{\"time\":\"19:00\"}}"}
+{"text":"no make it next week Tuesday","output":"{\"intent\":\"correct\",\"slots\":{\"day\":\"tuesday\",\"day_modifier\":\"next_week\"}}"}
+{"text":"push it to the day after","output":"{\"intent\":\"reschedule\",\"slots\":{\"relative_day\":\"day_after\"}}"}
+{"text":"change SIM-ABC123 to friday at 6pm","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-ABC123\",\"day\":\"friday\",\"time\":\"18:00\"}}"}
+{"text":"cancel this booking","output":"{\"intent\":\"cancel\",\"slots\":{}}"}
+{"text":"delete my reservation","output":"{\"intent\":\"cancel\",\"slots\":{}}"}
+{"text":"remove booking BK-Z9X8C7","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Z9X8C7\"}}"}
+{"text":"cancel SIM-ROFNYN please","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\"}}"}
+{"text":"can you cancel all my bookings apart from nandos?","output":"{\"intent\":\"cancel\",\"slots\":{}}"}
+{"text":"show my bookings","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"list my reservations","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"what have I booked?","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"do I have any current bookings?","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"tell me about my booking","output":"{\"intent\":\"booking_info\",\"slots\":{}}"}
+{"text":"booking details please","output":"{\"intent\":\"booking_info\",\"slots\":{}}"}
+{"text":"status of BK-Q1W2E3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q1W2E3\"}}"}
+{"text":"what is the postcode?","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"phone number for that restaurant","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"where is meze bar located?","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"what is the address of the golden curry?","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"how far is it from the west?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"distance from centre to efes restaurant","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"is hakka near south Cambridge?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"what prices can I filter by?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"which areas are supported?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"what cuisines can I search for?","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I do not know what to eat, suggest cuisines","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"what food types are available?","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"show it as a table","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"can you put that in table format?","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"as a tbale please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"more options please","output":"{\"intent\":\"alternative\",\"slots\":{}}"}
+{"text":"any other restaurants?","output":"{\"intent\":\"alternative\",\"slots\":{}}"}
+{"text":"not pizza, other restaurants","output":"{\"intent\":\"alternative\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"no italian, show other cuisines","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"other middle eastern restaurants please","output":"{\"intent\":\"alternative\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"text":"another south asian option","output":"{\"intent\":\"alternative\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"text":"hello there","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"hey dineAI","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"good evening","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"cheers thanks","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"thank u","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"thanks mate","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"can you help me get a passport?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I want to buy drugs","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"give me a credit card number","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"book a flight to London","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Find a cheap italian resturant in the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Middle Eastern food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"centre\"}}"}
+{"text":"I need somewhere cheap for chinese near the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"chinese\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find South Asian food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"],\"area\":\"centre\"}}"}
+{"text":"Could you look for thai food in the centre, cheap pls","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"thai\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find East Asian food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"],\"area\":\"centre\"}}"}
+{"text":"Show me a cheap place serving indian around the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Southeast Asian food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"],\"area\":\"centre\"}}"}
+{"text":"Somewhere nice for lebanese near the centre, cheap would be ideal","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"lebanese\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find North African food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"],\"area\":\"centre\"}}"}
+{"text":"Any cheap british options on the centre side of town?","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"british\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find West African food near the centre please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"West African\",\"food_candidates\":[\"african\"],\"area\":\"centre\"}}"}
+{"text":"Find a cheap japanese resturant in the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"japanese\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Middle Eastern food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"north\"}}"}
+{"text":"I need somewhere cheap for vegetarian near the centre","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"vegetarian\",\"area\":\"centre\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find South Asian food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"],\"area\":\"north\"}}"}
+{"text":"Could you look for italian food in the north, cheap pls","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find East Asian food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"],\"area\":\"north\"}}"}
+{"text":"Show me a cheap place serving chinese around the north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"chinese\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Southeast Asian food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"],\"area\":\"north\"}}"}
+{"text":"Somewhere nice for thai near the north, cheap would be ideal","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"thai\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find North African food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"],\"area\":\"north\"}}"}
+{"text":"Any cheap indian options on the north side of town?","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"indian\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find West African food near the north please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"West African\",\"food_candidates\":[\"african\"],\"area\":\"north\"}}"}
+{"text":"Find a cheap lebanese resturant in the north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"lebanese\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Middle Eastern food near the south please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"],\"area\":\"south\"}}"}
+{"text":"I need somewhere cheap for british near the north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"british\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find South Asian food near the south please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"],\"area\":\"south\"}}"}
+{"text":"Could you look for japanese food in the north, cheap pls","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"japanese\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find East Asian food near the south please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"],\"area\":\"south\"}}"}
+{"text":"Show me a cheap place serving vegetarian around the north","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"vegetarian\",\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find Southeast Asian food near the south please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"],\"area\":\"south\"}}"}
+{"text":"Somewhere nice for italian near the south, cheap would be ideal","output":"{\"intent\":\"search\",\"slots\":{\"food\":\"italian\",\"area\":\"south\",\"pricerange\":\"cheap\"}}"}
+{"text":"Find North African food near the south please","output":"{\"intent\":\"search\",\"slots\":{\"cuisine_group\":\"North African\",\"food_candidates\":[\"african\"],\"area\":\"south\"}}"}
+{"text":"List italian restaurants in the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"italian\",\"area\":\"centre\"}}"}
+{"text":"Show every chinese place around the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"chinese\",\"area\":\"centre\"}}"}
+{"text":"What thai options are there on the centre side?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"thai\",\"area\":\"centre\"}}"}
+{"text":"Can I see all indian resturants near the centre pls","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"indian\",\"area\":\"centre\"}}"}
+{"text":"Give me the full list of lebanese places in the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"lebanese\",\"area\":\"centre\"}}"}
+{"text":"Which british restaurants do you have around centre town?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"british\",\"area\":\"centre\"}}"}
+{"text":"List japanese restaurants in the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"japanese\",\"area\":\"centre\"}}"}
+{"text":"Show every vegetarian place around the centre","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"vegetarian\",\"area\":\"centre\"}}"}
+{"text":"What italian options are there on the north side?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"italian\",\"area\":\"north\"}}"}
+{"text":"Can I see all chinese resturants near the north pls","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"chinese\",\"area\":\"north\"}}"}
+{"text":"Give me the full list of thai places in the north","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"thai\",\"area\":\"north\"}}"}
+{"text":"Which indian restaurants do you have around north town?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"indian\",\"area\":\"north\"}}"}
+{"text":"List lebanese restaurants in the north","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"lebanese\",\"area\":\"north\"}}"}
+{"text":"Show every british place around the north","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"british\",\"area\":\"north\"}}"}
+{"text":"What japanese options are there on the north side?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"japanese\",\"area\":\"north\"}}"}
+{"text":"Can I see all vegetarian resturants near the north pls","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"vegetarian\",\"area\":\"north\"}}"}
+{"text":"Give me the full list of italian places in the south","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"italian\",\"area\":\"south\"}}"}
+{"text":"Which chinese restaurants do you have around south town?","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"chinese\",\"area\":\"south\"}}"}
+{"text":"List thai restaurants in the south","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"thai\",\"area\":\"south\"}}"}
+{"text":"Show every indian place around the south","output":"{\"intent\":\"list\",\"slots\":{\"food\":\"indian\",\"area\":\"south\"}}"}
+{"text":"Book a table for 2 on monday at 12:30","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"time\":\"12:30\",\"people\":2}}"}
+{"text":"Reserve somewhere cheap serving italian for 3 people","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"italian\",\"pricerange\":\"cheap\",\"people\":3}}"}
+{"text":"Table for 4 at 12:30 on tuesday pls","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"time\":\"12:30\",\"people\":4}}"}
+{"text":"I need a table for 5 at a cheap chinese resturant","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"chinese\",\"pricerange\":\"cheap\",\"people\":5}}"}
+{"text":"Need a tbale on wednesday at 12:30 for 6","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"time\":\"12:30\",\"people\":6}}"}
+{"text":"Book a cheap thai place for a party of 8","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"thai\",\"pricerange\":\"cheap\",\"people\":8}}"}
+{"text":"Can you reserve it thursday, 12:30, party of 2","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"time\":\"12:30\",\"people\":2}}"}
+{"text":"Can you book indian, cheap, for 3 pls","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"indian\",\"pricerange\":\"cheap\",\"people\":3}}"}
+{"text":"Please book for 4 people this friday at 12:30","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"time\":\"12:30\",\"people\":4}}"}
+{"text":"Find and book lebanese food for 5, budget is cheap","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"lebanese\",\"pricerange\":\"cheap\",\"people\":5}}"}
+{"text":"Book a table for 6 on saturday at 12:30","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"time\":\"12:30\",\"people\":6}}"}
+{"text":"Reserve somewhere cheap serving british for 8 people","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"british\",\"pricerange\":\"cheap\",\"people\":8}}"}
+{"text":"Table for 2 at 12:30 on sunday pls","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"time\":\"12:30\",\"people\":2}}"}
+{"text":"I need a table for 3 at a cheap japanese resturant","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"japanese\",\"pricerange\":\"cheap\",\"people\":3}}"}
+{"text":"Need a tbale on monday at 17:45 for 4","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"time\":\"17:45\",\"people\":4}}"}
+{"text":"Book a cheap vegetarian place for a party of 5","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"vegetarian\",\"pricerange\":\"cheap\",\"people\":5}}"}
+{"text":"Can you reserve it tuesday, 17:45, party of 6","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"time\":\"17:45\",\"people\":6}}"}
+{"text":"Can you book italian, reasonable, for 8 pls","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"italian\",\"pricerange\":\"moderate\",\"people\":8}}"}
+{"text":"Please book for 2 people this wednesday at 17:45","output":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"time\":\"17:45\",\"people\":2}}"}
+{"text":"Find and book chinese food for 3, budget is reasonable","output":"{\"intent\":\"book\",\"slots\":{\"food\":\"chinese\",\"pricerange\":\"moderate\",\"people\":3}}"}
+{"text":"Move booking BK-7GHT92 to monday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule SIM-A1B2C3 for monday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-Q2W3E4 to 12:30 on monday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking BK-9Z8Y7X to monday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Update SIM-C4D5E6: monday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"I need BK-M6N7P8 moved to monday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking BK-R4S5T6 to monday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule SIM-U7V8W9 for monday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"monday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-7GHT92 to 12:30 on tuesday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking SIM-A1B2C3 to tuesday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-Q2W3E4: tuesday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"I need BK-9Z8Y7X moved to tuesday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking SIM-C4D5E6 to tuesday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule BK-M6N7P8 for tuesday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-R4S5T6 to 12:30 on tuesday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking SIM-U7V8W9 to tuesday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"tuesday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-7GHT92: wednesday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"I need SIM-A1B2C3 moved to wednesday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking BK-Q2W3E4 to wednesday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule BK-9Z8Y7X for wednesday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Change SIM-C4D5E6 to 12:30 on wednesday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking BK-M6N7P8 to wednesday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-R4S5T6: wednesday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"I need SIM-U7V8W9 moved to wednesday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"wednesday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking BK-7GHT92 to thursday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule SIM-A1B2C3 for thursday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-Q2W3E4 to 12:30 on thursday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking BK-9Z8Y7X to thursday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Update SIM-C4D5E6: thursday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"I need BK-M6N7P8 moved to thursday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking BK-R4S5T6 to thursday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule SIM-U7V8W9 for thursday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"thursday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-7GHT92 to 12:30 on friday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking SIM-A1B2C3 to friday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-Q2W3E4: friday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"I need BK-9Z8Y7X moved to friday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking SIM-C4D5E6 to friday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule BK-M6N7P8 for friday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Change BK-R4S5T6 to 12:30 on friday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking SIM-U7V8W9 to friday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"friday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-7GHT92: saturday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-7GHT92\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"I need SIM-A1B2C3 moved to saturday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Move booking BK-Q2W3E4 to saturday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Reschedule BK-9Z8Y7X for saturday, 12:30 pls","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Change SIM-C4D5E6 to 12:30 on saturday","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Can you shift booking BK-M6N7P8 to saturday at 12:30?","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Update BK-R4S5T6: saturday, 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"I need SIM-U7V8W9 moved to saturday at 12:30","output":"{\"intent\":\"reschedule\",\"slots\":{\"booking_reference\":\"SIM-U7V8W9\",\"day\":\"saturday\",\"time\":\"12:30\"}}"}
+{"text":"Cancel booking BK-7GHT92","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Please call off BK-7GHT92","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"I no longer need BK-7GHT92","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Can you cancel BK-7GHT92 pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Remove reservation BK-7GHT92","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Scrap my booking BK-7GHT92","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"I'd like BK-7GHT92 cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Cancel BK-7GHT92 for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Cancel booking SIM-A1B2C3","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Please call off SIM-A1B2C3","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"I no longer need SIM-A1B2C3","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Can you cancel SIM-A1B2C3 pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Remove reservation SIM-A1B2C3","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Scrap my booking SIM-A1B2C3","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"I'd like SIM-A1B2C3 cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Cancel SIM-A1B2C3 for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Cancel booking BK-Q2W3E4","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Please call off BK-Q2W3E4","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"I no longer need BK-Q2W3E4","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Can you cancel BK-Q2W3E4 pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Remove reservation BK-Q2W3E4","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Scrap my booking BK-Q2W3E4","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"I'd like BK-Q2W3E4 cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Cancel BK-Q2W3E4 for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Cancel booking BK-9Z8Y7X","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Please call off BK-9Z8Y7X","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"I no longer need BK-9Z8Y7X","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Can you cancel BK-9Z8Y7X pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Remove reservation BK-9Z8Y7X","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Scrap my booking BK-9Z8Y7X","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"I'd like BK-9Z8Y7X cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Cancel BK-9Z8Y7X for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Cancel booking SIM-C4D5E6","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Please call off SIM-C4D5E6","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"I no longer need SIM-C4D5E6","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Can you cancel SIM-C4D5E6 pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Remove reservation SIM-C4D5E6","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Scrap my booking SIM-C4D5E6","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"I'd like SIM-C4D5E6 cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Cancel SIM-C4D5E6 for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Cancel booking BK-M6N7P8","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Please call off BK-M6N7P8","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"I no longer need BK-M6N7P8","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Can you cancel BK-M6N7P8 pls?","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Remove reservation BK-M6N7P8","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Scrap my booking BK-M6N7P8","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"I'd like BK-M6N7P8 cancelled","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Cancel BK-M6N7P8 for me today","output":"{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Actually make the area centre","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Wait, Actually make the area centre","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Correction: Actually make the area centre","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Sorry, Actually make the area centre","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"My mistake, Actually make the area centre","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Actually make the area north","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Wait, Actually make the area north","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Correction: Actually make the area north","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Sorry, Actually make the area north","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"My mistake, Actually make the area north","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Actually make the area south","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Wait, Actually make the area south","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Correction: Actually make the area south","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Sorry, Actually make the area south","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"My mistake, Actually make the area south","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Actually make the area east","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Wait, Actually make the area east","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Correction: Actually make the area east","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Sorry, Actually make the area east","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"My mistake, Actually make the area east","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Actually make the area west","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Wait, Actually make the area west","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Correction: Actually make the area west","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Sorry, Actually make the area west","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"My mistake, Actually make the area west","output":"{\"intent\":\"correct\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Sorry, I meant italian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"Wait, Sorry, I meant italian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"Correction: Sorry, I meant italian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"Sorry, Sorry, I meant italian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"My mistake, Sorry, I meant italian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"italian\"}}"}
+{"text":"Sorry, I meant chinese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"chinese\"}}"}
+{"text":"Wait, Sorry, I meant chinese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"chinese\"}}"}
+{"text":"Correction: Sorry, I meant chinese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"chinese\"}}"}
+{"text":"Sorry, Sorry, I meant chinese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"chinese\"}}"}
+{"text":"My mistake, Sorry, I meant chinese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"chinese\"}}"}
+{"text":"Sorry, I meant thai food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"Wait, Sorry, I meant thai food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"Correction: Sorry, I meant thai food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"Sorry, Sorry, I meant thai food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"My mistake, Sorry, I meant thai food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"thai\"}}"}
+{"text":"Sorry, I meant indian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"Wait, Sorry, I meant indian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"Correction: Sorry, I meant indian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"Sorry, Sorry, I meant indian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"My mistake, Sorry, I meant indian food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"indian\"}}"}
+{"text":"Sorry, I meant lebanese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"Wait, Sorry, I meant lebanese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"Correction: Sorry, I meant lebanese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"Sorry, Sorry, I meant lebanese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"My mistake, Sorry, I meant lebanese food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"lebanese\"}}"}
+{"text":"Sorry, I meant british food","output":"{\"intent\":\"correct\",\"slots\":{\"food\":\"british\"}}"}
+{"text":"Show details for BK-7GHT92","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"What are the booking details for BK-7GHT92?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Open reservation BK-7GHT92","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Tell me about booking BK-7GHT92","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Can I check BK-7GHT92 pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Which table is linked to BK-7GHT92?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Look up my reference BK-7GHT92","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"I need the info for BK-7GHT92","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-7GHT92\"}}"}
+{"text":"Show details for SIM-A1B2C3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"What are the booking details for SIM-A1B2C3?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Open reservation SIM-A1B2C3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Tell me about booking SIM-A1B2C3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Can I check SIM-A1B2C3 pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Which table is linked to SIM-A1B2C3?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Look up my reference SIM-A1B2C3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"I need the info for SIM-A1B2C3","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-A1B2C3\"}}"}
+{"text":"Show details for BK-Q2W3E4","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"What are the booking details for BK-Q2W3E4?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Open reservation BK-Q2W3E4","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Tell me about booking BK-Q2W3E4","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Can I check BK-Q2W3E4 pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Which table is linked to BK-Q2W3E4?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Look up my reference BK-Q2W3E4","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"I need the info for BK-Q2W3E4","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-Q2W3E4\"}}"}
+{"text":"Show details for BK-9Z8Y7X","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"What are the booking details for BK-9Z8Y7X?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Open reservation BK-9Z8Y7X","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Tell me about booking BK-9Z8Y7X","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Can I check BK-9Z8Y7X pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Which table is linked to BK-9Z8Y7X?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Look up my reference BK-9Z8Y7X","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"I need the info for BK-9Z8Y7X","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-9Z8Y7X\"}}"}
+{"text":"Show details for SIM-C4D5E6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"What are the booking details for SIM-C4D5E6?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Open reservation SIM-C4D5E6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Tell me about booking SIM-C4D5E6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Can I check SIM-C4D5E6 pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Which table is linked to SIM-C4D5E6?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Look up my reference SIM-C4D5E6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"I need the info for SIM-C4D5E6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"SIM-C4D5E6\"}}"}
+{"text":"Show details for BK-M6N7P8","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"What are the booking details for BK-M6N7P8?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Open reservation BK-M6N7P8","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Tell me about booking BK-M6N7P8","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Can I check BK-M6N7P8 pls?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Which table is linked to BK-M6N7P8?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Look up my reference BK-M6N7P8","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"I need the info for BK-M6N7P8","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-M6N7P8\"}}"}
+{"text":"Show details for BK-R4S5T6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\"}}"}
+{"text":"What are the booking details for BK-R4S5T6?","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\"}}"}
+{"text":"Open reservation BK-R4S5T6","output":"{\"intent\":\"booking_info\",\"slots\":{\"booking_reference\":\"BK-R4S5T6\"}}"}
+{"text":"Show my bookings please","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings pls","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings if possible","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings for me","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings right now","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings in this chat","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings when you can","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings today","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Show my bookings on here","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations please","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations pls","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations if possible","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations for me","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations right now","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations in this chat","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations when you can","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations today","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"List all my reservations on here","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked?","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? please","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? pls","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? if possible","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? for me","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? right now","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? in this chat","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? when you can","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? today","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"What tables have I booked? on here","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history please","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history pls","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history if possible","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history for me","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history right now","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history in this chat","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history when you can","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history today","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Open my booking history on here","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations?","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? please","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? pls","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? if possible","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? for me","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? right now","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? in this chat","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? when you can","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? today","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Can I see my current reservations? on here","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Display every booking I have","output":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant please","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant pls","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant if possible","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant for me","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant right now","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant in this chat","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant when you can","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant today","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Tell me about the restaurant on here","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details please","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details pls","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details if possible","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details for me","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details right now","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details in this chat","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details when you can","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details today","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Show the restaurant details on here","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place?","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? please","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? pls","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? if possible","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? for me","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? right now","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? in this chat","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? when you can","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? today","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What do you know about that place? on here","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it please","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it pls","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it if possible","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it for me","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it right now","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it in this chat","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it when you can","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it today","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Give me more information about it on here","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant please","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant pls","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant if possible","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant for me","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant right now","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant in this chat","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant when you can","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant today","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"Open the details for this resturant on here","output":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"text":"What filters are active?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? pls","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? if possible","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? for me","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? right now","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? in this chat","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? when you can","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? today","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What filters are active? on here","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters pls","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters if possible","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters for me","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters right now","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters in this chat","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters when you can","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters today","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Show my current search filters on here","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? pls","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? if possible","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? for me","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? right now","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? in this chat","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? when you can","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? today","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Which preferences did I set? on here","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used pls","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used if possible","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used for me","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used right now","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used in this chat","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used when you can","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used today","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Tell me the filters being used on here","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by?","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? pls","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? if possible","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? for me","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? right now","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? in this chat","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? when you can","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? today","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"What is this list filtered by? on here","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Display the active criteria","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Display the active criteria please","output":"{\"intent\":\"filter_info\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine pls","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine if possible","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine for me","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine right now","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine in this chat","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine when you can","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine today","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Help me choose a cuisine on here","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try?","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? pls","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? if possible","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? for me","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? right now","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? in this chat","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? when you can","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? today","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"What kind of food should I try? on here","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine pls","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine if possible","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine for me","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine right now","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine in this chat","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine when you can","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine today","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I cannot decide on a cuisine on here","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food pls","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food if possible","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food for me","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food right now","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food in this chat","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food when you can","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food today","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Suggest a type of food on here","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices?","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? pls","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? if possible","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? for me","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? right now","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? in this chat","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? when you can","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? today","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Can you explain the cuisine choices? on here","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Give me some cuisine ideas","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"Give me some cuisine ideas please","output":"{\"intent\":\"cuisine_help\",\"slots\":{}}"}
+{"text":"I fancy curry, what cuisines should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Where could I get curry?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Suggest food types if I want curry","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"I'm craving curry tonight","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Which restaurant cuisine is best for curry?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Could you help me find curry pls","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"I'd like a dish such as curry","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"What places might serve curry?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Find somewhere for curry around town","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"Any ideas if I want curry?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"curry\",\"food_candidates\":[\"indian\",\"thai\"]}}"}
+{"text":"I fancy noodles, what cuisines should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Where could I get noodles?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Suggest food types if I want noodles","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"I'm craving noodles tonight","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Which restaurant cuisine is best for noodles?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Could you help me find noodles pls","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"I'd like a dish such as noodles","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"What places might serve noodles?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Find somewhere for noodles around town","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"Any ideas if I want noodles?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"noodles\",\"food_candidates\":[\"chinese\",\"thai\",\"vietnamese\"]}}"}
+{"text":"I fancy pizza, what cuisines should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Where could I get pizza?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Suggest food types if I want pizza","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"I'm craving pizza tonight","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Which restaurant cuisine is best for pizza?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Could you help me find pizza pls","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"I'd like a dish such as pizza","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"What places might serve pizza?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Find somewhere for pizza around town","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"Any ideas if I want pizza?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"pizza\",\"food_candidates\":[\"italian\"]}}"}
+{"text":"I fancy sushi, what cuisines should I try?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"Where could I get sushi?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"Suggest food types if I want sushi","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"I'm craving sushi tonight","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"Which restaurant cuisine is best for sushi?","output":"{\"intent\":\"dish_preference\",\"slots\":{\"dish\":\"sushi\",\"food_candidates\":[\"japanese\"]}}"}
+{"text":"How far is it from the centre?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Is that close to the centre side?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Tell me the distance from centre town","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"How near is the restaurant to the centre?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Would it be a long walk from the centre?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Distance info for the centre please","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Is the place anywhere near the centre?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Roughly how far from the centre is it?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Could you check how close it is to centre?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"I need somewhere not far from the centre","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"How far away is that from centre Cambridge?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"Near the centre or miles away?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"centre\"}}"}
+{"text":"How far is it from the north?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Is that close to the north side?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Tell me the distance from north town","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"How near is the restaurant to the north?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Would it be a long walk from the north?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Distance info for the north please","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Is the place anywhere near the north?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Roughly how far from the north is it?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Could you check how close it is to north?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"I need somewhere not far from the north","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"How far away is that from north Cambridge?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"Near the north or miles away?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"north\"}}"}
+{"text":"How far is it from the south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Is that close to the south side?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Tell me the distance from south town","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"How near is the restaurant to the south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Would it be a long walk from the south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Distance info for the south please","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Is the place anywhere near the south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Roughly how far from the south is it?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Could you check how close it is to south?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"I need somewhere not far from the south","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"How far away is that from south Cambridge?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"Near the south or miles away?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"south\"}}"}
+{"text":"How far is it from the east?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Is that close to the east side?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Tell me the distance from east town","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"How near is the restaurant to the east?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Would it be a long walk from the east?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Distance info for the east please","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Is the place anywhere near the east?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Roughly how far from the east is it?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Could you check how close it is to east?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"I need somewhere not far from the east","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"How far away is that from east Cambridge?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Near the east or miles away?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"east\"}}"}
+{"text":"Is that close to the west side?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Tell me the distance from west town","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"How near is the restaurant to the west?","output":"{\"intent\":\"distance_info\",\"slots\":{\"area\":\"west\"}}"}
+{"text":"Show the results as a table","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table pls","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table if possible","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table for me","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table right now","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table in this chat","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table when you can","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table today","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Show the results as a table on here","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view pls","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view if possible","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view for me","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view right now","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view in this chat","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view when you can","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view today","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Switch to table view on here","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table pls","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table if possible","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table for me","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table right now","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table in this chat","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table when you can","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table today","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Put those restaurants in a table on here","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list?","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? pls","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? if possible","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? for me","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? right now","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? in this chat","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? when you can","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? today","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Can I see a tabular list? on here","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows pls","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows if possible","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows for me","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows right now","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows in this chat","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows when you can","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows today","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Display the options in rows on here","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Use the table layout","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Use the table layout please","output":"{\"intent\":\"table_view\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant please","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant pls","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant if possible","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant for me","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant right now","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant in this chat","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant when you can","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant today","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hello restaurant assistant on here","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started?","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? please","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? pls","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? if possible","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? for me","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? right now","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? in this chat","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? when you can","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? today","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hi there, can we get started? on here","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant please","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant pls","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant if possible","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant for me","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant right now","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant in this chat","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant when you can","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant today","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good morning assistant on here","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there?","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? please","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? pls","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? if possible","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? for me","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? right now","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? in this chat","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? when you can","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? today","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Good afternoon, anyone there? on here","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you please","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you pls","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you if possible","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you for me","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you right now","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you in this chat","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you when you can","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you today","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Hey, nice to meet you on here","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Evening, I need some help","output":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"text":"Thanks for that","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that please","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that pls","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that if possible","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that for me","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that right now","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that in this chat","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that when you can","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that today","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thanks for that on here","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help please","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help pls","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help if possible","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help for me","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help right now","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help in this chat","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help when you can","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help today","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Thank you for your help on here","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all please","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all pls","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all if possible","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all for me","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all right now","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all in this chat","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all when you can","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all today","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Cheers, that is all on here","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated please","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated pls","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated if possible","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated for me","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated right now","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated in this chat","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated when you can","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated today","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Much appreciated on here","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks please","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks pls","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks if possible","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks for me","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks right now","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks in this chat","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks when you can","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks today","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Brilliant, thanks on here","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"Lovely, thank you","output":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"text":"book me a taxi","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"find an emergency dentist","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"reserve a hotel room","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"check the next train","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"where can I buy fireworks","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"give me a refund","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"order a takeaway","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"take my payment","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you book me a taxi?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you find an emergency dentist?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you reserve a hotel room?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you check the next train?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you where can I buy fireworks?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you give me a refund?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you order a takeaway?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Can you take my payment?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please book me a taxi for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please find an emergency dentist for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please reserve a hotel room for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please check the next train for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please where can I buy fireworks for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please give me a refund for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please order a takeaway for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Please take my payment for me","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to book me a taxi pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to find an emergency dentist pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to reserve a hotel room pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to check the next train pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to where can I buy fireworks pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to give me a refund pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to order a takeaway pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"I need you to take my payment pls","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant book me a taxi?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant find an emergency dentist?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant reserve a hotel room?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant check the next train?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant where can I buy fireworks?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant give me a refund?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant order a takeaway?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Could this assistant take my payment?","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly book me a taxi","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly find an emergency dentist","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly reserve a hotel room","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly check the next train","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly where can I buy fireworks","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"text":"Quickly give me a refund","output":"{\"intent\":\"unsupported\",\"slots\":{}}"}

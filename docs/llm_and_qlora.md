@@ -95,9 +95,17 @@ The stronger optional Colab experiment adapts `google/flan-t5-base` separately,
 so it does not overwrite the small-model adapter:
 
 ```powershell
-python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 300
+python scripts/augment_slot_training_data.py
+python scripts/check_data_leakage.py --train-file data/training/slot_instruction_examples_augmented.jsonl --eval-file data/evaluation/slot_eval_cases.jsonl
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --train-file data/training/slot_instruction_examples_augmented.jsonl --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 600
 python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora-base
 ```
+
+`augment_slot_training_data.py` uses deterministic templates to balance intent
+coverage and reinforce complete compact JSON with empty, single-slot and
+multi-slot objects. The original instruction file is preserved. Generation
+fails if normalized training text overlaps the independent hold-out evaluation
+fixture, and the explicit leakage command checks the generated file again.
 
 The matrix reports this adapter as `qlora_adapter_base` when
 `models/slot-extractor-qlora-base` exists. Larger models are not assumed to be

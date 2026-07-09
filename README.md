@@ -282,7 +282,9 @@ python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small -
 For the Colab/GPU coursework run:
 
 ```powershell
-python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 300
+python scripts/augment_slot_training_data.py
+python scripts/check_data_leakage.py --train-file data/training/slot_instruction_examples_augmented.jsonl --eval-file data/evaluation/slot_eval_cases.jsonl
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --train-file data/training/slot_instruction_examples_augmented.jsonl --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 600
 python scripts/run_evaluation_matrix.py --sample-data
 ```
 
@@ -291,6 +293,14 @@ install requirements, check the GPU, train the stronger FLAN-T5-base adapter,
 evaluate it, run the matrix and optionally copy the adapter and reports to
 Google Drive. FLAN-T5-small remains the lightweight baseline and optional
 small-adapter comparison.
+
+The augmentation script deterministically expands the original instruction set
+with balanced paraphrase templates, multi-slot targets and repeated complete
+empty-slot objects. It writes
+`data/training/slot_instruction_examples_augmented.jsonl` without changing the
+original training file. Every target is validated as compact JSON, and
+normalized user text is checked against the separate hold-out file
+`data/evaluation/slot_eval_cases.jsonl` to prevent evaluation leakage.
 
 The default adapter output is ignored under `models/`. The fine-tuned adapter
 changes only the slot extractor. Retrieval, slot validation, dialogue state and
