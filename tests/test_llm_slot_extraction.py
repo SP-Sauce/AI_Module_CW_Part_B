@@ -187,9 +187,97 @@ def test_optional_extractor_tracks_repaired_output_without_hiding_parse_failure(
     assert result.used_llm is True
     assert result.llm_parse_success is False
     assert result.llm_repair_success is True
+    assert result.llm_repair_weak is False
+    assert result.llm_intent_trusted is True
+    assert result.llm_slots_trusted is True
     assert json.loads(result.llm_repaired_output) == {
         "intent": "list",
         "slots": {"area": "city centre"},
     }
     assert result.slots["area"] == "centre"
     assert result.errors and "valid intent/slots JSON" in result.errors[0]
+
+
+def test_weak_dangling_slots_repair_uses_rule_intent():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline('"intent":"list","slots":')
+
+    result = extractor.extract("Show every restaurant in the east")
+
+    assert result.llm_repair_success is True
+    assert result.llm_repair_weak is True
+    assert result.llm_intent_trusted is False
+    assert result.llm_slots_trusted is False
+    assert result.intent == "list"
+    assert result.slots == {"area": "east"}
+
+
+def test_conflicting_repaired_intent_cannot_override_confident_rule_intent():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        '"intent":"list","slots":"area":"city centre"'
+    )
+
+    result = extractor.extract("I need a cheap Chinese restaurant in the centre")
+
+    assert result.llm_repair_success is True
+    assert result.llm_repair_weak is True
+    assert result.llm_intent_trusted is False
+    assert result.intent == "search"
+    assert result.slots == {
+        "food": "chinese",
+        "area": "centre",
+        "pricerange": "cheap",
+    }
+
+
+def test_invalid_repaired_intent_is_weak():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        '"intent":"browse","slots":"area":"east"'
+    )
+
+    result = extractor.extract("Show every restaurant in the east")
+
+    assert result.llm_repair_weak is True
+    assert result.llm_intent_trusted is False
+    assert result.intent == "list"
+
+
+def test_complete_repaired_slots_object_can_support_non_conflicting_intent():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        '"intent":"list","slots":{"area":"east"}'
+    )
+
+    result = extractor.extract("Show every restaurant in the east")
+
+    assert result.llm_parse_success is False
+    assert result.llm_repair_success is True
+    assert result.llm_repair_weak is False
+    assert result.llm_intent_trusted is True
+    assert result.intent == "list"
+
+
+def test_guarded_rule_intent_is_preserved_even_after_strict_parse():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline({"intent": "list", "slots": {}})
+
+    result = extractor.extract("hello")
+
+    assert result.llm_parse_success is True
+    assert result.llm_intent_trusted is False
+    assert result.intent == "greeting"
+
+
+def test_llm_slots_fill_missing_values_but_do_not_override_rule_slots():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        {"intent": "search", "slots": {"area": "west", "food": "thai"}}
+    )
+
+    result = extractor.extract("Find a restaurant in the east")
+
+    assert result.llm_slots_trusted is True
+    assert result.llm_meaningful_slot_contribution is True
+    assert result.slots == {"area": "east", "food": "thai"}

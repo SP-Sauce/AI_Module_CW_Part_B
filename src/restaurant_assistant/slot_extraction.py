@@ -130,6 +130,21 @@ def repair_llm_json_output(text: str) -> tuple[dict[str, Any], str]:
     return repaired, repaired_output
 
 
+def _repaired_slots_shape(text: str) -> tuple[bool, bool]:
+    """Return whether output has dangling slots and a complete slots object."""
+    candidate_text = _text_after_last_json_marker(text).strip()
+    slots_marker = re.search(r'"slots"\s*:\s*', candidate_text)
+    if slots_marker is None:
+        return False, False
+    slot_fragment = candidate_text[slots_marker.end() :]
+    dangling_slots = not slot_fragment.strip()
+    try:
+        slots_value, _ = json.JSONDecoder().raw_decode(slot_fragment)
+    except json.JSONDecodeError:
+        return dangling_slots, False
+    return dangling_slots, isinstance(slots_value, dict)
+
+
 SUPPORTED_AREAS = {"centre", "north", "south", "east", "west"}
 SUPPORTED_PRICES = {"cheap", "moderate", "expensive"}
 SUPPORTED_FOODS = {
@@ -308,15 +323,21 @@ ALLOWED_INTENTS = {
 }
 
 RULE_GUARDED_INTENTS = {
+    "book",
     "booking_info",
     "booking_list",
+    "cancel",
+    "correct",
     "cuisine_help",
     "date_clarification",
     "dish_preference",
     "distance_info",
     "filter_info",
+    "greeting",
     "restaurant_info",
+    "reschedule",
     "table_view",
+    "thanks",
     "unsupported",
 }
 
@@ -330,6 +351,10 @@ class SlotExtractionResult:
     llm_attempted: bool = False
     llm_parse_success: bool = False
     llm_repair_success: bool = False
+    llm_repair_weak: bool = False
+    llm_intent_trusted: bool = False
+    llm_slots_trusted: bool = False
+    llm_meaningful_slot_contribution: bool = False
     llm_raw_output: str | None = None
     llm_repaired_output: str | None = None
     errors: list[str] = field(default_factory=list)
@@ -895,22 +920,52 @@ class OptionalLLMSlotExtractor:
                 parse_error = exc
                 parsed, repaired_output = repair_llm_json_output(raw_output)
                 repair_success = True
-            intent = parsed.get("intent", "unknown")
-            if intent not in ALLOWED_INTENTS:
-                intent = "unknown"
-            llm_slots = validate_slots(parsed.get("slots", {}))
-            merged_slots = dict(rule_result.slots)
-            merged_slots.update(llm_slots)
-            merged_slots = validate_slots(merged_slots)
 
-            if rule_result.intent == "unsupported":
-                intent = "unsupported"
-            elif rule_result.intent in {"book", "cancel", "reschedule"}:
-                intent = rule_result.intent
-            elif intent in {"unknown", "search"} and rule_result.intent in RULE_GUARDED_INTENTS:
-                intent = rule_result.intent
-            elif intent == "unknown" and rule_result.intent != "unknown":
-                intent = rule_result.intent
+            raw_intent = parsed.get("intent")
+            intent_is_valid = isinstance(raw_intent, str) and raw_intent in ALLOWED_INTENTS
+            candidate_intent = raw_intent if intent_is_valid else "unknown"
+            llm_slots = validate_slots(parsed.get("slots", {}))
+
+            rule_intent_confident = rule_result.intent != "unknown"
+            intent_conflict = (
+                intent_is_valid
+                and rule_intent_confident
+                and candidate_intent != rule_result.intent
+            )
+            dangling_slots, complete_slots_object = _repaired_slots_shape(raw_output)
+            repair_weak = repair_success and (
+                (dangling_slots and not llm_slots)
+                or not intent_is_valid
+                or (not llm_slots and bool(rule_result.slots))
+                or intent_conflict
+            )
+
+            llm_intent_trusted = False
+            intent = rule_result.intent
+            if rule_result.intent not in RULE_GUARDED_INTENTS:
+                if parse_success and intent_is_valid:
+                    intent = candidate_intent
+                    llm_intent_trusted = True
+                elif (
+                    repair_success
+                    and not repair_weak
+                    and intent_is_valid
+                    and (
+                        complete_slots_object
+                        or (candidate_intent != "unknown" and not intent_conflict)
+                    )
+                ):
+                    intent = candidate_intent
+                    llm_intent_trusted = True
+
+            merged_slots = dict(rule_result.slots)
+            meaningful_slot_contribution = False
+            for key, value in llm_slots.items():
+                if key not in merged_slots:
+                    merged_slots[key] = value
+                    meaningful_slot_contribution = True
+            merged_slots = validate_slots(merged_slots)
+            llm_slots_trusted = bool(llm_slots)
 
             return SlotExtractionResult(
                 intent=intent,
@@ -920,6 +975,10 @@ class OptionalLLMSlotExtractor:
                 llm_attempted=True,
                 llm_parse_success=parse_success,
                 llm_repair_success=repair_success,
+                llm_repair_weak=repair_weak,
+                llm_intent_trusted=llm_intent_trusted,
+                llm_slots_trusted=llm_slots_trusted,
+                llm_meaningful_slot_contribution=meaningful_slot_contribution,
                 llm_raw_output=raw_output,
                 llm_repaired_output=repaired_output,
                 errors=[str(parse_error)] if parse_error is not None else [],

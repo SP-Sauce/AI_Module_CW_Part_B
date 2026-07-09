@@ -106,6 +106,10 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
     llm_attempted = 0
     llm_parse_success = 0
     llm_repair_success = 0
+    llm_repair_weak = 0
+    llm_intent_trusted = 0
+    llm_slots_trusted = 0
+    meaningful_llm_slot_contribution = 0
     fallback_used = 0
     latencies = []
     details = []
@@ -118,7 +122,15 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         llm_attempted += int(result.llm_attempted)
         llm_parse_success += int(result.llm_parse_success)
         llm_repair_success += int(result.llm_repair_success)
-        fallback_used += int(enable_llm and not result.used_llm)
+        llm_repair_weak += int(result.llm_repair_weak)
+        llm_intent_trusted += int(result.llm_intent_trusted)
+        llm_slots_trusted += int(result.llm_slots_trusted)
+        meaningful_llm_slot_contribution += int(result.llm_meaningful_slot_contribution)
+        fallback_used += int(
+            enable_llm
+            and not result.llm_intent_trusted
+            and not result.llm_meaningful_slot_contribution
+        )
         intent_correct += int(result.intent == case["intent"])
         expected_slots = case.get("slots", {})
         predicted_slots = result.slots
@@ -143,6 +155,10 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
                     "llm_attempted": result.llm_attempted,
                     "llm_parse_success": result.llm_parse_success,
                     "llm_repair_success": result.llm_repair_success,
+                    "llm_repair_weak": result.llm_repair_weak,
+                    "llm_intent_trusted": result.llm_intent_trusted,
+                    "llm_slots_trusted": result.llm_slots_trusted,
+                    "llm_meaningful_slot_contribution": result.llm_meaningful_slot_contribution,
                     "llm_raw_output": _raw_output_preview(result.llm_raw_output),
                     "llm_repaired_output": _raw_output_preview(result.llm_repaired_output),
                     "errors": result.errors,
@@ -173,6 +189,10 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         "llm_attempted_cases": llm_attempted,
         "llm_parse_success_cases": llm_parse_success,
         "llm_repair_success_cases": llm_repair_success,
+        "llm_repair_weak_cases": llm_repair_weak,
+        "llm_intent_trusted_cases": llm_intent_trusted,
+        "llm_slots_trusted_cases": llm_slots_trusted,
+        "meaningful_llm_slot_contribution_cases": meaningful_llm_slot_contribution,
         "llm_valid_or_repaired_cases": llm_parse_success + llm_repair_success,
         "llm_parse_failed_cases": llm_attempted - llm_parse_success,
         "llm_unrepaired_failure_cases": llm_attempted - llm_parse_success - llm_repair_success,

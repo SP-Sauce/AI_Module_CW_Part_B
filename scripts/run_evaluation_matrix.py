@@ -59,8 +59,8 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
     lines = [
         "# Evaluation Matrix",
         "",
-        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Raw Parse Errors | LLM Attempted | Strict Parse Success | Repair Success | Valid or Repaired | Strict Parse Failed | Unrepaired Failure | Fallback Used | Mean Slot Latency (s) | Slot Model |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Raw Parse Errors | LLM Attempted | Strict Parse Success | Repair Success | Weak Repair | Intent Trusted | Slots Trusted | Meaningful LLM Slots | Valid or Repaired | Strict Parse Failed | Unrepaired Failure | Fallback Used | Mean Slot Latency (s) | Slot Model |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         slot_metrics = row.get("metrics", {}).get("slot_extraction", {})
@@ -79,6 +79,10 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
                     _metric(slot_metrics.get("llm_attempted_cases")),
                     _metric(slot_metrics.get("llm_parse_success_cases")),
                     _metric(slot_metrics.get("llm_repair_success_cases")),
+                    _metric(slot_metrics.get("llm_repair_weak_cases")),
+                    _metric(slot_metrics.get("llm_intent_trusted_cases")),
+                    _metric(slot_metrics.get("llm_slots_trusted_cases")),
+                    _metric(slot_metrics.get("meaningful_llm_slot_contribution_cases")),
                     _metric(slot_metrics.get("llm_valid_or_repaired_cases")),
                     _metric(slot_metrics.get("llm_parse_failed_cases")),
                     _metric(slot_metrics.get("llm_unrepaired_failure_cases")),
@@ -115,7 +119,9 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
             lines.append(
                 f"- `{configuration}` - input: `{case.get('text', '')}`; "
                 f"raw output: `{raw_output}`; repaired output: `{repaired_output}`; "
-                f"repair success: `{bool(predicted.get('llm_repair_success'))}`; errors: `{errors}`"
+                f"repair success: `{bool(predicted.get('llm_repair_success'))}`; "
+                f"weak repair: `{bool(predicted.get('llm_repair_weak'))}`; "
+                f"intent trusted: `{bool(predicted.get('llm_intent_trusted'))}`; errors: `{errors}`"
             )
     return "\n".join(lines) + "\n"
 
