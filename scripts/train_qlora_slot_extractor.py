@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--learning-rate", type=float, default=2e-4)
     parser.add_argument("--max-source-length", type=int, default=256)
     parser.add_argument("--max-target-length", type=int, default=128)
+    parser.add_argument(
+        "--target-prefix",
+        default="",
+        help="Optional text prepended to each compact JSON target during tokenization.",
+    )
     parser.add_argument("--lora-r", type=int, default=16)
     parser.add_argument("--lora-alpha", type=int, default=32)
     parser.add_argument("--lora-dropout", type=float, default=0.05)
@@ -49,6 +54,23 @@ def build_parser() -> argparse.ArgumentParser:
 
 def slot_prompt(text: str) -> str:
     return adapter_slot_prompt(text)
+
+
+def _compact_json_target(target: Any, *, path: Path, line_number: int) -> str:
+    if isinstance(target, str):
+        try:
+            target = json.loads(target)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Target is not valid JSON at {path}:{line_number}") from exc
+    if not isinstance(target, dict) or "intent" not in target or "slots" not in target:
+        raise ValueError(f'Target must contain "intent" and "slots" at {path}:{line_number}')
+
+    compact = json.dumps(target, ensure_ascii=True, separators=(",", ":"))
+    if not compact.startswith("{") or not compact.endswith("}"):
+        raise ValueError(f"Target must retain its JSON object braces at {path}:{line_number}")
+    if '"intent"' not in compact or '"slots"' not in compact:
+        raise ValueError(f'Target must contain "intent" and "slots" at {path}:{line_number}')
+    return compact
 
 
 def load_examples(path: Path) -> list[dict[str, str]]:
@@ -67,7 +89,12 @@ def load_examples(path: Path) -> list[dict[str, str]]:
                 target = row["output"]
             else:
                 target = {"intent": row.get("intent", "unknown"), "slots": row.get("slots", {})}
-            examples.append({"prompt": slot_prompt(text), "target": json.dumps(target, ensure_ascii=True)})
+            examples.append(
+                {
+                    "prompt": slot_prompt(text),
+                    "target": _compact_json_target(target, path=path, line_number=line_number),
+                }
+            )
     if not examples:
         raise ValueError(f"No training examples found in {path}")
     return examples
@@ -118,6 +145,10 @@ def main(argv: list[str] | None = None) -> None:
 
     examples = load_examples(args.train_file)
     eval_examples = load_examples(args.eval_file) if args.eval_file else None
+    print("Prompt/target format examples:")
+    for index, example in enumerate(examples[:3], start=1):
+        print(f"\n--- Example {index} prompt ---\n{example['prompt']}")
+        print(f"--- Example {index} target ---\n{args.target_prefix}{example['target']}")
     dataset = Dataset.from_list(examples)
     eval_dataset = Dataset.from_list(eval_examples) if eval_examples else None
     tokenizer = AutoTokenizer.from_pretrained(args.base_model)
@@ -158,7 +189,8 @@ def main(argv: list[str] | None = None) -> None:
 
     def tokenize(batch: dict[str, list[str]]) -> dict[str, Any]:
         inputs = tokenizer(batch["prompt"], max_length=args.max_source_length, truncation=True)
-        labels = tokenizer(text_target=batch["target"], max_length=args.max_target_length, truncation=True)
+        targets = [f"{args.target_prefix}{target}" for target in batch["target"]]
+        labels = tokenizer(text_target=targets, max_length=args.max_target_length, truncation=True)
         inputs["labels"] = labels["input_ids"]
         return inputs
 
@@ -218,6 +250,7 @@ def main(argv: list[str] | None = None) -> None:
             "output_dir": str(args.output_dir),
             "max_steps": args.max_steps,
             "batch_size": args.batch_size,
+            "target_prefix": args.target_prefix,
             "lora_r": args.lora_r,
             "lora_alpha": args.lora_alpha,
             "load_in_4bit": args.load_in_4bit,

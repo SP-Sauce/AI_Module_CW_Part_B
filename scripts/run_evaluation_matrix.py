@@ -59,8 +59,8 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
     lines = [
         "# Evaluation Matrix",
         "",
-        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Parse Errors | LLM Attempted | Parse Success | Parse Failed | Fallback Used | Mean Slot Latency (s) | Slot Model |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Raw Parse Errors | LLM Attempted | Strict Parse Success | Repair Success | Valid or Repaired | Strict Parse Failed | Unrepaired Failure | Fallback Used | Mean Slot Latency (s) | Slot Model |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         slot_metrics = row.get("metrics", {}).get("slot_extraction", {})
@@ -78,7 +78,10 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
                     _metric(slot_metrics.get("invalid_json_or_parse_error_count")),
                     _metric(slot_metrics.get("llm_attempted_cases")),
                     _metric(slot_metrics.get("llm_parse_success_cases")),
+                    _metric(slot_metrics.get("llm_repair_success_cases")),
+                    _metric(slot_metrics.get("llm_valid_or_repaired_cases")),
                     _metric(slot_metrics.get("llm_parse_failed_cases")),
+                    _metric(slot_metrics.get("llm_unrepaired_failure_cases")),
                     _metric(slot_metrics.get("fallback_used_cases")),
                     _metric(slot_metrics.get("mean_slot_latency_seconds")),
                     str(slot_metrics.get("slot_model_name") or "-"),
@@ -107,10 +110,12 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
         for configuration, case in parse_failures:
             predicted = case.get("predicted", {})
             raw_output = str(predicted.get("llm_raw_output") or "<no output>")
+            repaired_output = str(predicted.get("llm_repaired_output") or "<not repaired>")
             errors = "; ".join(str(error) for error in predicted.get("errors", []))
             lines.append(
-                f"- `{configuration}` — input: `{case.get('text', '')}`; "
-                f"raw output: `{raw_output}`; errors: `{errors}`"
+                f"- `{configuration}` - input: `{case.get('text', '')}`; "
+                f"raw output: `{raw_output}`; repaired output: `{repaired_output}`; "
+                f"repair success: `{bool(predicted.get('llm_repair_success'))}`; errors: `{errors}`"
             )
     return "\n".join(lines) + "\n"
 

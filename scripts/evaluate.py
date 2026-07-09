@@ -105,6 +105,7 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
     llm_used = 0
     llm_attempted = 0
     llm_parse_success = 0
+    llm_repair_success = 0
     fallback_used = 0
     latencies = []
     details = []
@@ -116,6 +117,7 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         llm_used += int(result.used_llm)
         llm_attempted += int(result.llm_attempted)
         llm_parse_success += int(result.llm_parse_success)
+        llm_repair_success += int(result.llm_repair_success)
         fallback_used += int(enable_llm and not result.used_llm)
         intent_correct += int(result.intent == case["intent"])
         expected_slots = case.get("slots", {})
@@ -140,7 +142,9 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
                     "used_llm": result.used_llm,
                     "llm_attempted": result.llm_attempted,
                     "llm_parse_success": result.llm_parse_success,
+                    "llm_repair_success": result.llm_repair_success,
                     "llm_raw_output": _raw_output_preview(result.llm_raw_output),
+                    "llm_repaired_output": _raw_output_preview(result.llm_repaired_output),
                     "errors": result.errors,
                 },
                 "latency_seconds": round(latency, 6),
@@ -168,7 +172,10 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         "llm_used_cases": llm_used,
         "llm_attempted_cases": llm_attempted,
         "llm_parse_success_cases": llm_parse_success,
+        "llm_repair_success_cases": llm_repair_success,
+        "llm_valid_or_repaired_cases": llm_parse_success + llm_repair_success,
         "llm_parse_failed_cases": llm_attempted - llm_parse_success,
+        "llm_unrepaired_failure_cases": llm_attempted - llm_parse_success - llm_repair_success,
         "fallback_used_cases": fallback_used,
         "slot_model_name": slot_model_name if enable_llm else None,
         "cases": details,

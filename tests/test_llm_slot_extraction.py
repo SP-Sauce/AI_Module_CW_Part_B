@@ -6,15 +6,19 @@ from restaurant_assistant.slot_extraction import (
     OptionalLLMSlotExtractor,
     adapter_slot_prompt,
     parse_llm_json_output,
+    repair_llm_json_output,
 )
 
 
 class FakeText2TextPipeline:
     def __init__(self, payload):
         self.payload = payload
+        self.generation_kwargs = None
 
-    def __call__(self, prompt, max_new_tokens=96, do_sample=False):
-        return [{"generated_text": json.dumps(self.payload)}]
+    def __call__(self, prompt, **generation_kwargs):
+        self.generation_kwargs = generation_kwargs
+        generated_text = self.payload if isinstance(self.payload, str) else json.dumps(self.payload)
+        return [{"generated_text": generated_text}]
 
 
 def test_optional_llm_slot_extractor_uses_llm_and_rule_guards():
@@ -38,6 +42,13 @@ def test_optional_llm_slot_extractor_uses_llm_and_rule_guards():
     assert result.llm_attempted is True
     assert result.llm_parse_success is True
     assert result.llm_raw_output is not None
+    assert extractor._pipeline.generation_kwargs == {
+        "max_new_tokens": 128,
+        "do_sample": False,
+        "num_beams": 4,
+        "early_stopping": True,
+        "repetition_penalty": 1.2,
+    }
     assert result.intent == "book"
     assert result.slots["food"] == "italian"
     assert result.slots["area"] == "centre"
@@ -113,7 +124,7 @@ def test_parse_failure_preserves_llm_diagnostics():
     assert result.used_llm is False
     assert result.llm_attempted is True
     assert result.llm_parse_success is False
-    assert result.llm_raw_output == '"not-json"'
+    assert result.llm_raw_output == "not-json"
     assert "Raw output" in result.errors[0]
 
 
@@ -122,3 +133,63 @@ def test_json_parser_error_contains_bounded_raw_preview():
         parse_llm_json_output("x" * 500)
 
     assert len(str(exc_info.value)) < 400
+
+
+@pytest.mark.parametrize(
+    ("fragment", "expected_slots"),
+    [
+        ('"slots": "area": "centre"', {"area": "centre"}),
+        ('"slots": "food": "thai"', {"food": "thai"}),
+        ('"slots": "time": "6"', {"time": "6"}),
+        ('"slots": "people": 4', {"people": 4}),
+        (
+            '"slots": "booking_reference": "BK-X9Y8Z7"',
+            {"booking_reference": "BK-X9Y8Z7"},
+        ),
+    ],
+)
+def test_json_repair_handles_known_slot_fragments(fragment, expected_slots):
+    repaired, repaired_output = repair_llm_json_output(f'"intent": "book", {fragment}')
+
+    assert repaired == {"intent": "book", "slots": expected_slots}
+    assert json.loads(repaired_output) == repaired
+
+
+def test_json_repair_keeps_first_valid_duplicate_and_ignores_disallowed_keys():
+    repaired, _ = repair_llm_json_output(
+        '"intent":"search","slots":"area":oops,"area":"north","area":"south",'
+        '"password":"secret","food":"thai"'
+    )
+
+    assert repaired == {
+        "intent": "search",
+        "slots": {"area": "north", "food": "thai"},
+    }
+
+
+def test_json_repair_keeps_already_valid_structured_output():
+    raw_output = 'prefix {"intent":"thanks","slots":{}} trailing text'
+
+    repaired, repaired_output = repair_llm_json_output(raw_output)
+
+    assert repaired == {"intent": "thanks", "slots": {}}
+    assert repaired_output == '{"intent":"thanks","slots":{}}'
+
+
+def test_optional_extractor_tracks_repaired_output_without_hiding_parse_failure():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        '"intent": "list", "slots": "area": "city centre"'
+    )
+
+    result = extractor.extract("Show restaurants in the centre")
+
+    assert result.used_llm is True
+    assert result.llm_parse_success is False
+    assert result.llm_repair_success is True
+    assert json.loads(result.llm_repaired_output) == {
+        "intent": "list",
+        "slots": {"area": "city centre"},
+    }
+    assert result.slots["area"] == "centre"
+    assert result.errors and "valid intent/slots JSON" in result.errors[0]

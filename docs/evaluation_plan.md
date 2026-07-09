@@ -148,6 +148,21 @@ be deleted and retrained. Training and inference now use the same prompt.
 The report should compare the base LLM extractor, the QLoRA adapter where
 available, and the rule fallback on the same labelled fixture.
 
+The base `google/flan-t5-small` model did not reliably follow the structured
+output instruction and often generated labels such as `location` or `food`
+instead of JSON. After fine-tuning, the QLoRA adapter learned recognisable
+intent/slot fragments, but some outputs still omitted structural braces, for
+example `"intent":"list","slots":"area":"centre"`. The runtime applies a
+narrow repair step that accepts only `intent`, `slots` and allowed slot keys,
+then runs the normal deterministic slot validation. Rule-based fallback still
+prevents a malformed or unrepaired model response from causing task failure.
+
+Final evaluation keeps these outcomes separate: raw strict-JSON parse failures,
+successful constrained repairs, valid-or-repaired outputs, unrepaired failures
+and rule fallback usage are all reported. Raw and repaired output previews are
+retained in case details rather than presenting fallback accuracy as LLM
+accuracy.
+
 Use the matrix command for reproducible JSON and Markdown outputs:
 
 ```powershell

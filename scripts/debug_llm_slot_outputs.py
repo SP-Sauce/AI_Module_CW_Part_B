@@ -65,7 +65,11 @@ def main(argv: list[str] | None = None) -> None:
         )
         print(f"LLM attempted: {result.llm_attempted}")
         print(f"Raw LLM output: {result.llm_raw_output if result.llm_raw_output is not None else '<none>'}")
-        if result.llm_parse_success:
+        print(f"Strict parse success: {result.llm_parse_success}")
+        print(f"Repair success: {result.llm_repair_success}")
+        if result.llm_repaired_output is not None:
+            print(f"Repaired JSON: {result.llm_repaired_output}")
+        if result.llm_parse_success or result.llm_repair_success:
             print(
                 "Parsed: "
                 + json.dumps({"intent": result.intent, "slots": result.slots}, ensure_ascii=False)

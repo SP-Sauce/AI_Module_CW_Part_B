@@ -13,6 +13,22 @@ from restaurant_assistant.llm_runtime import llm_backend_error
 from restaurant_assistant.preprocessing import normalize_area, normalize_food, normalize_price, normalize_time
 
 
+ALLOWED_SLOT_KEYS = {
+    "food",
+    "food_candidates",
+    "cuisine_group",
+    "dish",
+    "area",
+    "pricerange",
+    "day",
+    "relative_day",
+    "day_modifier",
+    "time",
+    "people",
+    "booking_reference",
+}
+
+
 def adapter_slot_prompt(text: str) -> str:
     """Return the shared instruction format for adapter training and inference."""
     return (
@@ -40,13 +56,17 @@ def _raw_output_preview(text: str, limit: int = 300) -> str:
     return preview
 
 
-def parse_llm_json_output(text: str) -> dict[str, Any]:
-    """Find the first complete slot JSON object in model-generated text."""
+def _text_after_last_json_marker(text: str) -> str:
     candidate_text = str(text)
     marker_position = candidate_text.rfind("JSON:")
     if marker_position != -1:
         candidate_text = candidate_text[marker_position + len("JSON:") :]
+    return candidate_text
 
+
+def parse_llm_json_output(text: str) -> dict[str, Any]:
+    """Find the first complete slot JSON object in model-generated text."""
+    candidate_text = _text_after_last_json_marker(text)
     decoder = json.JSONDecoder()
     for match in re.finditer(r"\{", candidate_text):
         try:
@@ -58,6 +78,56 @@ def parse_llm_json_output(text: str) -> dict[str, Any]:
 
     preview = _raw_output_preview(text)
     raise ValueError(f"LLM output did not contain a valid intent/slots JSON object. Raw output: {preview!r}")
+
+
+def _first_json_value_after_key(text: str, key: str) -> Any:
+    decoder = json.JSONDecoder()
+    pattern = re.compile(rf'"{re.escape(key)}"\s*:\s*')
+    for match in pattern.finditer(text):
+        try:
+            value, _ = decoder.raw_decode(text, match.end())
+        except json.JSONDecodeError:
+            continue
+        return value
+    raise ValueError(f"LLM output did not contain a valid value for {key!r}")
+
+
+def repair_llm_json_output(text: str) -> tuple[dict[str, Any], str]:
+    """Repair a narrow malformed intent/slots fragment into canonical JSON."""
+    try:
+        parsed = parse_llm_json_output(text)
+    except ValueError:
+        parsed = None
+    if parsed is not None:
+        repaired_output = json.dumps(parsed, ensure_ascii=True, separators=(",", ":"))
+        return parsed, repaired_output
+
+    candidate_text = _text_after_last_json_marker(text)
+    intent = _first_json_value_after_key(candidate_text, "intent")
+    if not isinstance(intent, str):
+        raise ValueError("LLM output intent was not a string")
+
+    slots_marker = re.search(r'"slots"\s*:\s*', candidate_text)
+    if slots_marker is None:
+        raise ValueError("LLM output did not contain a slots fragment")
+
+    slot_fragment = candidate_text[slots_marker.end() :]
+    slots: dict[str, Any] = {}
+    key_pattern = re.compile(r'"(?P<key>[^"]+)"\s*:\s*')
+    decoder = json.JSONDecoder()
+    for match in key_pattern.finditer(slot_fragment):
+        key = match.group("key")
+        if key not in ALLOWED_SLOT_KEYS or key in slots:
+            continue
+        try:
+            value, _ = decoder.raw_decode(slot_fragment, match.end())
+        except json.JSONDecodeError:
+            continue
+        slots[key] = value
+
+    repaired = {"intent": intent, "slots": slots}
+    repaired_output = json.dumps(repaired, ensure_ascii=True, separators=(",", ":"))
+    return repaired, repaired_output
 
 
 SUPPORTED_AREAS = {"centre", "north", "south", "east", "west"}
@@ -259,7 +329,9 @@ class SlotExtractionResult:
     used_llm: bool = False
     llm_attempted: bool = False
     llm_parse_success: bool = False
+    llm_repair_success: bool = False
     llm_raw_output: str | None = None
+    llm_repaired_output: str | None = None
     errors: list[str] = field(default_factory=list)
     unsupported_slots: dict[str, str] = field(default_factory=dict)
 
@@ -776,8 +848,15 @@ class OptionalLLMSlotExtractor:
         return True
 
     def _generate(self, prompt: str) -> str:
+        generation_kwargs = {
+            "max_new_tokens": 128,
+            "do_sample": False,
+            "num_beams": 4,
+            "early_stopping": True,
+            "repetition_penalty": 1.2,
+        }
         if self._pipeline is not None:
-            output = self._pipeline(prompt, max_new_tokens=96, do_sample=False)
+            output = self._pipeline(prompt, **generation_kwargs)
             return str(output[0]["generated_text"])
 
         inputs = self._tokenizer(prompt, return_tensors="pt", truncation=True)
@@ -792,7 +871,7 @@ class OptionalLLMSlotExtractor:
         import torch
 
         with torch.inference_mode():
-            generated = self._model.generate(**inputs, max_new_tokens=96, do_sample=False)
+            generated = self._model.generate(**inputs, **generation_kwargs)
         return str(self._tokenizer.decode(generated[0], skip_special_tokens=True))
 
     def extract(self, message: str) -> SlotExtractionResult:
@@ -803,9 +882,19 @@ class OptionalLLMSlotExtractor:
             return rule_result
         prompt = adapter_slot_prompt(message)
         raw_output: str | None = None
+        repaired_output: str | None = None
+        parse_success = False
+        repair_success = False
+        parse_error: ValueError | None = None
         try:
             raw_output = self._generate(prompt)
-            parsed = parse_llm_json_output(raw_output)
+            try:
+                parsed = parse_llm_json_output(raw_output)
+                parse_success = True
+            except ValueError as exc:
+                parse_error = exc
+                parsed, repaired_output = repair_llm_json_output(raw_output)
+                repair_success = True
             intent = parsed.get("intent", "unknown")
             if intent not in ALLOWED_INTENTS:
                 intent = "unknown"
@@ -829,16 +918,24 @@ class OptionalLLMSlotExtractor:
                 confidence=0.9,
                 used_llm=True,
                 llm_attempted=True,
-                llm_parse_success=True,
+                llm_parse_success=parse_success,
+                llm_repair_success=repair_success,
                 llm_raw_output=raw_output,
+                llm_repaired_output=repaired_output,
+                errors=[str(parse_error)] if parse_error is not None else [],
                 unsupported_slots=dict(rule_result.unsupported_slots),
             )
         except Exception as exc:
             fallback = rule_result
             fallback.llm_attempted = True
-            fallback.llm_parse_success = False
+            fallback.llm_parse_success = parse_success
+            fallback.llm_repair_success = repair_success
             fallback.llm_raw_output = _raw_output_preview(raw_output) if raw_output is not None else None
-            fallback.errors.append(str(exc))
+            fallback.llm_repaired_output = repaired_output
+            if parse_error is not None:
+                fallback.errors.append(str(parse_error))
+            if not fallback.errors or str(exc) != fallback.errors[-1]:
+                fallback.errors.append(str(exc))
             return fallback
 
     def _parse_json(self, text: str) -> dict[str, Any]:
