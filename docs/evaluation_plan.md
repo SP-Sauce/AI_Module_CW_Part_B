@@ -20,9 +20,11 @@ Final slot metrics:
 The main report should compare the same hold-out fixture across:
 
 - `baseline_rule_based`: deterministic rules only;
-- `base_llm`: `google/flan-t5-small` prompted JSON extraction;
+- `base_llm`: lightweight `google/flan-t5-small` prompted JSON extraction;
 - `qlora_adapter`: the optional `models/slot-extractor-qlora` adapter when it
-  has been trained.
+  has been trained from FLAN-T5-small;
+- `qlora_adapter_base`: the stronger optional FLAN-T5-base adapter at
+  `models/slot-extractor-qlora-base`.
 
 ## Retrieval
 
@@ -162,6 +164,11 @@ successful constrained repairs, valid-or-repaired outputs, unrepaired failures
 and rule fallback usage are all reported. Raw and repaired output previews are
 retained in case details rather than presenting fallback accuracy as LLM
 accuracy.
+
+The FLAN-T5-base adapter is evaluated through the same validation, repair,
+weak-repair detection, trusted-intent/slot checks and rule fallback as the
+small model. Model size alone is not treated as evidence that structured output
+is reliable.
 
 Use the matrix command for reproducible JSON and Markdown outputs:
 

@@ -8,11 +8,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from evaluate import ROOT, run_evaluation
+try:
+    from .evaluate import ROOT, run_evaluation
+except ImportError:
+    from evaluate import ROOT, run_evaluation
 
 
 DEFAULT_SLOT_FIXTURE = ROOT / "data" / "evaluation" / "slot_eval_cases.jsonl"
 DEFAULT_ADAPTER_PATH = ROOT / "models" / "slot-extractor-qlora"
+DEFAULT_BASE_ADAPTER_PATH = ROOT / "models" / "slot-extractor-qlora-base"
 DEFAULT_OUTPUT_DIR = ROOT / "outputs" / "evaluation"
 
 
@@ -21,7 +25,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
     parser.add_argument("--slot-fixture", type=Path, default=DEFAULT_SLOT_FIXTURE)
     parser.add_argument("--model-name", default=None, help="Optional response-generation model override.")
-    parser.add_argument("--adapter-path", type=Path, default=DEFAULT_ADAPTER_PATH)
+    parser.add_argument(
+        "--adapter-path",
+        type=Path,
+        default=DEFAULT_ADAPTER_PATH,
+        help="Optional FLAN-T5-small QLoRA adapter directory.",
+    )
+    parser.add_argument(
+        "--base-adapter-path",
+        type=Path,
+        default=DEFAULT_BASE_ADAPTER_PATH,
+        help="Optional FLAN-T5-base QLoRA adapter directory.",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     return parser
 
@@ -142,6 +157,13 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
             "name": "qlora_adapter",
             "enable_llm": True,
             "slot_model_name": str(args.adapter_path),
+            "adapter_path": args.adapter_path,
+        },
+        {
+            "name": "qlora_adapter_base",
+            "enable_llm": True,
+            "slot_model_name": str(args.base_adapter_path),
+            "adapter_path": args.base_adapter_path,
         },
     ]
     rows: list[dict[str, Any]] = []
@@ -153,12 +175,13 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
             slot_model_name=config["slot_model_name"],
             model_name=args.model_name,
         )
-        if config["name"] == "qlora_adapter" and not args.adapter_path.exists():
+        adapter_path = config.get("adapter_path")
+        if adapter_path is not None and not adapter_path.exists():
             rows.append(
                 {
                     "name": config["name"],
                     "status": "skipped",
-                    "reason": f"Adapter folder not found: {args.adapter_path}",
+                    "reason": f"Adapter folder not found: {adapter_path}",
                     "command": command,
                     "metrics": {},
                 }

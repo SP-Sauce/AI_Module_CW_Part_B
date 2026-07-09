@@ -231,11 +231,14 @@ python scripts/run_evaluation_matrix.py --sample-data
 This runs:
 
 - `baseline_rule_based`: deterministic rule extractor, no `--enable-llm`;
-- `base_llm`: `--enable-llm --slot-model-name google/flan-t5-small`;
-- `qlora_adapter`: `--enable-llm --slot-model-name models/slot-extractor-qlora`.
+- `base_llm`: lightweight `google/flan-t5-small` prompted extraction;
+- `qlora_adapter`: optional FLAN-T5-small adapter at
+  `models/slot-extractor-qlora`;
+- `qlora_adapter_base`: optional stronger FLAN-T5-base adapter at
+  `models/slot-extractor-qlora-base`.
 
-If the adapter folder is missing, the QLoRA row is marked as skipped. Outputs
-are written to `outputs/evaluation/evaluation_matrix.json` and
+Missing adapter folders are marked as skipped. Outputs are written to
+`outputs/evaluation/evaluation_matrix.json` and
 `outputs/evaluation/evaluation_matrix.md`.
 
 ## Safety And Limitations
@@ -279,15 +282,20 @@ python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small -
 For the Colab/GPU coursework run:
 
 ```powershell
-python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small --eval-file data/evaluation/slot_eval_cases.jsonl --metrics-output outputs/evaluation/qlora_training_metadata.json
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 300
 python scripts/run_evaluation_matrix.py --sample-data
 ```
 
 `notebooks/train_qlora_colab.ipynb` contains the Colab workflow: clone the repo,
-install requirements, check the GPU, train the adapter, run the matrix and
-optionally copy `outputs/evaluation` to Google Drive.
+install requirements, check the GPU, train the stronger FLAN-T5-base adapter,
+evaluate it, run the matrix and optionally copy the adapter and reports to
+Google Drive. FLAN-T5-small remains the lightweight baseline and optional
+small-adapter comparison.
 
 The default adapter output is ignored under `models/`. The fine-tuned adapter
 changes only the slot extractor. Retrieval, slot validation, dialogue state and
-booking logic remain deterministic guardrails. See `docs/llm_and_qlora.md` for
-the LLM pipeline and recommended report wording.
+booking logic remain deterministic guardrails. Both model sizes still pass
+through JSON repair, weak-repair detection, trusted-intent/slot checks and
+rule-based fallback because a larger model can still emit malformed structured
+output. See `docs/llm_and_qlora.md` for the LLM pipeline and recommended report
+wording.

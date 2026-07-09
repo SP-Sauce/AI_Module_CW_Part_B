@@ -44,7 +44,10 @@ paths are instructed to use only retrieved restaurant evidence.
 
 `scripts/train_qlora_slot_extractor.py` is an optional PEFT/QLoRA training path
 for the JSON slot-extraction model. It saves adapters under `models/`, which can
-then be supplied with `--slot-model-name`.
+then be supplied with `--slot-model-name`. FLAN-T5-small is the lightweight
+baseline; the Colab workflow can additionally train the stronger
+FLAN-T5-base adapter under `models/slot-extractor-qlora-base`. Both use the same
+validation, constrained JSON repair, weak-repair detection and rule fallback.
 
 `booking.py` creates booking references such as `BK-AB12CD`, supports
 rescheduling and cancellation, and avoids any claim about live restaurant

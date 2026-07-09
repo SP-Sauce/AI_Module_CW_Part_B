@@ -65,7 +65,8 @@ python scripts/debug_llm_slot_outputs.py --slot-model-name google/flan-t5-small 
 ## QLoRA Fine-Tuning
 
 The optional QLoRA script fine-tunes the JSON slot extractor, not the whole
-booking system:
+booking system. `google/flan-t5-small` is retained as the lightweight prompted
+baseline and optional small-adapter experiment:
 
 ```powershell
 pip install -r requirements-qlora.txt
@@ -90,6 +91,20 @@ python scripts/run_chat.py --enable-llm --slot-model-name models/slot-extractor-
 python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora
 ```
 
+The stronger optional Colab experiment adapts `google/flan-t5-base` separately,
+so it does not overwrite the small-model adapter:
+
+```powershell
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --eval-file data/evaluation/slot_eval_cases.jsonl --output-dir models/slot-extractor-qlora-base --metrics-output outputs/evaluation/qlora_base_training_metadata.json --batch-size 1 --max-steps 300
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora-base
+```
+
+The matrix reports this adapter as `qlora_adapter_base` when
+`models/slot-extractor-qlora-base` exists. Larger models are not assumed to be
+structurally reliable: strict parsing, constrained repair, weak-repair
+detection, slot validation, trusted-intent/slot checks and rule-based fallback
+remain active for both adapter sizes.
+
 4-bit QLoRA normally requires a CUDA-capable Linux, WSL or Colab environment.
 On CPU-only machines, use `--no-4bit` for a small LoRA smoke test, or keep the
 base LLM path and describe QLoRA as implemented optional fine-tuning.
@@ -107,8 +122,8 @@ python scripts/run_evaluation_matrix.py --sample-data
 ```
 
 The matrix writes `outputs/evaluation/evaluation_matrix.json` and
-`outputs/evaluation/evaluation_matrix.md`. If the adapter directory does not
-exist, the QLoRA row is skipped instead of failing the whole evaluation.
+`outputs/evaluation/evaluation_matrix.md`. Missing small or base adapter
+directories are skipped instead of failing the whole evaluation.
 
 ## Report Wording
 
