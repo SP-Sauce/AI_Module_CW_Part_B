@@ -25,24 +25,54 @@ ALLOWED_SLOT_KEYS = {
     "day_modifier",
     "time",
     "people",
+    "restaurant_name",
     "booking_reference",
+}
+
+STRICT_MODEL_INTENTS = {
+    "search",
+    "list",
+    "restaurant_info",
+    "book",
+    "update_booking",
+    "cancel_booking",
+    "booking_list",
+    "greeting",
+    "thanks",
+    "goodbye",
+    "unsupported",
+}
+
+STRICT_MODEL_SLOT_KEYS = {
+    "food",
+    "food_candidates",
+    "cuisine_group",
+    "area",
+    "pricerange",
+    "day",
+    "time",
+    "people",
+    "restaurant_name",
+    "booking_reference",
+}
+
+MODEL_INTENT_ALIASES = {
+    "update_booking": "reschedule",
+    "cancel_booking": "cancel",
 }
 
 
 def adapter_slot_prompt(text: str) -> str:
     """Return the shared instruction format for adapter training and inference."""
     return (
-        "Extract restaurant intent and slots.\n"
-        "Return exactly one JSON object. Do not explain. Do not repeat the prompt. "
-        'Use only keys "intent" and "slots".\n'
-        "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
-        "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
-        "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown.\n"
-        "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
-        "relative_day, day_modifier, time, people, booking_reference.\n"
-        "For broad regional cuisines use cuisine_group and food_candidates. For incomplete bookings "
-        "use intent book with provided slots only. Booking commands remain intent book even when a "
-        "restaurant name contains a dish or cuisine word. Never invent values.\n"
+        "Task: Extract the restaurant assistant intent and slots.\n"
+        "Return only one valid minified JSON object.\n"
+        "Do not explain.\n"
+        "Do not use markdown.\n"
+        "Allowed intents: search, list, restaurant_info, book, update_booking, cancel_booking, "
+        "booking_list, greeting, thanks, goodbye, unsupported.\n"
+        "Allowed slots: food, food_candidates, cuisine_group, area, pricerange, day, time, people, "
+        "restaurant_name, booking_reference.\n"
         f"User: {text}\n"
         "JSON:"
     )
@@ -78,6 +108,35 @@ def parse_llm_json_output(text: str) -> dict[str, Any]:
 
     preview = _raw_output_preview(text)
     raise ValueError(f"LLM output did not contain a valid intent/slots JSON object. Raw output: {preview!r}")
+
+
+def strict_parse_llm_json_output(text: str) -> dict[str, Any]:
+    """Parse exactly one raw intent/slots JSON object with no prompt text."""
+
+    candidate_text = str(text).strip()
+    decoder = json.JSONDecoder()
+    try:
+        parsed, end = decoder.raw_decode(candidate_text)
+    except json.JSONDecodeError as exc:
+        preview = _raw_output_preview(text)
+        raise ValueError(f"LLM output was not strict JSON. Raw output: {preview!r}") from exc
+    if candidate_text[end:].strip():
+        preview = _raw_output_preview(text)
+        raise ValueError(f"LLM output had trailing text after JSON. Raw output: {preview!r}")
+    if not isinstance(parsed, dict) or set(parsed) != {"intent", "slots"}:
+        raise ValueError('Strict JSON output must contain only "intent" and "slots" keys')
+    if not isinstance(parsed["intent"], str) or not isinstance(parsed["slots"], dict):
+        raise ValueError('Strict JSON output must use a string "intent" and object "slots"')
+    return parsed
+
+
+def canonicalize_model_intent(intent: Any) -> str:
+    """Map strict-model labels onto internal assistant intent labels."""
+
+    if not isinstance(intent, str):
+        return "unknown"
+    normalized = intent.strip()
+    return MODEL_INTENT_ALIASES.get(normalized, normalized)
 
 
 def _first_json_value_after_key(text: str, key: str) -> Any:
@@ -304,9 +363,12 @@ ALLOWED_INTENTS = {
     "search",
     "book",
     "reschedule",
+    "update_booking",
     "cancel",
+    "cancel_booking",
     "greeting",
     "thanks",
+    "goodbye",
     "alternative",
     "list",
     "correct",
@@ -328,6 +390,7 @@ RULE_GUARDED_INTENTS = {
     "booking_info",
     "booking_list",
     "cancel",
+    "cancel_booking",
     "correct",
     "cuisine_help",
     "date_clarification",
@@ -335,8 +398,10 @@ RULE_GUARDED_INTENTS = {
     "distance_info",
     "filter_info",
     "greeting",
+    "goodbye",
     "restaurant_info",
     "reschedule",
+    "update_booking",
     "table_view",
     "thanks",
     "unsupported",
@@ -656,8 +721,13 @@ class RuleBasedSlotExtractor:
         return match.group(1).upper() if match else None
 
     def _detect_intent(self, text: str, slots: dict[str, Any]) -> str:
-        if re.search(r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card|taxi|flight|fireworks?|dentist)\b", text):
+        if re.search(
+            r"\b(gun|weapon|firearm|knife|drugs?|passport|credit card|taxi|hotel|train|flight|fireworks?|dentist)\b",
+            text,
+        ):
             return "unsupported"
+        if re.search(r"\b(goodbye|bye|see you|see ya|farewell)\b", text):
+            return "goodbye"
         if re.search(r"^(hi|hello|hey|good morning|good afternoon|good evening)\b", text) and not re.search(
             r"\b(book|reserve|find|search|restaurants?|cuisines?|food|what to eat|suggest)\b",
             text,
@@ -818,6 +888,11 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
             people = 0
         if people > 0:
             valid["people"] = people
+    if "restaurant_name" in slots:
+        restaurant_name = re.sub(r"\s+", " ", str(slots["restaurant_name"]).strip().lower())
+        restaurant_name = re.sub(r"[^a-z0-9 '&.-]", "", restaurant_name)
+        if restaurant_name:
+            valid["restaurant_name"] = restaurant_name[:120]
     if "booking_reference" in slots:
         reference = str(slots["booking_reference"]).strip().upper()
         if re.fullmatch(r"(?:BK|SIM)-[A-Z0-9]{6}", reference):
@@ -890,8 +965,9 @@ def merge_llm_slots(
 class OptionalLLMSlotExtractor:
     """Strict JSON LLM extractor with rule-based fallback."""
 
-    def __init__(self, model_name: str = "google/flan-t5-small") -> None:
+    def __init__(self, model_name: str = "google/flan-t5-small", *, num_beams: int = 1) -> None:
         self.model_name = model_name
+        self.num_beams = max(1, int(num_beams))
         # Kept as an injectable test seam for existing callers. Normal inference
         # uses the tokenizer/model pair below rather than a Transformers pipeline.
         self._pipeline = None
@@ -939,7 +1015,7 @@ class OptionalLLMSlotExtractor:
         generation_kwargs = {
             "max_new_tokens": 128,
             "do_sample": False,
-            "num_beams": 4,
+            "num_beams": self.num_beams,
             "early_stopping": True,
             "repetition_penalty": 1.2,
         }
@@ -985,8 +1061,8 @@ class OptionalLLMSlotExtractor:
                 repair_success = True
 
             raw_intent = parsed.get("intent")
-            intent_is_valid = isinstance(raw_intent, str) and raw_intent in ALLOWED_INTENTS
-            candidate_intent = raw_intent if intent_is_valid else "unknown"
+            candidate_intent = canonicalize_model_intent(raw_intent)
+            intent_is_valid = candidate_intent in ALLOWED_INTENTS
             llm_slots = validate_llm_slots(parsed.get("slots", {}))
 
             rule_intent_confident = rule_result.intent != "unknown"

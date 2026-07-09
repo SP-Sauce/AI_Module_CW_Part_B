@@ -9,6 +9,7 @@ from typing import Any, Iterable
 
 from restaurant_assistant.dialogue_state import DialogueState
 from restaurant_assistant.llm_runtime import llm_backend_error
+from restaurant_assistant.nlg import contains_json_or_debug_leakage
 from restaurant_assistant.ranking import RankedRestaurant
 
 
@@ -78,7 +79,7 @@ class GroundedResponseGenerator:
         if not output:
             return None
         output = self._clean_llm_output(output)
-        if not output or self._looks_like_prompt_leak(output):
+        if not output or self._looks_like_prompt_leak(output) or contains_json_or_debug_leakage(output):
             return None
         return GenerationResult(text=output, used_llm=True, mode=f"transformers:{self.model_name}")
 
@@ -93,15 +94,28 @@ class GroundedResponseGenerator:
         lowered = text.lower()
         if text.startswith(("{", "[")):
             return True
+        if "{" in text or "}" in text:
+            return True
         leak_patterns = [
             r'"\s*user\s*"\s*:',
             r'"\s*assistant\s*"\s*:',
             r'"\s*timestamp\s*"\s*:',
             r'"\s*conversation_history\s*"\s*:',
+            r'"\s*(?:name|food|area|pricerange|address|postcode|phone|type|intent|slots)\s*"\s*:',
             r"\bstate\s*:",
             r"\bevidence\s*:",
             r"\bmissing slots\s*:",
             r"\bintent\s*:",
+            r"\bsource_id\b",
+            r"\bname_norm\b",
+            r"\bfood_norm\b",
+            r"\barea_norm\b",
+            r"\bpricerange_norm\b",
+            r"\bsimilarity\b",
+            r"\bscore\b",
+            r"\bdebug\b",
+            r"\bslot_model_name\b",
+            r"\bgeneration_mode\b",
         ]
         return any(re.search(pattern, lowered) for pattern in leak_patterns)
 

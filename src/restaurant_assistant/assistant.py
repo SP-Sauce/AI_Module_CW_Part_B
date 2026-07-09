@@ -21,8 +21,15 @@ from restaurant_assistant.date_utils import (
 )
 from restaurant_assistant.dialogue_state import BOOKING_SLOTS, DialogueState
 from restaurant_assistant.llm_generator import GroundedResponseGenerator
+from restaurant_assistant.nlg import NaturalLanguageGenerator, contains_json_or_debug_leakage, safe_user_text
 from restaurant_assistant.ranking import RankedRestaurant, rank_candidates
 from restaurant_assistant.retrieval import RestaurantRetriever, RetrievedRestaurant
+from restaurant_assistant.response_plan import (
+    ResponsePlan,
+    public_restaurant,
+    ranked_to_public_restaurants,
+    retrieved_to_public_restaurants,
+)
 from restaurant_assistant.slot_extraction import OptionalLLMSlotExtractor, RuleBasedSlotExtractor
 from restaurant_assistant.storage import BookingStore
 
@@ -55,10 +62,18 @@ class RestaurantAssistant:
         self.retriever = RestaurantRetriever().fit(self.restaurants)
         llm_enabled = self.settings.enable_llm if enable_llm is None else enable_llm
         self.llm_enabled = llm_enabled
-        self.slot_extractor = (
-            OptionalLLMSlotExtractor(self.settings.slot_model_name) if llm_enabled else RuleBasedSlotExtractor()
-        )
+        if llm_enabled:
+            try:
+                self.slot_extractor = OptionalLLMSlotExtractor(
+                    self.settings.slot_model_name,
+                    num_beams=self.settings.slot_num_beams,
+                )
+            except TypeError:
+                self.slot_extractor = OptionalLLMSlotExtractor(self.settings.slot_model_name)
+        else:
+            self.slot_extractor = RuleBasedSlotExtractor()
         self.generator = GroundedResponseGenerator(enable_llm=llm_enabled, model_name=self.settings.model_name)
+        self.nlg = NaturalLanguageGenerator()
         self.booking = BookingManager(store=booking_store, session_id=session_id, user_id=user_id)
 
     def process(self, user_message: str, *, debug: bool = False) -> AssistantResponse:
@@ -121,11 +136,30 @@ class RestaurantAssistant:
         if extraction.unsupported_slots or extraction.intent == "unsupported":
             pass
         elif effective_intent == "greeting":
-            generated = self.generator.generate(user_message, self.state, intent="greeting")
-            response = generated.text
-            generation_mode = generated.mode
+            response = self.nlg.generate(
+                ResponsePlan(
+                    dialogue_act="greeting",
+                    user_intent=effective_intent,
+                    constraints=self._current_constraints(),
+                )
+            )
+            generation_mode = "nlg"
         elif effective_intent == "thanks":
-            response = "You're welcome. I can help with the current session booking if you need to view, change or cancel it."
+            response = self.nlg.generate(
+                ResponsePlan(
+                    dialogue_act="thanks",
+                    user_intent=effective_intent,
+                    constraints=self._current_constraints(),
+                )
+            )
+        elif effective_intent == "goodbye":
+            response = self.nlg.generate(
+                ResponsePlan(
+                    dialogue_act="goodbye",
+                    user_intent=effective_intent,
+                    constraints=self._current_constraints(),
+                )
+            )
         elif effective_intent == "date_clarification":
             response = self._next_week_day_prompt()
         elif effective_intent == "cancel":
@@ -218,11 +252,17 @@ class RestaurantAssistant:
                     empty_message="I could not find restaurants in those cuisine categories in the loaded MultiWOZ records.",
                 )
             else:
-                response = self._format_ranked_list(
-                    ranked,
-                    empty_message="I could not find restaurants matching those filters in the loaded MultiWOZ records.",
-                    prefix="Matching restaurants:",
-                )
+                if extraction.intent == "table_view":
+                    response = self._format_restaurant_table(
+                        ranked,
+                        empty_message="I could not find restaurants matching those filters in the loaded MultiWOZ records.",
+                    )
+                else:
+                    response = self._format_ranked_list(
+                        ranked,
+                        empty_message="I could not find restaurants matching those filters in the loaded MultiWOZ records.",
+                        prefix="Matching restaurants:",
+                    )
         elif effective_intent == "booking_info":
             reference_response = self._resolve_requested_booking_reference(extraction.slots)
             if reference_response:
@@ -230,7 +270,7 @@ class RestaurantAssistant:
             else:
                 response = self._booking_info_response()
         elif effective_intent == "booking_list":
-            response = self._booking_list_response()
+            response = self._booking_list_response(table=extraction.intent == "table_view")
         elif effective_intent == "distance_info":
             restaurant = named_restaurant or self.state.selected_restaurant
             if named_restaurant:
@@ -304,8 +344,25 @@ class RestaurantAssistant:
                 if ranked and not ranked[0].missing_unmatched_constraints:
                     self.state.selected_restaurant = ranked[0].record
                 generated = self.generator.generate(user_message, self.state, ranked, intent="search")
-                response = generated.text
-                generation_mode = generated.mode
+                response_plan = ResponsePlan(
+                    dialogue_act=(
+                        "partial_match"
+                        if ranked and ranked[0].missing_unmatched_constraints
+                        else "single_recommendation" if ranked else "no_results"
+                    ),
+                    user_intent=effective_intent,
+                    constraints=self._current_constraints(),
+                    retrieved_restaurants=ranked_to_public_restaurants(ranked),
+                    selected_restaurant=public_restaurant(ranked[0].record) if ranked else public_restaurant(self.state.selected_restaurant),
+                    missing_constraints=list(ranked[0].missing_unmatched_constraints) if ranked else [],
+                    next_action="present_restaurant" if ranked else "suggest_adjustment",
+                )
+                response, generation_mode = self._grounded_generation_or_nlg(
+                    generated.text,
+                    generated.mode,
+                    response_plan,
+                    ranked,
+                )
         else:
             response = (
                 "I can only help with MultiWOZ restaurant search and restaurant booking records. "
@@ -313,16 +370,152 @@ class RestaurantAssistant:
             )
 
         turn_timestamp = turn_time.isoformat(timespec="seconds")
+        response_plan = self._fallback_response_plan(
+            extraction=extraction,
+            effective_intent=effective_intent,
+            retrieved=retrieved,
+            ranked=ranked,
+            response=response,
+        )
+        response, generation_mode = self._finalize_response(response_plan, response, generation_mode)
         self.state.add_turn(user_message, response, timestamp=turn_timestamp)
         return AssistantResponse(
             response=response,
-            debug=self._debug(extraction, effective_intent, retrieved, ranked, generation_mode, turn_timestamp, relative_resolution)
+            debug=self._debug(
+                extraction,
+                effective_intent,
+                retrieved,
+                ranked,
+                generation_mode,
+                turn_timestamp,
+                relative_resolution,
+                response_plan,
+            )
             if debug
             else {},
         )
 
     def reset(self) -> None:
         self.state.reset()
+
+    def _fallback_response_plan(
+        self,
+        *,
+        extraction: Any,
+        effective_intent: str,
+        retrieved: list[RetrievedRestaurant],
+        ranked: list[RankedRestaurant],
+        response: str,
+    ) -> ResponsePlan:
+        constraints = self._current_constraints()
+        public_ranked = ranked_to_public_restaurants(ranked)
+        selected = public_restaurant(self.state.selected_restaurant)
+        if extraction.unsupported_slots or extraction.intent == "unsupported":
+            return ResponsePlan(
+                dialogue_act="unsupported_request",
+                user_intent=effective_intent,
+                constraints=constraints,
+                selected_restaurant=selected,
+                next_action="explain_scope",
+                metadata={"message": response},
+            )
+        if effective_intent == "search":
+            if public_ranked:
+                dialogue_act = "partial_match" if ranked[0].missing_unmatched_constraints else "single_recommendation"
+                return ResponsePlan(
+                    dialogue_act=dialogue_act,
+                    user_intent=effective_intent,
+                    constraints=constraints,
+                    retrieved_restaurants=public_ranked,
+                    selected_restaurant=public_restaurant(ranked[0].record),
+                    missing_constraints=list(ranked[0].missing_unmatched_constraints),
+                    next_action="present_restaurant",
+                )
+            if not self.state.has_search_constraint():
+                return ResponsePlan(
+                    dialogue_act="booking_missing_details",
+                    user_intent=effective_intent,
+                    constraints=constraints,
+                    missing_constraints=self.state.missing_search_slots(),
+                    next_action="ask_clarification",
+                )
+            return ResponsePlan(
+                dialogue_act="no_results",
+                user_intent=effective_intent,
+                constraints=constraints,
+                retrieved_restaurants=retrieved_to_public_restaurants(retrieved),
+                selected_restaurant=selected,
+                next_action="suggest_adjustment",
+            )
+        if effective_intent in {"list", "alternative"}:
+            prefix = "Other matching options:" if effective_intent == "alternative" else "Matching restaurants:"
+            return ResponsePlan(
+                dialogue_act="table_view" if extraction.intent == "table_view" else ("exact_match_list" if public_ranked else "no_results"),
+                user_intent=effective_intent,
+                constraints=constraints,
+                retrieved_restaurants=public_ranked,
+                alternatives=public_ranked,
+                selected_restaurant=public_restaurant(ranked[0].record) if ranked else selected,
+                next_action="present_restaurants",
+                metadata={"prefix": prefix, "empty_message": response if not public_ranked else ""},
+            )
+        return ResponsePlan(
+            dialogue_act="direct_message",
+            user_intent=effective_intent,
+            constraints=constraints,
+            retrieved_restaurants=public_ranked,
+            selected_restaurant=selected,
+            metadata={"message": response},
+        )
+
+    def _finalize_response(
+        self,
+        plan: ResponsePlan,
+        candidate_response: str,
+        generation_mode: str,
+    ) -> tuple[str, str]:
+        if contains_json_or_debug_leakage(candidate_response):
+            plan.warnings.append("discarded_candidate_response_with_json_or_debug_leakage")
+            return self.nlg.generate(plan), "nlg:safe_fallback"
+        return safe_user_text(candidate_response), generation_mode
+
+    def _grounded_generation_or_nlg(
+        self,
+        candidate_response: str,
+        generation_mode: str,
+        plan: ResponsePlan,
+        ranked: list[RankedRestaurant],
+    ) -> tuple[str, str]:
+        if contains_json_or_debug_leakage(candidate_response):
+            plan.warnings.append("discarded_candidate_response_with_json_or_debug_leakage")
+            return self.nlg.generate(plan), "nlg:safe_fallback"
+        if generation_mode.startswith("transformers:") and not self._response_mentions_only_ranked_restaurants(
+            candidate_response,
+            ranked,
+        ):
+            plan.warnings.append("discarded_ungrounded_llm_response")
+            return self.nlg.generate(plan), "nlg:grounded_fallback"
+        return candidate_response, generation_mode
+
+    def _response_mentions_only_ranked_restaurants(
+        self,
+        candidate_response: str,
+        ranked: list[RankedRestaurant],
+    ) -> bool:
+        if not ranked:
+            return False
+        text = candidate_response.casefold()
+        allowed_names = {
+            str(item.record.get("name", "")).casefold()
+            for item in ranked
+            if item.record.get("name")
+        }
+        mentioned_names = {
+            str(record.get("name", "")).casefold()
+            for record in self.restaurants
+            if record.get("name") and str(record.get("name", "")).casefold() in text
+        }
+        return bool(mentioned_names) and mentioned_names <= allowed_names
 
     def _select_restaurant_if_needed(self, user_message: str) -> tuple[list[RetrievedRestaurant], list[RankedRestaurant]]:
         if self.state.selected_restaurant:
@@ -458,18 +651,38 @@ class RestaurantAssistant:
             return first_id == second_id
         return str(first.get("name", "")).lower() == str(second.get("name", "")).lower()
 
+    def _current_constraints(self) -> dict[str, Any]:
+        return {
+            slot: getattr(self.state, slot)
+            for slot in ("food", "area", "pricerange", "day", "booking_date", "time", "people")
+            if getattr(self.state, slot) not in (None, "")
+        }
+
     def _format_ranked_list(self, ranked: list[RankedRestaurant], *, empty_message: str, prefix: str) -> str:
-        if not ranked:
-            return empty_message
-        parts = []
-        for index, item in enumerate(ranked, start=1):
-            record = item.record
-            name = record.get("name", "unknown restaurant")
-            food = record.get("food", "unknown food")
-            area = record.get("area", "unknown area")
-            price = record.get("pricerange", "unknown price")
-            parts.append(f"{index}. {name} ({price} {food}, {area})")
-        return prefix + " " + " ".join(parts)
+        restaurants = ranked_to_public_restaurants(ranked)
+        plan = ResponsePlan(
+            dialogue_act="exact_match_list" if restaurants else "no_results",
+            user_intent="list",
+            constraints=self._current_constraints(),
+            retrieved_restaurants=restaurants,
+            alternatives=restaurants,
+            selected_restaurant=public_restaurant(ranked[0].record) if ranked else None,
+            metadata={"empty_message": empty_message, "prefix": prefix},
+        )
+        return self.nlg.generate(plan)
+
+    def _format_restaurant_table(self, ranked: list[RankedRestaurant], *, empty_message: str) -> str:
+        restaurants = ranked_to_public_restaurants(ranked)
+        plan = ResponsePlan(
+            dialogue_act="table_view" if restaurants else "no_results",
+            user_intent="table_view",
+            constraints=self._current_constraints(),
+            retrieved_restaurants=restaurants,
+            alternatives=restaurants,
+            selected_restaurant=public_restaurant(ranked[0].record) if ranked else None,
+            metadata={"empty_message": empty_message},
+        )
+        return self.nlg.generate(plan)
 
     def _dish_preference_response(
         self,
@@ -478,17 +691,22 @@ class RestaurantAssistant:
         ranked: list[RankedRestaurant],
     ) -> str:
         dish_text = dish or "that dish"
-        cuisine_text = ", ".join(food.title() for food in foods)
-        lead = (
-            f"I do not have dish-level menu data for {dish_text}, but it can fit these cuisine categories: "
-            f"{cuisine_text}."
+        restaurants = ranked_to_public_restaurants(ranked)
+        plan = ResponsePlan(
+            dialogue_act="dish_preference",
+            user_intent="dish_preference",
+            constraints=self._current_constraints(),
+            retrieved_restaurants=restaurants,
+            alternatives=restaurants,
+            selected_restaurant=public_restaurant(ranked[0].record) if ranked else None,
+            metadata={
+                "dish": dish_text,
+                "foods": foods,
+                "prefix": "Matching restaurants:",
+                "empty_message": "I could not find matching restaurants for those cuisine categories in the loaded MultiWOZ records.",
+            },
         )
-        list_text = self._format_ranked_list(
-            ranked,
-            empty_message="I could not find matching restaurants for those cuisine categories in the loaded MultiWOZ records.",
-            prefix="Matching restaurants:",
-        )
-        return f"{lead}\n{list_text}"
+        return self.nlg.generate(plan)
 
     def _cuisine_group_response(
         self,
@@ -499,14 +717,22 @@ class RestaurantAssistant:
         prefix: str,
         empty_message: str,
     ) -> str:
-        group_text = group or "That cuisine group"
-        cuisine_text = ", ".join(food.title() for food in foods)
-        lead = (
-            f"{group_text} is not a direct cuisine label in the loaded MultiWOZ records, "
-            f"so I searched these supported categories: {cuisine_text}."
+        restaurants = ranked_to_public_restaurants(ranked)
+        plan = ResponsePlan(
+            dialogue_act="cuisine_group",
+            user_intent="list",
+            constraints=self._current_constraints(),
+            retrieved_restaurants=restaurants,
+            alternatives=restaurants,
+            selected_restaurant=public_restaurant(ranked[0].record) if ranked else None,
+            metadata={
+                "group": group or "That cuisine group",
+                "foods": foods,
+                "prefix": prefix,
+                "empty_message": empty_message,
+            },
         )
-        list_text = self._format_ranked_list(ranked, empty_message=empty_message, prefix=prefix)
-        return f"{lead}\n{list_text}"
+        return self.nlg.generate(plan)
 
     def _has_new_booking_details(self, slots: dict[str, Any]) -> bool:
         return any(slot in slots for slot in BOOKING_SLOTS)
@@ -538,12 +764,42 @@ class RestaurantAssistant:
             slots.pop("food", None)
             self.state.food = None
             self.state.selected_restaurant = None
+        if self._is_standalone_price_search(text, slots):
+            if "food" not in slots:
+                self.state.food = None
+            if "area" not in slots:
+                self.state.area = None
+            self.state.selected_restaurant = None
         if broad_all_request and any(slot in slots for slot in ("food", "area", "pricerange")) and not not_just_request:
             for slot in ("food", "area", "pricerange"):
                 if slot not in slots:
                     setattr(self.state, slot, None)
             self.state.selected_restaurant = None
         return excluded_food
+
+    def _is_standalone_price_search(self, normalized_text: str, slots: dict[str, Any]) -> bool:
+        if "pricerange" not in slots:
+            return False
+        if "food" in slots:
+            return False
+        if not (self.state.food or self.state.area):
+            return False
+        continuation = re.search(
+            r"\b(same|that|those|there|it|them|ones|other|another|alternative|alternatives|more|still|nearby)\b",
+            normalized_text,
+        )
+        if continuation:
+            return False
+        previous_food = re.escape(str(self.state.food or "").lower())
+        if previous_food and re.search(rf"\b{previous_food}\b", normalized_text):
+            return False
+        return bool(
+            re.search(
+                r"\b(?:a|an|any|some|good|find|search|recommend|show|list|what\s+is|what's)\b.*\brestaurants?\b"
+                r"|\brestaurants?\b",
+                normalized_text,
+            )
+        )
 
     def _effective_intent(
         self,
@@ -698,7 +954,7 @@ class RestaurantAssistant:
             f"for {self.state.people} people."
         )
 
-    def _booking_list_response(self) -> str:
+    def _booking_list_response(self, *, table: bool = False) -> str:
         bookings = self.booking.list_bookings()
         if not bookings and self.state.booking_reference:
             restaurant = self.state.booking_restaurant or self.state.selected_restaurant or {}
@@ -715,17 +971,26 @@ class RestaurantAssistant:
             ]
         if not bookings:
             if self.booking.user_id is not None:
-                return "I do not have any booking records for your account yet."
-            return "I do not have any booking records for this current session."
-        parts = []
-        for index, booking in enumerate(bookings, start=1):
-            date_text = format_booking_date(booking.get("booking_date"), booking.get("day"))
-            parts.append(
-                f"{index}. {booking.get('reference')}: {booking.get('restaurant_name')} on {date_text} "
-                f"at {booking.get('time')} for {booking.get('people')} people ({booking.get('status')})"
-            )
+                empty_message = "I do not have any booking records for your account yet."
+            else:
+                empty_message = "I do not have any booking records for this current session."
+        else:
+            empty_message = ""
         label = "Current account booking records" if self.booking.user_id is not None else "Current session booking records"
-        return f"{label}: " + " ".join(parts)
+        return self.nlg.generate(
+            ResponsePlan(
+                dialogue_act="booking_list",
+                user_intent="booking_list",
+                constraints=self._current_constraints(),
+                selected_restaurant=public_restaurant(self.state.booking_restaurant or self.state.selected_restaurant),
+                metadata={
+                    "bookings": bookings,
+                    "label": label,
+                    "empty_message": empty_message,
+                    "table": table,
+                },
+            )
+        )
 
     def _bulk_cancel_exception(
         self,
@@ -806,27 +1071,14 @@ class RestaurantAssistant:
         return bool(has_another_booking and has_same_details)
 
     def _restaurant_detail_response(self, restaurant: dict[str, Any]) -> str:
-        name = restaurant.get("name", "the selected restaurant")
-        descriptors = []
-        if restaurant.get("pricerange"):
-            descriptors.append(str(restaurant["pricerange"]))
-        if restaurant.get("food"):
-            descriptors.append(str(restaurant["food"]))
-        detail = str(name)
-        if descriptors:
-            detail += " (" + " ".join(descriptors) + ")"
-        if restaurant.get("area"):
-            detail += f" in the {restaurant['area']} area"
-        fields = []
-        if restaurant.get("address"):
-            fields.append(f"Address: {restaurant['address']}")
-        if restaurant.get("postcode"):
-            fields.append(f"Postcode: {restaurant['postcode']}")
-        if restaurant.get("phone"):
-            fields.append(f"Phone: {restaurant['phone']}")
-        if fields:
-            detail += ". " + ". ".join(fields)
-        return detail + "."
+        return self.nlg.generate(
+            ResponsePlan(
+                dialogue_act="restaurant_details",
+                user_intent="restaurant_info",
+                constraints=self._current_constraints(),
+                selected_restaurant=public_restaurant(restaurant),
+            )
+        )
 
     def _distance_info_response(self, restaurant: dict[str, Any] | None, target_area: str | None) -> str:
         limitation = (
@@ -859,19 +1111,23 @@ class RestaurantAssistant:
         )
 
     def _filter_info_response(self) -> str:
-        return (
-            "You can filter restaurants by area: centre, north, south, east and west. "
-            "You can also filter by price range: cheap, moderate or expensive, and by cuisine such as Indian, Turkish, Italian or British."
+        return self.nlg.generate(
+            ResponsePlan(
+                dialogue_act="area_filter_help",
+                user_intent="filter_info",
+                constraints=self._current_constraints(),
+            )
         )
 
     def _cuisine_help_response(self) -> str:
         cuisines = sorted({str(record.get("food", "")).strip() for record in self.restaurants if record.get("food")})
-        if not cuisines:
-            return "I do not have cuisine categories loaded yet."
-        display = ", ".join(cuisine.title() for cuisine in cuisines[:24])
-        return (
-            "You can search by cuisine categories in the loaded MultiWOZ restaurant data. "
-            f"Available cuisines include: {display}."
+        return self.nlg.generate(
+            ResponsePlan(
+                dialogue_act="cuisine_help",
+                user_intent="cuisine_help",
+                constraints=self._current_constraints(),
+                metadata={"cuisines": cuisines},
+            )
         )
 
     def _unsupported_slot_response(self, unsupported_slots: dict[str, str]) -> str:
@@ -909,6 +1165,7 @@ class RestaurantAssistant:
         generation_mode: str,
         turn_timestamp: str,
         relative_resolution: dict[str, Any] | None,
+        response_plan: ResponsePlan,
     ) -> dict[str, Any]:
         return {
             "turn_timestamp": turn_timestamp,
@@ -935,5 +1192,17 @@ class RestaurantAssistant:
                 }
                 for item in ranked
             ],
+            "response_plan": {
+                "dialogue_act": response_plan.dialogue_act,
+                "user_intent": response_plan.user_intent,
+                "constraints": response_plan.constraints,
+                "retrieved_restaurants": response_plan.retrieved_restaurants,
+                "selected_restaurant": response_plan.selected_restaurant,
+                "missing_constraints": response_plan.missing_constraints,
+                "alternatives": response_plan.alternatives,
+                "next_action": response_plan.next_action,
+                "warnings": response_plan.warnings,
+                "internal_notes": response_plan.internal_notes,
+            },
             "generation_mode": generation_mode,
         }

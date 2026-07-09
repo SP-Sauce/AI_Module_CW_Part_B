@@ -11,7 +11,8 @@ user message
 -> rule validation and safety fallback
 -> dialogue state tracking
 -> TF-IDF retrieval and preference-fit ranking
--> grounded LLM response generation
+-> ResponsePlan construction
+-> controlled NLG response with leakage checks
 -> booking record update
 ```
 
@@ -53,8 +54,12 @@ python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eva
 
 The slot evaluation output includes `llm_attempted_cases`,
 `llm_parse_success_cases`, `llm_parse_failed_cases` and
-`fallback_used_cases`, plus raw-output previews in case details. This separates
-model-load failures from invalid model output and safe rule fallback.
+`fallback_used_cases`, plus raw-output previews in case details. It also
+separates strict raw model metrics from final repaired/fallback metrics:
+`strict_json_parse_success_rate`, `raw_parse_error_count`,
+`strict_intent_accuracy`, `strict_slot_precision`, `strict_slot_recall`,
+`strict_slot_f1`, then `final_intent_accuracy`, `final_slot_precision`,
+`final_slot_recall` and `final_slot_f1`.
 
 Inspect raw model output before running the full evaluation matrix:
 
@@ -62,7 +67,26 @@ Inspect raw model output before running the full evaluation matrix:
 python scripts/debug_llm_slot_outputs.py --slot-model-name google/flan-t5-small --limit 5
 ```
 
-## QLoRA Fine-Tuning
+## Strict Kaggle LoRA Fine-Tuning
+
+The current recommended stronger extractor is the Kaggle LoRA path:
+
+```powershell
+python scripts/build_slot_training_data.py
+python scripts/train_strict_slot_extractor_lora.py --base-model google/flan-t5-base --train-file data/training/slot_train_strict.jsonl --dev-file data/training/slot_dev_strict.jsonl --output-dir models/slot-extractor-lora-strict --max-steps 800
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-lora-strict --report-path reports/evaluation_lora_strict_eval.json
+```
+
+Use `notebooks/kaggle_train_strict_slot_extractor.md` for exact Kaggle cells.
+This path trains the model to emit exactly one minified JSON object using the
+same prompt used at runtime. It avoids copying exact evaluation fixture text and
+records strict raw JSON dev metrics in
+`models/slot-extractor-lora-strict/training_metadata.json`.
+
+The NLG safety boundary remains active after training. The stronger extractor
+should reduce raw parse failures; it is not used to hide them.
+
+## Legacy QLoRA Fine-Tuning
 
 The optional QLoRA script fine-tunes the JSON slot extractor, not the whole
 booking system. `google/flan-t5-small` is retained as the lightweight prompted
@@ -91,7 +115,7 @@ python scripts/run_chat.py --enable-llm --slot-model-name models/slot-extractor-
 python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora
 ```
 
-The stronger optional Colab experiment adapts `google/flan-t5-base` separately,
+The stronger older GPU experiment adapts `google/flan-t5-base` separately,
 so it does not overwrite the small-model adapter:
 
 ```powershell
@@ -113,7 +137,7 @@ structurally reliable: strict parsing, constrained repair, weak-repair
 detection, slot validation, trusted-intent/slot checks and rule-based fallback
 remain active for both adapter sizes.
 
-4-bit QLoRA normally requires a CUDA-capable Linux, WSL or Colab environment.
+4-bit QLoRA normally requires a CUDA-capable Linux, WSL, Kaggle or Colab environment.
 On CPU-only machines, use `--no-4bit` for a small LoRA smoke test, or keep the
 base LLM path and describe QLoRA as implemented optional fine-tuning.
 

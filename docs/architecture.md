@@ -8,7 +8,8 @@ User message
 -> dialogue state update
 -> restaurant retrieval
 -> preference-fit ranking
--> grounded response generation
+-> ResponsePlan construction
+-> deterministic natural-language generation and safety guard
 -> booking-state update
 -> SQLite session and booking persistence in the web app
 ```
@@ -25,6 +26,23 @@ produce compact JSON intent/slot output, then validates and merges that output
 with the same rule safeguards. It supports food type, area, price range, day,
 time and number of people.
 
+The strict LoRA training path uses the same inference prompt as runtime:
+
+```text
+Task: Extract the restaurant assistant intent and slots.
+Return only one valid minified JSON object.
+Do not explain.
+Do not use markdown.
+Allowed intents: search, list, restaurant_info, book, update_booking, cancel_booking, booking_list, greeting, thanks, goodbye, unsupported.
+Allowed slots: food, food_candidates, cuisine_group, area, pricerange, day, time, people, restaurant_name, booking_reference.
+User: <USER_MESSAGE>
+JSON:
+```
+
+Strict model labels such as `update_booking` and `cancel_booking` are mapped
+back to the assistant's internal `reschedule` and `cancel` labels after raw LLM
+metrics are recorded.
+
 `dialogue_state.py` stores session-level context. The state object has food,
 area, price range, booking day, concrete booking date, booking time, people,
 selected restaurant, booking status, booking reference and conversation history.
@@ -37,10 +55,28 @@ where possible, with TF-IDF as fallback and tie-breaker.
 matches plus text similarity. It returns matched constraints, unmatched
 constraints and a short explanation.
 
+`response_plan.py` defines the structured response boundary after state updates
+and retrieval. Plans carry the dialogue act, user intent, constraints, public
+restaurant evidence, selected restaurant, missing constraints, alternatives,
+next action and debug-only warnings/internal notes.
+
+`nlg.py` converts response plans into customer-facing text with deterministic
+phrasing. It rejects JSON-like text, raw database/debug fields and ungrounded
+optional generation before a message is returned to the user.
+
 `llm_generator.py` produces grounded responses. If Hugging Face Transformers and
 a local/downloadable model are available, it can use a small encoder-decoder
 model such as `google/flan-t5-small`. Otherwise it uses safe templates. Both
-paths are instructed to use only retrieved restaurant evidence.
+paths are instructed to use only retrieved restaurant evidence, and optional
+LLM output is discarded when it fails the response safety checks.
+
+`scripts/build_slot_training_data.py` creates strict train/dev JSONL files for
+the slot extractor without copying exact evaluation fixture text. Targets are
+canonical minified JSON strings. `scripts/train_strict_slot_extractor_lora.py`
+is the Kaggle-friendly LoRA training path for `google/flan-t5-base`; it evaluates
+raw generated JSON on the dev set before repair/fallback. `scripts/evaluate.py`
+therefore reports raw strict model metrics separately from final repaired and
+fallback metrics.
 
 `scripts/train_qlora_slot_extractor.py` is an optional PEFT/QLoRA training path
 for the JSON slot-extraction model. It saves adapters under `models/`, which can

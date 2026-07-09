@@ -1,0 +1,330 @@
+{"input":"i fancy noodles, find somewhere in the north mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"chinese\"}}"}
+{"input":"change BK-X9Y8Z7 to 18:00 mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"time\":\"18:00\"}}"}
+{"input":"change BK-X9Y8Z7 to 17:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"time\":\"17:30\"}}"}
+{"input":"please looking for korean, low cost, east, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"korean\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you weather","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"please move booking BK-M4N5P6 to sunday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"sunday\"}}"}
+{"input":"i need lebanese food northern part and expensive please ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"}}"}
+{"input":"could you please find a not too expensive british resurant in the west side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"british\",\"pricerange\":\"moderate\"}}"}
+{"input":"book it for sunday at 20:30 for 6 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":6,\"time\":\"20:30\"}}"}
+{"input":"mate can you look for mediterranean somewhere not too expensive near west side ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"mediterranean\",\"pricerange\":\"moderate\"}}"}
+{"input":"i need british food south and low cost please please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"british\",\"pricerange\":\"cheap\"}}"}
+{"input":"hey mate please","target":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"input":"list all chinese resturants in the north","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"food\":\"chinese\"}}"}
+{"input":"tell me about anatolia please please","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"anatolia\"}}"}
+{"input":"sushi please not too pricey around southern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"japanese\",\"pricerange\":\"moderate\"}}"}
+{"input":"please what is a upmarket restaurant you can find","target":"{\"intent\":\"search\",\"slots\":{\"pricerange\":\"expensive\"}}"}
+{"input":"mate can you look for indian somewhere mid range near south side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"moderate\"}}"}
+{"input":"give me advice about legal advice ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"i need lebanese food west side and not too expensive please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"lebanese\",\"pricerange\":\"moderate\"}}"}
+{"input":"mate can you look for korean somewhere cheap near south mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"korean\",\"pricerange\":\"cheap\"}}"}
+{"input":"pasta please not too pricey around northern part mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"italian\",\"pricerange\":\"moderate\"}}"}
+{"input":"please mate can you look for spanish somewhere cheap near centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"spanish\",\"pricerange\":\"cheap\"}}"}
+{"input":"mate can you look for vegetarian somewhere fairly priced near north side mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"}}"}
+{"input":"mate can you look for turkish somewhere cheap near north mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"turkish\",\"pricerange\":\"cheap\"}}"}
+{"input":"move booking BK-X9Y8Z7 to tuesday ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"day\":\"tuesday\"}}"}
+{"input":"please what lebanese places are there","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"lebanese\"}}"}
+{"input":"please show me a cheap place for thai in centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"thai\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you please find a cheap japanese resturant in the south please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"actually make it for 2 people ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"people\":2}}"}
+{"input":"please looking for french, high end, middle of town, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"french\",\"pricerange\":\"expensive\"}}"}
+{"input":"move booking SIM-ROFNYN to monday mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"monday\"}}"}
+{"input":"please looking for chinese, low cost, city centre, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you list the budget resturants near west side mate","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"pricerange\":\"cheap\"}}"}
+{"input":"what is the address ta","target":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"input":"please find me moderate grub, vegetarian, around the east side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"}}"}
+{"input":"booking history please ta","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"please delete SIM-Z8L84T mate","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\"}}"}
+{"input":"move booking SIM-Z8L84T to thursday mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"day\":\"thursday\"}}"}
+{"input":"sushi please not too pricey around southern part mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"japanese\",\"pricerange\":\"moderate\"}}"}
+{"input":"i need vegetarian food east and low cost please mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you list the budget resurants near south side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"pricerange\":\"cheap\"}}"}
+{"input":"good morning ta","target":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"input":"change BK-M4N5P6 to 20:30 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"time\":\"20:30\"}}"}
+{"input":"could you phone number for pizza hut city centre?","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"pizza hut city centre\"}}"}
+{"input":"book it for sunday at 18:00 for 1 people ta","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":1,\"time\":\"18:00\"}}"}
+{"input":"i fancy veggie, find somewhere in the east","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\"}}"}
+{"input":"change BK-M4N5P6 to 21:00 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"time\":\"21:00\"}}"}
+{"input":"what bookings do i have","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"what is the latest medical advice mate","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you find south asian resturants in the east","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"input":"move booking BK-Q7W8E9 to wednesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"day\":\"wednesday\"}}"}
+{"input":"move booking BK-X9Y8Z7 to tuesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"day\":\"tuesday\"}}"}
+{"input":"please find me cheap grub, lebanese, around the south","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"lebanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you low cost french city centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"french\",\"pricerange\":\"cheap\"}}"}
+{"input":"hello restaurant assistant ta","target":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"input":"low cost mediterranean south please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"mediterranean\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you please find a expensive asian oriental resturant in the northern part please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"asian oriental\",\"pricerange\":\"expensive\"}}"}
+{"input":"change BK-M4N5P6 to 20:00 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"time\":\"20:00\"}}"}
+{"input":"please move booking BK-M4N5P6 to friday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"friday\"}}"}
+{"input":"could you book it for monday at 20:30 for 2 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"people\":2,\"time\":\"20:30\"}}"}
+{"input":"could you give me the full list for thai city center","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"thai\"}}"}
+{"input":"change the time please","target":"{\"intent\":\"update_booking\",\"slots\":{}}"}
+{"input":"phone number for nandos city centre? ta","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"nandos city centre\"}}"}
+{"input":"list all southeast asian places please","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"]}}"}
+{"input":"veggie please not too pricey around eastern part ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"}}"}
+{"input":"please show me a cheap place for italian in south","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"italian\",\"pricerange\":\"cheap\"}}"}
+{"input":"i fancy veggie, find somewhere in the east mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\"}}"}
+{"input":"could you list the reasonable resturants near center ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you i need weather information","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"give me the full list for japanese west side ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"food\":\"japanese\"}}"}
+{"input":"booking history please please","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"book it for saturday at 21:00 for 4 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"people\":4,\"time\":\"21:00\"}}"}
+{"input":"i need chinese food east side and moderate please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"chinese\",\"pricerange\":\"moderate\"}}"}
+{"input":"what is the latest financial advice please","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"book it for monday at 12:30 for 2 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"people\":2,\"time\":\"12:30\"}}"}
+{"input":"what is the address of ali baba mate","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"ali baba\"}}"}
+{"input":"could you as a table show my bookings","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"book it for friday at 21:00 for 1 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"people\":1,\"time\":\"21:00\"}}"}
+{"input":"change SIM-Z8L84T to 18:30 please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"time\":\"18:30\"}}"}
+{"input":"veggie please not too pricey around middle of town ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you curry please not too pricey around middle of town","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"indian\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you noodles please not too pricey around northern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"chinese\",\"pricerange\":\"moderate\"}}"}
+{"input":"please book it for wednesday at 19:30 for 6 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"people\":6,\"time\":\"19:30\"}}"}
+{"input":"give me the full list for mediterranean north side ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"food\":\"mediterranean\"}}"}
+{"input":"i no longer need reservation SIM-ROFNYN","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\"}}"}
+{"input":"what is the latest train ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"show me a cheap place for vegetarian in south ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"vegetarian\",\"pricerange\":\"cheap\"}}"}
+{"input":"please taxi","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"please i fancy kebab, find somewhere in the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"turkish\"}}"}
+{"input":"could you reserve nandos city centre for 2 people","target":"{\"intent\":\"book\",\"slots\":{\"people\":2,\"restaurant_name\":\"nandos city centre\"}}"}
+{"input":"book a table at hakka tomorrow 7pm","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"restaurant_name\":\"hakka\",\"time\":\"19:00\"}}"}
+{"input":"book it for thursday at 17:30 for 5 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":5,\"time\":\"17:30\"}}"}
+{"input":"book a table at anatolia tomorrow 7pm","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"restaurant_name\":\"anatolia\",\"time\":\"19:00\"}}"}
+{"input":"nice one thanks ta","target":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"input":"what is the latest legal advice","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"please tell me about it","target":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"input":"please what french places are there","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"food\":\"french\"}}"}
+{"input":"looking for indian, high end, middle of town, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"indian\",\"pricerange\":\"expensive\"}}"}
+{"input":"please i no longer need reservation BK-A1B2C3","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\"}}"}
+{"input":"mate can you look for spanish somewhere cheap near centre please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"spanish\",\"pricerange\":\"cheap\"}}"}
+{"input":"find me cheap grub, thai, around the west","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"thai\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you please find a cheap vegetarian resturant in the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"vegetarian\",\"pricerange\":\"cheap\"}}"}
+{"input":"show me all upmarket lebanese options please","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"lebanese\"}}"}
+{"input":"not too expensive italian west side please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"italian\",\"pricerange\":\"moderate\"}}"}
+{"input":"no i meant friday ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"day\":\"friday\"}}"}
+{"input":"find me cheap grub, japanese, around the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"book it for wednesday at 12:30 for 1 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"people\":1,\"time\":\"12:30\"}}"}
+{"input":"please hello","target":"{\"intent\":\"greeting\",\"slots\":{}}"}
+{"input":"book it for tuesday at 12:30 for 5 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":5,\"time\":\"12:30\"}}"}
+{"input":"what thai places are there please","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"food\":\"thai\"}}"}
+{"input":"please find me cheap grub, thai, around the west","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"thai\",\"pricerange\":\"cheap\"}}"}
+{"input":"i no longer need reservation BK-M4N5P6","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\"}}"}
+{"input":"please book me a hotel mate","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"looking for thai, reasonable, center, ta please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"thai\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you move booking SIM-Z8L84T to friday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"day\":\"friday\"}}"}
+{"input":"change SIM-ROFNYN to 20:30 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"time\":\"20:30\"}}"}
+{"input":"book it for thursday at 21:00 for 5 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":5,\"time\":\"21:00\"}}"}
+{"input":"change BK-X9Y8Z7 to 19:30 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"time\":\"19:30\"}}"}
+{"input":"book it for tuesday at 20:30 for 5 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":5,\"time\":\"20:30\"}}"}
+{"input":"sushi please not too pricey around middle of town ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"japanese\",\"pricerange\":\"moderate\"}}"}
+{"input":"book it for today at 20:30 for 2 people ta","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":2,\"time\":\"20:30\"}}"}
+{"input":"book it for tomorrow at 19:30 for 3 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"people\":3,\"time\":\"19:30\"}}"}
+{"input":"could you move booking SIM-Z8L84T to wednesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"day\":\"wednesday\"}}"}
+{"input":"what is the latest flights please","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"curry please not too pricey around middle of town mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"indian\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you change SIM-ROFNYN to 18:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"time\":\"18:30\"}}"}
+{"input":"looking for lebanese, fancy, eastern part, ta ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"}}"}
+{"input":"change BK-Q7W8E9 to 18:00 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"time\":\"18:00\"}}"}
+{"input":"find me cheap grub, turkish, around the east","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"turkish\",\"pricerange\":\"cheap\"}}"}
+{"input":"show me a pricey place for italian in western part mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"italian\",\"pricerange\":\"expensive\"}}"}
+{"input":"what is a reasonable resturant you can find","target":"{\"intent\":\"search\",\"slots\":{\"pricerange\":\"moderate\"}}"}
+{"input":"book it for tomorrow at 19:30 for 3 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"people\":3,\"time\":\"19:30\"}}"}
+{"input":"could you move booking BK-M4N5P6 to monday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"monday\"}}"}
+{"input":"book it for monday at 21:00 for 3 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"people\":3,\"time\":\"21:00\"}}"}
+{"input":"could you i no longer need reservation BK-M4N5P6","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\"}}"}
+{"input":"book it for tuesday at 21:00 for 6 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":6,\"time\":\"21:00\"}}"}
+{"input":"move booking SIM-ROFNYN to thursday please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"thursday\"}}"}
+{"input":"please change BK-Q7W8E9 to 20:00","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"time\":\"20:00\"}}"}
+{"input":"book it for thursday at 19:30 for 2 people ta","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":2,\"time\":\"19:30\"}}"}
+{"input":"could you change SIM-ROFNYN to 20:00","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"time\":\"20:00\"}}"}
+{"input":"any thai places in the northern part that are expensive mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"thai\",\"pricerange\":\"expensive\"}}"}
+{"input":"book me a british restaurant for four please","target":"{\"intent\":\"book\",\"slots\":{\"food\":\"british\",\"people\":4}}"}
+{"input":"book it for tuesday at 18:30 for 1 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":1,\"time\":\"18:30\"}}"}
+{"input":"expensive vegetarian northern part please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"vegetarian\",\"pricerange\":\"expensive\"}}"}
+{"input":"where is that restaurant","target":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"input":"list all middle eastern places please mate","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"input":"book me a turkish restaurant for four mate","target":"{\"intent\":\"book\",\"slots\":{\"food\":\"turkish\",\"people\":4}}"}
+{"input":"what is the address of ask restaurant mate","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"ask restaurant\"}}"}
+{"input":"book it for friday at 12:30 for 8 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"people\":8,\"time\":\"12:30\"}}"}
+{"input":"curry please not too pricey around eastern part please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"indian\",\"pricerange\":\"moderate\"}}"}
+{"input":"please find me not too expensive grub, french, around the west side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"french\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you any italian places in the north that are low cost","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"italian\",\"pricerange\":\"cheap\"}}"}
+{"input":"any british places in the southern part that are upmarket","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"british\",\"pricerange\":\"expensive\"}}"}
+{"input":"book it for tuesday at 19:00 for 2 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":2,\"time\":\"19:00\"}}"}
+{"input":"could you mate can you look for lebanese somewhere upmarket near southern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"}}"}
+{"input":"book it for tuesday at 19:30 for 3 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":3,\"time\":\"19:30\"}}"}
+{"input":"could you reschedule the booking","target":"{\"intent\":\"update_booking\",\"slots\":{}}"}
+{"input":"move booking SIM-ROFNYN to monday please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"monday\"}}"}
+{"input":"could you find south asian restaurants in the south ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"input":"what is the latest medical advice ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"book it for tuesday at 12:30 for 5 people ta","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":5,\"time\":\"12:30\"}}"}
+{"input":"could you cheers","target":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"input":"could you i need train information","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"change BK-A1B2C3 to 19:30 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"19:30\"}}"}
+{"input":"could you list the reasonable resturants near south side please","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"pricerange\":\"moderate\"}}"}
+{"input":"move booking BK-Q7W8E9 to tuesday mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"day\":\"tuesday\"}}"}
+{"input":"please weather","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you book it for wednesday at 17:30 for 2 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"people\":2,\"time\":\"17:30\"}}"}
+{"input":"phone number for efes restaurant? please","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"efes restaurant\"}}"}
+{"input":"could you find south asian resturants in the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"input":"please change SIM-Z8L84T to 17:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"time\":\"17:30\"}}"}
+{"input":"show me a cheap place for korean in center","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"korean\",\"pricerange\":\"cheap\"}}"}
+{"input":"book it for thursday at 20:00 for 3 people ta","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":3,\"time\":\"20:00\"}}"}
+{"input":"i need train information","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"move booking BK-A1B2C3 to wednesday mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"day\":\"wednesday\"}}"}
+{"input":"please what is the latest legal advice","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you move booking BK-X9Y8Z7 to monday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"day\":\"monday\"}}"}
+{"input":"can you help with medical advice","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you spaghetti please not too pricey around eastern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"italian\",\"pricerange\":\"moderate\"}}"}
+{"input":"book it for wednesday at 18:00 for 3 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"people\":3,\"time\":\"18:00\"}}"}
+{"input":"please book it for monday at 19:30 for 8 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"people\":8,\"time\":\"19:30\"}}"}
+{"input":"mate can you look for british somewhere cheap near east mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"british\",\"pricerange\":\"cheap\"}}"}
+{"input":"what italian places are there ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"food\":\"italian\"}}"}
+{"input":"move booking SIM-ROFNYN to wednesday mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"wednesday\"}}"}
+{"input":"list all spanish resturants in the centre","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"spanish\"}}"}
+{"input":"i no longer need reservation BK-A1B2C3 ta","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\"}}"}
+{"input":"book it for thursday at 12:00 for 3 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":3,\"time\":\"12:00\"}}"}
+{"input":"please what italian places are there","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"food\":\"italian\"}}"}
+{"input":"i need flights information ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you please find a reasonable mediterranean resturant in the city center mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"mediterranean\",\"pricerange\":\"moderate\"}}"}
+{"input":"any asian oriental places in the city centre that are low cost ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"asian oriental\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you goodbye","target":"{\"intent\":\"goodbye\",\"slots\":{}}"}
+{"input":"could you please find a expensive asian oriental resturant in the northern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"asian oriental\",\"pricerange\":\"expensive\"}}"}
+{"input":"what is the address of anatolia","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"anatolia\"}}"}
+{"input":"move booking BK-A1B2C3 to saturday please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"day\":\"saturday\"}}"}
+{"input":"can you help with flights mate","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"can you help me pick a place please","target":"{\"intent\":\"search\",\"slots\":{}}"}
+{"input":"mate can you look for indian somewhere mid range near south side please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"moderate\"}}"}
+{"input":"book it for saturday at 19:00 for 8 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"people\":8,\"time\":\"19:00\"}}"}
+{"input":"could you list the fancy resurants near center","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"pricerange\":\"expensive\"}}"}
+{"input":"actually make it for 8 people","target":"{\"intent\":\"update_booking\",\"slots\":{\"people\":8}}"}
+{"input":"what lebanese places are there ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"lebanese\"}}"}
+{"input":"i need weather information","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"change BK-A1B2C3 to 18:30 mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"18:30\"}}"}
+{"input":"i fancy veggie, find somewhere in the east ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"vegetarian\"}}"}
+{"input":"could you find southeast asian resturants in the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"cuisine_group\":\"Southeast Asian\",\"food_candidates\":[\"thai\",\"vietnamese\",\"asian oriental\"]}}"}
+{"input":"book it for sunday at 19:30 for 4 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":4,\"time\":\"19:30\"}}"}
+{"input":"list all east asian places please","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"input":"book it for monday at 18:30 for 5 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"monday\",\"people\":5,\"time\":\"18:30\"}}"}
+{"input":"please show me all expensive chinese options","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\"}}"}
+{"input":"give me the full list for french east side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"french\"}}"}
+{"input":"i need a restaurant","target":"{\"intent\":\"search\",\"slots\":{}}"}
+{"input":"book it for today at 21:00 for 3 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":3,\"time\":\"21:00\"}}"}
+{"input":"please book a table at efes restaurant tomorrow 7pm","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"restaurant_name\":\"efes restaurant\",\"time\":\"19:00\"}}"}
+{"input":"mate can you look for vegetarian somewhere cheap near west please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"vegetarian\",\"pricerange\":\"cheap\"}}"}
+{"input":"cancel booking BK-X9Y8Z7 ta","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\"}}"}
+{"input":"i fancy kebab, find somewhere in the south ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"turkish\"}}"}
+{"input":"please change BK-M4N5P6 to 19:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"time\":\"19:30\"}}"}
+{"input":"moderate british east side please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"british\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you list the budget resturants near west side please","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you please find a cheap french resurant in the north","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"french\",\"pricerange\":\"cheap\"}}"}
+{"input":"looking for chinese, low cost, city centre, ta ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\",\"pricerange\":\"cheap\"}}"}
+{"input":"list all korean resturants in the west ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"food\":\"korean\"}}"}
+{"input":"could you not too expensive italian west side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"italian\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you i need to update it","target":"{\"intent\":\"update_booking\",\"slots\":{}}"}
+{"input":"cancel booking SIM-Z8L84T please","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\"}}"}
+{"input":"could you mate can you look for british somewhere cheap near east","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"british\",\"pricerange\":\"cheap\"}}"}
+{"input":"show me all high end indian options ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"food\":\"indian\"}}"}
+{"input":"list all middle eastern places please","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"Middle Eastern\",\"food_candidates\":[\"lebanese\",\"turkish\",\"mediterranean\"]}}"}
+{"input":"book it for thursday at 19:30 for 2 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"thursday\",\"people\":2,\"time\":\"19:30\"}}"}
+{"input":"please any japanese places in the east that are low cost","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you please find a expensive british resturant in the northern part please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"british\",\"pricerange\":\"expensive\"}}"}
+{"input":"any turkish places in the east side that are moderate mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"turkish\",\"pricerange\":\"moderate\"}}"}
+{"input":"move booking BK-M4N5P6 to sunday ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"sunday\"}}"}
+{"input":"could you find east asian restaurants in the north mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"input":"book a table at pizza hut city centre tomorrow 7pm mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"restaurant_name\":\"pizza hut city centre\",\"time\":\"19:00\"}}"}
+{"input":"tell me about nandos city centre please","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"nandos city centre\"}}"}
+{"input":"move booking BK-M4N5P6 to tuesday please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"tuesday\"}}"}
+{"input":"book it for today at 20:00 for 1 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":1,\"time\":\"20:00\"}}"}
+{"input":"mate can you look for mediterranean somewhere expensive near northern part mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"mediterranean\",\"pricerange\":\"expensive\"}}"}
+{"input":"show my bookings mate","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"where is that resturant","target":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"input":"could you move booking BK-Q7W8E9 to tuesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"day\":\"tuesday\"}}"}
+{"input":"looking for mediterranean, low cost, city centre, ta mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"mediterranean\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you move booking BK-M4N5P6 to tuesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"tuesday\"}}"}
+{"input":"book it for sunday at 20:30 for 6 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":6,\"time\":\"20:30\"}}"}
+{"input":"change SIM-Z8L84T to 20:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"time\":\"20:30\"}}"}
+{"input":"could you please find a high end thai resurant in the central","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"thai\",\"pricerange\":\"expensive\"}}"}
+{"input":"move booking SIM-ROFNYN to sunday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"sunday\"}}"}
+{"input":"could you book it for sunday at 21:00 for 8 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":8,\"time\":\"21:00\"}}"}
+{"input":"book a table at ali baba tomorrow 7pm","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"restaurant_name\":\"ali baba\",\"time\":\"19:00\"}}"}
+{"input":"any mediterranean places in the north side that are fairly priced please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"mediterranean\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you high end british middle of town","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"british\",\"pricerange\":\"expensive\"}}"}
+{"input":"book it for sunday at 19:00 for 3 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"sunday\",\"people\":3,\"time\":\"19:00\"}}"}
+{"input":"reserve meze bar for 2 people please","target":"{\"intent\":\"book\",\"slots\":{\"people\":2,\"restaurant_name\":\"meze bar\"}}"}
+{"input":"what is the latest hotel please","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"ta ta","target":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"input":"book it for saturday at 12:00 for 2 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"people\":2,\"time\":\"12:00\"}}"}
+{"input":"any mediterranean places in the north side that are fairly priced","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"mediterranean\",\"pricerange\":\"moderate\"}}"}
+{"input":"cancel it ta","target":"{\"intent\":\"cancel_booking\",\"slots\":{}}"}
+{"input":"could you find me mid range grub, british, around the south side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"british\",\"pricerange\":\"moderate\"}}"}
+{"input":"please change BK-A1B2C3 to 21:00","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"21:00\"}}"}
+{"input":"give me advice about medical advice please","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"could you looking for lebanese, fancy, eastern part, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"}}"}
+{"input":"please looking for spanish, fancy, eastern part, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"spanish\",\"pricerange\":\"expensive\"}}"}
+{"input":"book it for today at 19:30 for 8 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":8,\"time\":\"19:30\"}}"}
+{"input":"can i have the postcode please","target":"{\"intent\":\"restaurant_info\",\"slots\":{}}"}
+{"input":"change BK-A1B2C3 to 17:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"17:30\"}}"}
+{"input":"mate can you look for japanese somewhere moderate near east side mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"japanese\",\"pricerange\":\"moderate\"}}"}
+{"input":"find me fairly priced grub, thai, around the north side","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"thai\",\"pricerange\":\"moderate\"}}"}
+{"input":"show every reasonable restaurant around north side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"food\":\"italian\"}}"}
+{"input":"find me cheap grub, japanese, around the centre mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"give me the full list for vegetarian city center","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"vegetarian\"}}"}
+{"input":"can you help with medical advice ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"please move booking SIM-ROFNYN to monday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"monday\"}}"}
+{"input":"mid range thai south side mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"moderate\"}}"}
+{"input":"book it for friday at 18:00 for 2 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"people\":2,\"time\":\"18:00\"}}"}
+{"input":"change BK-A1B2C3 to 20:30 ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"20:30\"}}"}
+{"input":"low cost spanish east please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"spanish\",\"pricerange\":\"cheap\"}}"}
+{"input":"mate can you look for thai somewhere cheap near south ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"cheap\"}}"}
+{"input":"please any italian places in the north that are low cost","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"italian\",\"pricerange\":\"cheap\"}}"}
+{"input":"cancel booking SIM-Z8L84T","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\"}}"}
+{"input":"please change SIM-Z8L84T to 21:00","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"time\":\"21:00\"}}"}
+{"input":"looking for british, low cost, west, ta please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"british\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you move booking BK-Q7W8E9 to thursday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-Q7W8E9\",\"day\":\"thursday\"}}"}
+{"input":"change SIM-Z8L84T to 20:30 please","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-Z8L84T\",\"time\":\"20:30\"}}"}
+{"input":"could you delete my booking","target":"{\"intent\":\"cancel_booking\",\"slots\":{}}"}
+{"input":"list all south asian places please please","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"input":"ta mate","target":"{\"intent\":\"thanks\",\"slots\":{}}"}
+{"input":"could you find me expensive grub, indian, around the northern part","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"indian\",\"pricerange\":\"expensive\"}}"}
+{"input":"could you i need turkish food city centre and low cost please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"turkish\",\"pricerange\":\"cheap\"}}"}
+{"input":"please find me cheap grub, korean, around the west","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"korean\",\"pricerange\":\"cheap\"}}"}
+{"input":"list all south asian places please ta","target":"{\"intent\":\"list\",\"slots\":{\"cuisine_group\":\"South Asian\",\"food_candidates\":[\"indian\"]}}"}
+{"input":"taxi ta","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"low cost japanese north","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"give me the full list for british east side mate","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"british\"}}"}
+{"input":"high end asian oriental middle of town ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"asian oriental\",\"pricerange\":\"expensive\"}}"}
+{"input":"could you book it for saturday at 20:00 for 2 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"saturday\",\"people\":2,\"time\":\"20:00\"}}"}
+{"input":"change BK-A1B2C3 to 21:00 mate","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-A1B2C3\",\"time\":\"21:00\"}}"}
+{"input":"please move booking BK-M4N5P6 to wednesday","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-M4N5P6\",\"day\":\"wednesday\"}}"}
+{"input":"book it for tuesday at 12:00 for 4 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":4,\"time\":\"12:00\"}}"}
+{"input":"book it for friday at 19:30 for 5 people mate","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"friday\",\"people\":5,\"time\":\"19:30\"}}"}
+{"input":"book me a lebanese restaurant for four ta","target":"{\"intent\":\"book\",\"slots\":{\"food\":\"lebanese\",\"people\":4}}"}
+{"input":"please reasonable spanish center","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"spanish\",\"pricerange\":\"moderate\"}}"}
+{"input":"could you list the budget resturants near north side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you high end asian oriental middle of town","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"asian oriental\",\"pricerange\":\"expensive\"}}"}
+{"input":"find me high end grub, vegetarian, around the central ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"vegetarian\",\"pricerange\":\"expensive\"}}"}
+{"input":"i need french food west and low cost please ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"french\",\"pricerange\":\"cheap\"}}"}
+{"input":"looking for chinese, low cost, city centre, ta please","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\",\"pricerange\":\"cheap\"}}"}
+{"input":"could you i no longer need reservation SIM-ROFNYN","target":"{\"intent\":\"cancel_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\"}}"}
+{"input":"book it for wednesday at 19:00 for 5 people please","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"wednesday\",\"people\":5,\"time\":\"19:00\"}}"}
+{"input":"could you find east asian restaurants in the centre","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"cuisine_group\":\"East Asian\",\"food_candidates\":[\"chinese\",\"cantonese\",\"japanese\",\"korean\",\"asian oriental\"]}}"}
+{"input":"show me all expensive chinese options","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\"}}"}
+{"input":"could you list the fancy resurants near south side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"pricerange\":\"expensive\"}}"}
+{"input":"could you change BK-X9Y8Z7 to 19:30","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"BK-X9Y8Z7\",\"time\":\"19:30\"}}"}
+{"input":"please i fancy pasta, find somewhere in the north","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"italian\"}}"}
+{"input":"please what bookings do i have","target":"{\"intent\":\"booking_list\",\"slots\":{}}"}
+{"input":"move booking SIM-ROFNYN to saturday ta","target":"{\"intent\":\"update_booking\",\"slots\":{\"booking_reference\":\"SIM-ROFNYN\",\"day\":\"saturday\"}}"}
+{"input":"low cost japanese north mate","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"cheap\"}}"}
+{"input":"move it to another day","target":"{\"intent\":\"update_booking\",\"slots\":{}}"}
+{"input":"any indian places in the western part that are pricey ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"indian\",\"pricerange\":\"expensive\"}}"}
+{"input":"could you looking for asian oriental, fairly priced, north side, ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"asian oriental\",\"pricerange\":\"moderate\"}}"}
+{"input":"tell me about pizza hut city center please","target":"{\"intent\":\"restaurant_info\",\"slots\":{\"restaurant_name\":\"pizza hut city centre\"}}"}
+{"input":"book it for tuesday at 18:00 for 8 people","target":"{\"intent\":\"book\",\"slots\":{\"day\":\"tuesday\",\"people\":8,\"time\":\"18:00\"}}"}
+{"input":"please list all japanese resturants in the centre","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"centre\",\"food\":\"japanese\"}}"}
+{"input":"please give me the full list for italian west side","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"food\":\"italian\"}}"}
+{"input":"i need flights information please","target":"{\"intent\":\"unsupported\",\"slots\":{}}"}
+{"input":"looking for indian, high end, middle of town, ta ta","target":"{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"indian\",\"pricerange\":\"expensive\"}}"}
+{"input":"please what is a not expensive restaurant you can find","target":"{\"intent\":\"search\",\"slots\":{\"pricerange\":\"cheap\"}}"}
+{"input":"list all indian resturants in the east ta","target":"{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"indian\"}}"}

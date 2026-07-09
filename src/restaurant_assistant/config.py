@@ -29,6 +29,7 @@ class Settings:
     enable_llm: bool = False
     model_name: str = "google/flan-t5-small"
     slot_model_name: str = "google/flan-t5-small"
+    slot_num_beams: int = 1
     timezone: str = "Europe/London"
 
 
@@ -45,5 +46,6 @@ def get_settings() -> Settings:
         enable_llm=_env_bool("ENABLE_LLM", False),
         model_name=generation_model,
         slot_model_name=os.getenv("HF_SLOT_MODEL_NAME", generation_model),
+        slot_num_beams=int(os.getenv("HF_SLOT_NUM_BEAMS", "1")),
         timezone=os.getenv("ASSISTANT_TIMEZONE", "Europe/London"),
     )

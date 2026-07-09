@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import statistics
 import sys
 import time
@@ -18,9 +19,16 @@ from restaurant_assistant.assistant import RestaurantAssistant
 from restaurant_assistant.config import get_settings
 from restaurant_assistant.data_loader import load_restaurants
 from restaurant_assistant.dialogue_state import DialogueState
+from restaurant_assistant.nlg import contains_json_or_debug_leakage
 from restaurant_assistant.ranking import rank_candidates
 from restaurant_assistant.retrieval import RestaurantRetriever
-from restaurant_assistant.slot_extraction import OptionalLLMSlotExtractor, RuleBasedSlotExtractor
+from restaurant_assistant.slot_extraction import (
+    OptionalLLMSlotExtractor,
+    RuleBasedSlotExtractor,
+    canonicalize_model_intent,
+    strict_parse_llm_json_output,
+    validate_llm_slots,
+)
 
 
 SLOT_FIXTURE = ROOT / "tests" / "fixtures" / "slot_cases.json"
@@ -32,6 +40,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--enable-llm", action="store_true", help="Evaluate with LLM extraction and generation enabled.")
     parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
     parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
+    parser.add_argument("--slot-num-beams", type=int, default=None, help="Beam count for slot-model JSON generation.")
+    parser.add_argument("--report-path", type=Path, default=None, help="Optional path to write the JSON report.")
     parser.add_argument(
         "--slot-fixture",
         type=Path,
@@ -89,18 +99,38 @@ def _raw_output_preview(raw_output: str | None, limit: int = 300) -> str | None:
     return preview if len(preview) <= limit else preview[: limit - 3] + "..."
 
 
-def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path) -> dict[str, Any]:
+def _percentile_ms(latencies_seconds: list[float], percentile: float) -> float:
+    if not latencies_seconds:
+        return 0.0
+    ordered = sorted(value * 1000 for value in latencies_seconds)
+    index = max(0, min(len(ordered) - 1, math.ceil((percentile / 100) * len(ordered)) - 1))
+    return round(ordered[index], 3)
+
+
+def evaluate_slots(
+    *,
+    enable_llm: bool,
+    slot_model_name: str,
+    slot_fixture: Path,
+    slot_num_beams: int = 1,
+) -> dict[str, Any]:
     slot_cases = load_slot_cases(slot_fixture)
     if not slot_cases:
         raise ValueError(f"No slot evaluation cases found in {slot_fixture}")
-    extractor = OptionalLLMSlotExtractor(slot_model_name) if enable_llm else RuleBasedSlotExtractor()
-    intent_correct = 0
+    extractor = OptionalLLMSlotExtractor(slot_model_name, num_beams=slot_num_beams) if enable_llm else RuleBasedSlotExtractor()
+    final_intent_correct = 0
     exact_slot_objects = 0
     expected_slot_total = 0
     expected_slot_correct = 0
     true_positive_slots = 0
     false_positive_slots = 0
     false_negative_slots = 0
+    raw_intent_correct = 0
+    raw_true_positive_slots = 0
+    raw_false_positive_slots = 0
+    raw_false_negative_slots = 0
+    strict_json_parse_success = 0
+    raw_parse_error_count = 0
     invalid_json_or_parse_errors = 0
     llm_used = 0
     llm_attempted = 0
@@ -131,11 +161,34 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
             and not result.llm_intent_trusted
             and not result.llm_meaningful_slot_contribution
         )
-        intent_correct += int(result.intent == case["intent"])
+        expected_intent = case["intent"]
         expected_slots = case.get("slots", {})
+        final_intent_correct += int(result.intent == expected_intent)
+        raw_prediction: dict[str, Any] | None = None
+        raw_parse_error: str | None = None
+        if enable_llm and result.llm_raw_output is not None:
+            try:
+                raw_parsed = strict_parse_llm_json_output(result.llm_raw_output)
+                strict_json_parse_success += 1
+                raw_prediction = {
+                    "intent": canonicalize_model_intent(raw_parsed.get("intent")),
+                    "slots": validate_llm_slots(raw_parsed.get("slots", {})),
+                }
+            except ValueError as exc:
+                raw_parse_error_count += 1
+                raw_parse_error = str(exc)
+        if raw_prediction is not None:
+            raw_intent_correct += int(raw_prediction["intent"] == expected_intent)
+            raw_predicted_pairs = _slot_pairs(raw_prediction["slots"])
+        else:
+            raw_predicted_pairs = set()
+        expected_pairs = _slot_pairs(expected_slots)
+        raw_matched_pairs = raw_predicted_pairs & expected_pairs
+        raw_true_positive_slots += len(raw_matched_pairs)
+        raw_false_positive_slots += len(raw_predicted_pairs - expected_pairs)
+        raw_false_negative_slots += len(expected_pairs - raw_predicted_pairs)
         predicted_slots = result.slots
         exact_slot_objects += int(predicted_slots == expected_slots)
-        expected_pairs = _slot_pairs(expected_slots)
         predicted_pairs = _slot_pairs(predicted_slots)
         matched_pairs = predicted_pairs & expected_pairs
         expected_slot_total += len(expected_pairs)
@@ -161,6 +214,9 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
                     "llm_meaningful_slot_contribution": result.llm_meaningful_slot_contribution,
                     "llm_raw_output": _raw_output_preview(result.llm_raw_output),
                     "llm_repaired_output": _raw_output_preview(result.llm_repaired_output),
+                    "raw_strict_prediction": raw_prediction,
+                    "raw_strict_parse_success": raw_prediction is not None,
+                    "raw_strict_parse_error": raw_parse_error,
                     "errors": result.errors,
                 },
                 "latency_seconds": round(latency, 6),
@@ -173,15 +229,53 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         if slot_precision + slot_recall
         else 0.0
     )
+    raw_slot_precision = _safe_divide(raw_true_positive_slots, raw_true_positive_slots + raw_false_positive_slots)
+    raw_slot_recall = _safe_divide(raw_true_positive_slots, raw_true_positive_slots + raw_false_negative_slots)
+    raw_slot_f1 = (
+        round(2 * raw_slot_precision * raw_slot_recall / (raw_slot_precision + raw_slot_recall), 4)
+        if raw_slot_precision + raw_slot_recall
+        else 0.0
+    )
+    attempted_denominator = llm_attempted if enable_llm else 0
+    raw_denominator = attempted_denominator or len(slot_cases)
+    strict_json_parse_success_rate = _safe_divide(strict_json_parse_success, raw_denominator)
+    repaired_json_success_rate = _safe_divide(llm_parse_success + llm_repair_success, attempted_denominator)
     return {
         "fixture": str(slot_fixture),
         "case_count": len(slot_cases),
-        "intent_accuracy": round(intent_correct / len(slot_cases), 4),
+        "intent_accuracy": round(final_intent_correct / len(slot_cases), 4),
         "slot_accuracy": _safe_divide(expected_slot_correct, expected_slot_total),
         "exact_slot_object_accuracy": round(exact_slot_objects / len(slot_cases), 4),
         "slot_precision": slot_precision,
         "slot_recall": slot_recall,
         "slot_f1": slot_f1,
+        "strict_json_parse_success_rate": strict_json_parse_success_rate,
+        "raw_parse_error_count": raw_parse_error_count,
+        "strict_intent_accuracy": _safe_divide(raw_intent_correct, raw_denominator),
+        "strict_slot_precision": raw_slot_precision,
+        "strict_slot_recall": raw_slot_recall,
+        "strict_slot_f1": raw_slot_f1,
+        "repaired_json_success_rate": repaired_json_success_rate,
+        "final_intent_accuracy": round(final_intent_correct / len(slot_cases), 4),
+        "final_slot_precision": slot_precision,
+        "final_slot_recall": slot_recall,
+        "final_slot_f1": slot_f1,
+        "raw_llm_metrics": {
+            "strict_json_parse_success_rate": strict_json_parse_success_rate,
+            "raw_parse_error_count": raw_parse_error_count,
+            "strict_intent_accuracy": _safe_divide(raw_intent_correct, raw_denominator),
+            "strict_slot_precision": raw_slot_precision,
+            "strict_slot_recall": raw_slot_recall,
+            "strict_slot_f1": raw_slot_f1,
+        },
+        "after_repair_fallback_metrics": {
+            "repaired_json_success_rate": repaired_json_success_rate,
+            "fallback_used_cases": fallback_used,
+            "final_intent_accuracy": round(final_intent_correct / len(slot_cases), 4),
+            "final_slot_precision": slot_precision,
+            "final_slot_recall": slot_recall,
+            "final_slot_f1": slot_f1,
+        },
         "invalid_json_or_parse_error_count": invalid_json_or_parse_errors,
         "mean_slot_latency_seconds": round(statistics.mean(latencies), 6),
         "llm_enabled": enable_llm,
@@ -261,6 +355,10 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]], set
     successes = 0
     latencies = []
     transcript = []
+    response_count = 0
+    leakage_count = 0
+    grounded_passes = 0
+    forbidden = ["live availability", "payment", "verified halal", "verified vegetarian"]
     for script in scripts:
         assistant = RestaurantAssistant(settings=settings, use_sample=use_sample, enable_llm=enable_llm)
         responses = []
@@ -273,6 +371,11 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]], set
             responses.append(result.response)
             llm_slot_turns += int(result.debug.get("slot_extraction_used_llm") is True)
             generation_modes.append(result.debug.get("generation_mode"))
+            response_count += 1
+            leaked = contains_json_or_debug_leakage(result.response)
+            leakage_count += int(leaked)
+            lower_response = result.response.casefold()
+            grounded_passes += int(not leaked and not any(term in lower_response for term in forbidden))
         combined = " ".join(responses).lower()
         success = all(term.lower() in combined for term in script["success_terms"])
         successes += int(success)
@@ -289,6 +392,10 @@ def evaluate_end_to_end(use_sample: bool, restaurants: list[dict[str, Any]], set
         "task_success_rate": round(successes / len(scripts), 4),
         "latency_seconds_mean": round(statistics.mean(latencies), 4),
         "latency_seconds_max": round(max(latencies), 4),
+        "average_latency_ms": round(statistics.mean(latencies) * 1000, 3),
+        "p95_latency_ms": _percentile_ms(latencies, 95),
+        "json_leakage_rate": _safe_divide(leakage_count, response_count),
+        "groundedness_pass_rate": _safe_divide(grounded_passes, response_count),
         "transcript": transcript,
     }
 
@@ -306,12 +413,47 @@ def evaluate_response_safety(restaurants: list[dict[str, Any]], settings: Any, *
     result = assistant.process(_query_from_record(target), debug=True)
     forbidden = ["live availability", "payment", "verified halal", "verified vegetarian"]
     lower = result.response.lower()
+    has_leakage = contains_json_or_debug_leakage(result.response)
     return {
         "fallback_grounded_check": str(target.get("name", "")).lower() in lower,
         "forbidden_claims_present": [term for term in forbidden if term in lower],
+        "json_or_debug_leakage": has_leakage,
+        "groundedness_pass": not has_leakage and str(target.get("name", "")).lower() in lower,
         "slot_extraction_used_llm": result.debug.get("slot_extraction_used_llm"),
         "generation_mode": result.debug.get("generation_mode"),
         "optional_metrics": "BLEU/ROUGE/BERTScore hooks not installed for MVP",
+    }
+
+
+def system_metric_summary(results: dict[str, Any]) -> dict[str, Any]:
+    slot_metrics = results.get("slot_extraction", {})
+    retrieval_metrics = results.get("retrieval", {})
+    end_to_end = results.get("end_to_end", {})
+    response_generation = results.get("response_generation", {})
+    groundedness_values = [
+        value
+        for value in [
+            end_to_end.get("groundedness_pass_rate"),
+            1.0 if response_generation.get("groundedness_pass") else 0.0,
+        ]
+        if value is not None
+    ]
+    groundedness_pass_rate = (
+        round(sum(groundedness_values) / len(groundedness_values), 4)
+        if groundedness_values
+        else 0.0
+    )
+    return {
+        "intent_accuracy": slot_metrics.get("intent_accuracy", 0.0),
+        "slot_precision": slot_metrics.get("slot_precision", 0.0),
+        "slot_recall": slot_metrics.get("slot_recall", 0.0),
+        "slot_f1": slot_metrics.get("slot_f1", 0.0),
+        "retrieval_recall_at_3": retrieval_metrics.get("recall_at_3", 0.0),
+        "task_success_rate": end_to_end.get("task_success_rate", 0.0),
+        "json_leakage_rate": end_to_end.get("json_leakage_rate", 0.0),
+        "groundedness_pass_rate": groundedness_pass_rate,
+        "average_latency_ms": end_to_end.get("average_latency_ms", 0.0),
+        "p95_latency_ms": end_to_end.get("p95_latency_ms", 0.0),
     }
 
 
@@ -321,6 +463,7 @@ def run_evaluation(
     enable_llm: bool,
     model_name: str | None = None,
     slot_model_name: str | None = None,
+    slot_num_beams: int | None = None,
     slot_fixture: Path = SLOT_FIXTURE,
 ) -> dict[str, Any]:
     settings = get_settings()
@@ -328,19 +471,24 @@ def run_evaluation(
         settings = replace(settings, model_name=model_name)
     if slot_model_name:
         settings = replace(settings, slot_model_name=slot_model_name)
+    if slot_num_beams is not None:
+        settings = replace(settings, slot_num_beams=slot_num_beams)
     if enable_llm:
         settings = replace(settings, enable_llm=True)
     restaurants = load_restaurants(settings, use_sample=sample_data)
-    return {
+    results = {
         "slot_extraction": evaluate_slots(
             enable_llm=settings.enable_llm,
             slot_model_name=settings.slot_model_name,
             slot_fixture=slot_fixture,
+            slot_num_beams=settings.slot_num_beams,
         ),
         "retrieval": evaluate_retrieval(restaurants),
         "response_generation": evaluate_response_safety(restaurants, settings, enable_llm=settings.enable_llm),
         "end_to_end": evaluate_end_to_end(sample_data, restaurants, settings, enable_llm=settings.enable_llm),
     }
+    results["system_metrics"] = system_metric_summary(results)
+    return results
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -351,7 +499,12 @@ def main(argv: list[str] | None = None) -> None:
         model_name=args.model_name,
         slot_model_name=args.slot_model_name,
         slot_fixture=args.slot_fixture,
+        slot_num_beams=args.slot_num_beams,
     )
+    if args.report_path is not None:
+        args.report_path.parent.mkdir(parents=True, exist_ok=True)
+        args.report_path.write_text(json.dumps(output, indent=2, default=str), encoding="utf-8")
+        print(f"Saved evaluation report to {args.report_path}")
     print(json.dumps(output, indent=2, default=str))
 
 

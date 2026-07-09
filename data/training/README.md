@@ -1,7 +1,7 @@
 # Slot Extraction Training Data
 
 `slot_instruction_examples.jsonl` is an instruction dataset for the optional
-LoRA/QLoRA slot-extraction adapter.
+legacy LoRA/QLoRA slot-extraction adapter.
 
 Each row uses:
 
@@ -23,7 +23,23 @@ The current set includes 230 examples covering:
 - typo-heavy restaurant turns, short follow-ups, booking changes/cancellations,
   dish-to-cuisine suggestions and restaurant detail questions.
 
-In Colab, install the optional dependencies, upload or clone the repo, then run:
+The strict Kaggle training path is generated from templates:
+
+```bash
+python scripts/build_slot_training_data.py
+```
+
+It writes:
+
+- `slot_train_strict.jsonl`
+- `slot_dev_strict.jsonl`
+
+Those rows use `input` and canonical compact JSON `target` strings for the
+stricter intent set used by `scripts/train_strict_slot_extractor_lora.py`.
+Targets are validated before writing and exact normalized text overlap with the
+evaluation fixtures is rejected.
+
+For the older QLoRA path, install the optional dependencies and run:
 
 ```bash
 pip install -r requirements-qlora.txt

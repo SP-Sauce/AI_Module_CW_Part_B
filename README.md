@@ -20,7 +20,8 @@ User message
 -> dialogue state tracking
 -> restaurant retrieval
 -> preference-fit ranking
--> grounded LLM or template response
+-> ResponsePlan construction
+-> controlled NaturalLanguageGenerator response
 -> booking-state update
 ```
 
@@ -200,10 +201,14 @@ report, check for train/evaluation leakage:
 python scripts/check_data_leakage.py
 ```
 
-The evaluation reports intent accuracy, exact slot-object accuracy, slot
-precision, recall and F1, parse-error counts, slot latency, retrieval metrics,
-response safety and end-to-end task success. The ablation script compares the
-final stateful retrieval system with simpler baselines.
+The evaluation reports raw LLM JSON validity separately from final
+repair/fallback quality. Raw slot-model metrics include strict JSON parse
+success, raw parse errors, strict intent accuracy and strict slot
+precision/recall/F1. Final metrics include repaired JSON success, fallback use,
+final intent accuracy and final slot precision/recall/F1. System-level metrics
+include task success, JSON leakage rate, groundedness pass rate and latency. The
+ablation script compares the final stateful retrieval system with simpler
+baselines.
 
 Evaluate the LLM path:
 
@@ -269,7 +274,57 @@ Missing adapter folders are marked as skipped. Outputs are written to
 - The web app stores local session ids, chat turns and booking records in
   SQLite. The terminal chatbot keeps state only for the current process.
 
-## Optional QLoRA Fine-Tuning
+## Strict Slot Extractor Training On Kaggle
+
+For the stronger extractor, build a strict training/dev split:
+
+```powershell
+python scripts/build_slot_training_data.py
+```
+
+This creates:
+
+```text
+data/training/slot_train_strict.jsonl
+data/training/slot_dev_strict.jsonl
+```
+
+Targets are canonical minified JSON strings generated with sorted keys and
+validated before saving. The builder checks for exact normalized text overlap
+with `data/evaluation/slot_eval_cases.jsonl` and
+`data/evaluation/slot_challenge_cases.jsonl`.
+
+Train on Kaggle GPU with the cells in:
+
+```text
+notebooks/kaggle_train_strict_slot_extractor.md
+```
+
+The recommended full run is:
+
+```powershell
+python scripts/train_strict_slot_extractor_lora.py --base-model google/flan-t5-base --train-file data/training/slot_train_strict.jsonl --dev-file data/training/slot_dev_strict.jsonl --output-dir models/slot-extractor-lora-strict --max-steps 800
+```
+
+After downloading the Kaggle output, use it locally with:
+
+```powershell
+python scripts/run_web.py --enable-llm --slot-model-name models/slot-extractor-lora-strict --debug
+```
+
+Evaluate and save reports:
+
+```powershell
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-lora-strict --report-path reports/evaluation_lora_strict_eval.json
+python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_challenge_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-lora-strict --report-path reports/evaluation_lora_strict_challenge.json
+python scripts/compare_model_reports.py --report strict_eval=reports/evaluation_lora_strict_eval.json --report strict_challenge=reports/evaluation_lora_strict_challenge.json
+```
+
+The NLG safety boundary remains in place after slot extraction. The model is
+trained to improve raw structured output honestly, but malformed JSON, weak
+repairs and fallback use are still reported rather than hidden.
+
+## Optional Legacy QLoRA Fine-Tuning
 
 The repository includes an optional LoRA/QLoRA training path for the LLM slot
 extractor:
@@ -291,7 +346,7 @@ use a tiny number of steps:
 python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small --no-4bit --max-steps 5 --output-dir models/slot-extractor-smoke
 ```
 
-For the Colab/GPU coursework run:
+For the legacy GPU coursework run:
 
 ```powershell
 python scripts/augment_slot_training_data.py
@@ -300,11 +355,10 @@ python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-base --
 python scripts/run_evaluation_matrix.py --sample-data
 ```
 
-`notebooks/train_qlora_colab.ipynb` contains the Colab workflow: clone the repo,
-install requirements, check the GPU, train the stronger FLAN-T5-base adapter,
-evaluate it, run the matrix and optionally copy the adapter and reports to
-Google Drive. FLAN-T5-small remains the lightweight baseline and optional
-small-adapter comparison.
+`notebooks/train_qlora_colab.ipynb` is kept as an older workflow reference.
+The current strict extractor workflow is Kaggle-first and is documented in
+`notebooks/kaggle_train_strict_slot_extractor.md`. FLAN-T5-small remains the
+lightweight baseline and optional small-adapter comparison.
 
 The augmentation script deterministically expands the original instruction set
 with balanced paraphrase templates, multi-slot targets and repeated complete

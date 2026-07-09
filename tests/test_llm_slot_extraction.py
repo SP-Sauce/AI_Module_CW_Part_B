@@ -45,7 +45,7 @@ def test_optional_llm_slot_extractor_uses_llm_and_rule_guards():
     assert extractor._pipeline.generation_kwargs == {
         "max_new_tokens": 128,
         "do_sample": False,
-        "num_beams": 4,
+        "num_beams": 1,
         "early_stopping": True,
         "repetition_penalty": 1.2,
     }
@@ -90,8 +90,9 @@ def test_optional_llm_slot_extractor_keeps_explicit_booking_action():
 def test_adapter_prompt_uses_strict_answer_marker_without_examples():
     prompt = adapter_slot_prompt("hello")
 
-    assert "Return exactly one JSON object." in prompt
-    assert 'Use only keys "intent" and "slots".' in prompt
+    assert "Task: Extract the restaurant assistant intent and slots." in prompt
+    assert "Return only one valid minified JSON object." in prompt
+    assert "Allowed intents: search, list, restaurant_info, book, update_booking" in prompt
     assert prompt.endswith("User: hello\nJSON:")
     assert '{"intent":' not in prompt
 
