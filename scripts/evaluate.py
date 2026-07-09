@@ -82,6 +82,13 @@ def _has_json_or_parse_error(errors: list[str]) -> bool:
     return any("json" in error.lower() or "parse" in error.lower() for error in errors)
 
 
+def _raw_output_preview(raw_output: str | None, limit: int = 300) -> str | None:
+    if raw_output is None:
+        return None
+    preview = " ".join(raw_output.split())
+    return preview if len(preview) <= limit else preview[: limit - 3] + "..."
+
+
 def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path) -> dict[str, Any]:
     slot_cases = load_slot_cases(slot_fixture)
     if not slot_cases:
@@ -96,6 +103,9 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
     false_negative_slots = 0
     invalid_json_or_parse_errors = 0
     llm_used = 0
+    llm_attempted = 0
+    llm_parse_success = 0
+    fallback_used = 0
     latencies = []
     details = []
     for case in slot_cases:
@@ -104,6 +114,9 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         latency = time.perf_counter() - start
         latencies.append(latency)
         llm_used += int(result.used_llm)
+        llm_attempted += int(result.llm_attempted)
+        llm_parse_success += int(result.llm_parse_success)
+        fallback_used += int(enable_llm and not result.used_llm)
         intent_correct += int(result.intent == case["intent"])
         expected_slots = case.get("slots", {})
         predicted_slots = result.slots
@@ -125,6 +138,9 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
                     "intent": result.intent,
                     "slots": result.slots,
                     "used_llm": result.used_llm,
+                    "llm_attempted": result.llm_attempted,
+                    "llm_parse_success": result.llm_parse_success,
+                    "llm_raw_output": _raw_output_preview(result.llm_raw_output),
                     "errors": result.errors,
                 },
                 "latency_seconds": round(latency, 6),
@@ -150,6 +166,10 @@ def evaluate_slots(*, enable_llm: bool, slot_model_name: str, slot_fixture: Path
         "mean_slot_latency_seconds": round(statistics.mean(latencies), 6),
         "llm_enabled": enable_llm,
         "llm_used_cases": llm_used,
+        "llm_attempted_cases": llm_attempted,
+        "llm_parse_success_cases": llm_parse_success,
+        "llm_parse_failed_cases": llm_attempted - llm_parse_success,
+        "fallback_used_cases": fallback_used,
         "slot_model_name": slot_model_name if enable_llm else None,
         "cases": details,
     }

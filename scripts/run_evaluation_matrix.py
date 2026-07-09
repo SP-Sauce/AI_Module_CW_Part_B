@@ -59,8 +59,8 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
     lines = [
         "# Evaluation Matrix",
         "",
-        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Parse Errors | Mean Slot Latency (s) | LLM Used Cases | Slot Model |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Parse Errors | LLM Attempted | Parse Success | Parse Failed | Fallback Used | Mean Slot Latency (s) | Slot Model |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         slot_metrics = row.get("metrics", {}).get("slot_extraction", {})
@@ -76,8 +76,11 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
                     _metric(slot_metrics.get("slot_recall")),
                     _metric(slot_metrics.get("slot_f1")),
                     _metric(slot_metrics.get("invalid_json_or_parse_error_count")),
+                    _metric(slot_metrics.get("llm_attempted_cases")),
+                    _metric(slot_metrics.get("llm_parse_success_cases")),
+                    _metric(slot_metrics.get("llm_parse_failed_cases")),
+                    _metric(slot_metrics.get("fallback_used_cases")),
                     _metric(slot_metrics.get("mean_slot_latency_seconds")),
-                    _metric(slot_metrics.get("llm_used_cases")),
                     str(slot_metrics.get("slot_model_name") or "-"),
                 ]
             )
@@ -92,6 +95,23 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
     )
     for row in rows:
         lines.append(f"- `{row['name']}`: `{row['command']}`")
+    parse_failures: list[tuple[str, dict[str, Any]]] = []
+    for row in rows:
+        cases = row.get("metrics", {}).get("slot_extraction", {}).get("cases", [])
+        for case in cases:
+            predicted = case.get("predicted", {})
+            if predicted.get("llm_attempted") and not predicted.get("llm_parse_success"):
+                parse_failures.append((row["name"], case))
+    if parse_failures:
+        lines.extend(["", "## LLM parse failures", ""])
+        for configuration, case in parse_failures:
+            predicted = case.get("predicted", {})
+            raw_output = str(predicted.get("llm_raw_output") or "<no output>")
+            errors = "; ".join(str(error) for error in predicted.get("errors", []))
+            lines.append(
+                f"- `{configuration}` — input: `{case.get('text', '')}`; "
+                f"raw output: `{raw_output}`; errors: `{errors}`"
+            )
     return "\n".join(lines) + "\n"
 
 

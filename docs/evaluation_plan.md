@@ -137,8 +137,13 @@ If a slot-extraction adapter is trained with
 `scripts/train_qlora_slot_extractor.py`, rerun:
 
 ```powershell
+Remove-Item -Recurse -Force models/slot-extractor-qlora -ErrorAction SilentlyContinue
+python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small
 python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name models/slot-extractor-qlora
 ```
+
+Adapters trained before the strict `User: ...` / `JSON:` prompt-format fix must
+be deleted and retrained. Training and inference now use the same prompt.
 
 The report should compare the base LLM extractor, the QLoRA adapter where
 available, and the rule fallback on the same labelled fixture.

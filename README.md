@@ -212,8 +212,15 @@ python scripts/evaluate.py --sample-data --enable-llm --slot-model-name google/f
 python scripts/run_ablation.py --enable-llm
 ```
 
-The JSON output includes whether slot extraction used the LLM and which
-generation mode answered each turn.
+The JSON output distinguishes LLM attempts, successful JSON parses, parse
+failures and rule-based fallbacks. Per-case details include a bounded preview
+of the raw slot-model output.
+
+Inspect a few raw outputs before running the full matrix:
+
+```powershell
+python scripts/debug_llm_slot_outputs.py --slot-model-name google/flan-t5-small --limit 5
+```
 
 Run the report-ready experiment matrix:
 
@@ -254,8 +261,13 @@ extractor:
 
 ```powershell
 pip install -r requirements-qlora.txt
+Remove-Item -Recurse -Force models/slot-extractor-qlora -ErrorAction SilentlyContinue
 python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small
 ```
+
+The adapter prompt now uses a strict `User: ...` followed by `JSON:` answer
+marker. Any adapter trained with the earlier prompt format is incompatible and
+must be deleted and retrained before adapter evaluation.
 
 For a short local CPU smoke test of the LoRA path, disable 4-bit loading and
 use a tiny number of steps:

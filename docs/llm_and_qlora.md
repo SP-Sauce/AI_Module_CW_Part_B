@@ -51,8 +51,16 @@ Evaluate the LLM path:
 python scripts/evaluate.py --sample-data --slot-fixture data/evaluation/slot_eval_cases.jsonl --enable-llm --slot-model-name google/flan-t5-small
 ```
 
-The evaluation output includes `slot_extraction_used_llm` and
-`generation_mode`, so the report can show whether LLM components were active.
+The slot evaluation output includes `llm_attempted_cases`,
+`llm_parse_success_cases`, `llm_parse_failed_cases` and
+`fallback_used_cases`, plus raw-output previews in case details. This separates
+model-load failures from invalid model output and safe rule fallback.
+
+Inspect raw model output before running the full evaluation matrix:
+
+```powershell
+python scripts/debug_llm_slot_outputs.py --slot-model-name google/flan-t5-small --limit 5
+```
 
 ## QLoRA Fine-Tuning
 
@@ -61,8 +69,13 @@ booking system:
 
 ```powershell
 pip install -r requirements-qlora.txt
+Remove-Item -Recurse -Force models/slot-extractor-qlora -ErrorAction SilentlyContinue
 python scripts/train_qlora_slot_extractor.py --base-model google/flan-t5-small --eval-file data/evaluation/slot_eval_cases.jsonl --metrics-output outputs/evaluation/qlora_training_metadata.json
 ```
+
+The training and inference paths share a strict prompt ending in `User: ...`
+and `JSON:`. Delete and retrain any adapter created before this prompt-format
+fix; an old adapter must not be evaluated against the new inference prompt.
 
 By default it writes an adapter to:
 

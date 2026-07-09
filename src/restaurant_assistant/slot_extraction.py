@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import ast
 import json
 import re
 from dataclasses import dataclass, field
@@ -15,23 +14,50 @@ from restaurant_assistant.preprocessing import normalize_area, normalize_food, n
 
 
 def adapter_slot_prompt(text: str) -> str:
-    """Return the instruction format used to train the slot adapter."""
+    """Return the shared instruction format for adapter training and inference."""
     return (
-        "You are the language-understanding component for a MultiWOZ restaurant assistant. "
-        "Return only compact JSON with this schema: "
-        '{"intent":"<intent>","slots":{...}}. '
+        "Extract restaurant intent and slots.\n"
+        "Return exactly one JSON object. Do not explain. Do not repeat the prompt. "
+        'Use only keys "intent" and "slots".\n'
         "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
         "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
-        "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
+        "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown.\n"
         "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
-        "relative_day, day_modifier, time, people, booking_reference. "
-        "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
-        "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
-        "For incomplete booking requests, return intent book with only the booking slots the user gave. "
-        "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
-        "word such as curry; do not reinterpret the restaurant name as a dish preference. "
-        f"User: {text}"
+        "relative_day, day_modifier, time, people, booking_reference.\n"
+        "For broad regional cuisines use cuisine_group and food_candidates. For incomplete bookings "
+        "use intent book with provided slots only. Booking commands remain intent book even when a "
+        "restaurant name contains a dish or cuisine word. Never invent values.\n"
+        f"User: {text}\n"
+        "JSON:"
     )
+
+
+def _raw_output_preview(text: str, limit: int = 300) -> str:
+    """Return a compact, bounded preview suitable for errors and reports."""
+    preview = " ".join(str(text).split())
+    if len(preview) > limit:
+        return preview[: limit - 3] + "..."
+    return preview
+
+
+def parse_llm_json_output(text: str) -> dict[str, Any]:
+    """Find the first complete slot JSON object in model-generated text."""
+    candidate_text = str(text)
+    marker_position = candidate_text.rfind("JSON:")
+    if marker_position != -1:
+        candidate_text = candidate_text[marker_position + len("JSON:") :]
+
+    decoder = json.JSONDecoder()
+    for match in re.finditer(r"\{", candidate_text):
+        try:
+            parsed, _ = decoder.raw_decode(candidate_text, match.start())
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict) and "intent" in parsed and "slots" in parsed:
+            return parsed
+
+    preview = _raw_output_preview(text)
+    raise ValueError(f"LLM output did not contain a valid intent/slots JSON object. Raw output: {preview!r}")
 
 
 SUPPORTED_AREAS = {"centre", "north", "south", "east", "west"}
@@ -231,6 +257,9 @@ class SlotExtractionResult:
     slots: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
     used_llm: bool = False
+    llm_attempted: bool = False
+    llm_parse_success: bool = False
+    llm_raw_output: str | None = None
     errors: list[str] = field(default_factory=list)
     unsupported_slots: dict[str, str] = field(default_factory=dict)
 
@@ -703,74 +732,80 @@ class OptionalLLMSlotExtractor:
 
     def __init__(self, model_name: str = "google/flan-t5-small") -> None:
         self.model_name = model_name
+        # Kept as an injectable test seam for existing callers. Normal inference
+        # uses the tokenizer/model pair below rather than a Transformers pipeline.
         self._pipeline = None
+        self._model = None
+        self._tokenizer = None
+        self._load_attempted = False
         self._load_error: str | None = None
         self._uses_adapter = False
         self.rule_extractor = RuleBasedSlotExtractor()
 
-    def _load_pipeline(self) -> Any:
+    def _load_model(self) -> bool:
         if self._pipeline is not None:
-            return self._pipeline
+            return True
+        if self._model is not None and self._tokenizer is not None:
+            return True
+        if self._load_attempted:
+            return False
+        self._load_attempted = True
         backend_error = llm_backend_error()
         if backend_error:
             self._load_error = backend_error
-            self._pipeline = False
-            return self._pipeline
+            return False
         try:
-            from transformers import pipeline
+            from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
             model_path = Path(self.model_name)
             if model_path.exists() and (model_path / "adapter_config.json").exists():
                 from peft import AutoPeftModelForSeq2SeqLM
-                from transformers import AutoTokenizer
 
                 self._uses_adapter = True
-                tokenizer = AutoTokenizer.from_pretrained(model_path)
-                model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_path)
-                self._pipeline = pipeline("text2text-generation", model=model, tokenizer=tokenizer)
+                self._tokenizer = AutoTokenizer.from_pretrained(model_path)
+                self._model = AutoPeftModelForSeq2SeqLM.from_pretrained(model_path)
             else:
-                self._pipeline = pipeline("text2text-generation", model=self.model_name)
+                self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+                self._model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name)
+            self._model.eval()
         except Exception as exc:
             self._load_error = str(exc)
-            self._pipeline = False
-        return self._pipeline
+            self._model = None
+            self._tokenizer = None
+            return False
+        return True
+
+    def _generate(self, prompt: str) -> str:
+        if self._pipeline is not None:
+            output = self._pipeline(prompt, max_new_tokens=96, do_sample=False)
+            return str(output[0]["generated_text"])
+
+        inputs = self._tokenizer(prompt, return_tensors="pt", truncation=True)
+        try:
+            input_device = self._model.get_input_embeddings().weight.device
+            inputs = {key: value.to(input_device) for key, value in inputs.items()}
+        except (AttributeError, RuntimeError):
+            # CPU models already receive CPU tensors; some sharded/quantized
+            # models manage placement internally and do not expose one device.
+            pass
+
+        import torch
+
+        with torch.inference_mode():
+            generated = self._model.generate(**inputs, max_new_tokens=96, do_sample=False)
+        return str(self._tokenizer.decode(generated[0], skip_special_tokens=True))
 
     def extract(self, message: str) -> SlotExtractionResult:
         rule_result = self.rule_extractor.extract(message)
-        pipe = self._load_pipeline()
-        if not pipe:
+        if not self._load_model():
             if self._load_error and self._load_error not in rule_result.errors:
                 rule_result.errors.append(self._load_error)
             return rule_result
-        if self._uses_adapter:
-            prompt = adapter_slot_prompt(message)
-        else:
-            prompt = (
-                "You are the language-understanding component for a MultiWOZ restaurant assistant. "
-                "Return only compact JSON. Do not explain.\n"
-                "Schema: "
-                '{"intent":"<intent>","slots":{...}}. '
-                "Allowed intents: search, book, reschedule, cancel, greeting, thanks, alternative, list, "
-                "correct, booking_info, booking_list, table_view, restaurant_info, filter_info, "
-                "cuisine_help, dish_preference, distance_info, date_clarification, unsupported, unknown. "
-                "Allowed slots: food, food_candidates, cuisine_group, dish, area, pricerange, day, "
-                "relative_day, day_modifier, time, people, booking_reference. "
-                "For broad regional cuisine phrases such as Middle Eastern, South Asian, East Asian, "
-                "Southeast Asian, North African or West African, prefer cuisine_group plus food_candidates. "
-                "For incomplete booking requests, return intent book with only the booking slots the user gave. "
-                "A book or reserve command remains intent book when a restaurant name contains a dish or cuisine "
-                "word such as curry; do not reinterpret the restaurant name as a dish preference. "
-                "Use only restaurant-domain values. Do not invent unsupported areas, cuisines, dates, "
-                "booking references, addresses or phone numbers.\n"
-                'User: hello\nJSON: {"intent":"greeting","slots":{}}\n'
-                'User: I need a cheap Italian restaurant in the south\nJSON: {"intent":"search","slots":{"food":"italian","area":"south","pricerange":"cheap"}}\n'
-                'User: book it for Friday at 7pm for 2 people\nJSON: {"intent":"book","slots":{"day":"friday","time":"19:00","people":2}}\n'
-                'User: cancel BK-ABC123\nJSON: {"intent":"cancel","slots":{"booking_reference":"BK-ABC123"}}\n'
-                f"User: {message}\nJSON:"
-            )
+        prompt = adapter_slot_prompt(message)
+        raw_output: str | None = None
         try:
-            output = pipe(prompt, max_new_tokens=96, do_sample=False)[0]["generated_text"]
-            parsed = self._parse_json(output)
+            raw_output = self._generate(prompt)
+            parsed = parse_llm_json_output(raw_output)
             intent = parsed.get("intent", "unknown")
             if intent not in ALLOWED_INTENTS:
                 intent = "unknown"
@@ -793,28 +828,22 @@ class OptionalLLMSlotExtractor:
                 slots=merged_slots,
                 confidence=0.9,
                 used_llm=True,
+                llm_attempted=True,
+                llm_parse_success=True,
+                llm_raw_output=raw_output,
                 unsupported_slots=dict(rule_result.unsupported_slots),
             )
         except Exception as exc:
             fallback = rule_result
+            fallback.llm_attempted = True
+            fallback.llm_parse_success = False
+            fallback.llm_raw_output = _raw_output_preview(raw_output) if raw_output is not None else None
             fallback.errors.append(str(exc))
             return fallback
 
     def _parse_json(self, text: str) -> dict[str, Any]:
-        start = text.find("{")
-        end = text.rfind("}")
-        if start == -1 or end == -1 or end <= start:
-            raise ValueError("LLM output did not contain JSON")
-        try:
-            parsed = json.loads(text[start : end + 1])
-        except json.JSONDecodeError:
-            try:
-                parsed = ast.literal_eval(text[start : end + 1])
-            except (SyntaxError, ValueError) as exc:
-                raise ValueError("LLM output did not contain valid JSON") from exc
-        if not isinstance(parsed, dict):
-            raise ValueError("LLM output JSON was not an object")
-        return parsed
+        """Backward-compatible wrapper around the robust parser."""
+        return parse_llm_json_output(text)
 
 
 def extract_slots(message: str, *, use_llm: bool = False, model_name: str = "google/flan-t5-small") -> SlotExtractionResult:
