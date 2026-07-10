@@ -34,9 +34,10 @@ pip install -r requirements.txt
 ```
 
 The default tests and demo work without downloading an LLM. With `--enable-llm`,
-the assistant uses Hugging Face Transformers for JSON intent/slot extraction and
-grounded response generation when a supported model is available. Validated
-rules, retrieval and booking safeguards remain active as guardrails.
+the assistant uses Hugging Face Transformers for JSON intent/slot extraction.
+Optional response generation is separate: use `--enable-response-llm` with
+`--response-model-name` when you want a guarded response model. Validated rules,
+retrieval and booking safeguards remain active as guardrails.
 
 For local LLM mode, install the optional backend dependencies as well:
 
@@ -164,16 +165,16 @@ You: Cancel it.
 Assistant: I have cancelled booking...
 ```
 
-Enable attempted Transformers generation:
+Enable attempted Transformers slot extraction:
 
 ```powershell
 python scripts/run_chat.py --sample-data --enable-llm
 ```
 
-Use separate models or a fine-tuned adapter for slot extraction:
+Use separate slot and response models:
 
 ```powershell
-python scripts/run_chat.py --enable-llm --model-name google/flan-t5-small --slot-model-name google/flan-t5-small
+python scripts/run_chat.py --enable-llm --enable-response-llm --slot-model-name models/slot-extractor-lora-strict --response-model-name google/flan-t5-base
 ```
 
 ## Run Tests
@@ -311,6 +312,11 @@ After downloading the Kaggle output, use it locally with:
 ```powershell
 python scripts/run_web.py --enable-llm --slot-model-name models/slot-extractor-lora-strict --debug
 ```
+
+That command enables the trained slot extractor only. To try guarded response
+generation as well, add `--enable-response-llm --response-model-name
+models/response-generator-lora` or use the default `google/flan-t5-base`
+response model.
 
 Evaluate and save reports:
 

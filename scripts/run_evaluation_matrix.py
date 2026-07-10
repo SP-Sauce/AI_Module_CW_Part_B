@@ -30,7 +30,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional second slot fixture written to separate challenge matrix reports.",
     )
-    parser.add_argument("--model-name", default=None, help="Optional response-generation model override.")
+    parser.add_argument("--response-model-name", default=None, help="Optional response-generation model override.")
+    parser.add_argument("--model-name", default=None, help="Deprecated alias for --response-model-name.")
     parser.add_argument(
         "--slot-model-name",
         default=None,
@@ -66,7 +67,7 @@ def _command_for_config(
     slot_fixture: Path,
     enable_llm: bool,
     slot_model_name: str | None,
-    model_name: str | None,
+    response_model_name: str | None,
 ) -> str:
     parts = ["python", "scripts/evaluate.py"]
     if sample_data:
@@ -74,8 +75,8 @@ def _command_for_config(
     parts.extend(["--slot-fixture", str(slot_fixture)])
     if enable_llm:
         parts.append("--enable-llm")
-    if model_name:
-        parts.extend(["--model-name", model_name])
+    if response_model_name:
+        parts.extend(["--response-model-name", response_model_name])
     if slot_model_name:
         parts.extend(["--slot-model-name", slot_model_name])
     return " ".join(parts)
@@ -160,6 +161,7 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
 
 def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
     explicit_slot_model = getattr(args, "slot_model_name", None)
+    response_model_name = getattr(args, "response_model_name", None) or getattr(args, "model_name", None)
     configs = [
         {
             "name": "baseline_rule_based",
@@ -204,7 +206,7 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
             slot_fixture=args.slot_fixture,
             enable_llm=config["enable_llm"],
             slot_model_name=config["slot_model_name"],
-            model_name=args.model_name,
+            response_model_name=response_model_name,
         )
         adapter_path = config.get("adapter_path")
         if adapter_path is not None and not adapter_path.exists():
@@ -222,7 +224,8 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
             metrics = run_evaluation(
                 sample_data=args.sample_data,
                 enable_llm=config["enable_llm"],
-                model_name=args.model_name,
+                model_name=getattr(args, "model_name", None),
+                response_model_name=response_model_name,
                 slot_model_name=config["slot_model_name"],
                 slot_fixture=args.slot_fixture,
             )

@@ -17,7 +17,7 @@ def llm_backend_error(*, min_torch_version: str = "2.4") -> str | None:
     """Return a user-readable reason if Transformers cannot use PyTorch."""
 
     if importlib.util.find_spec("torch") is None:
-        return "PyTorch is not installed. Install the LLM extras before using --enable-llm."
+        return "PyTorch is not installed. Install the LLM extras before using the local LLM paths."
     try:
         import torch
     except Exception as exc:

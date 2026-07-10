@@ -34,17 +34,21 @@ after adapter training.
 
 ## Commands
 
-Run the CLI with LLM extraction and generation:
+Run the CLI with LLM slot extraction:
 
 ```powershell
 python scripts/run_chat.py --enable-llm --debug
 ```
 
-Run the web demo with separate models for generation and slot extraction:
+Run the web demo with separate models for response generation and slot extraction:
 
 ```powershell
-python scripts/run_web.py --enable-llm --model-name google/flan-t5-small --slot-model-name google/flan-t5-small
+python scripts/run_web.py --enable-llm --enable-response-llm --slot-model-name models/slot-extractor-lora-strict --response-model-name google/flan-t5-base
 ```
+
+For a trained response adapter, replace the response model with
+`--response-model-name models/response-generator-lora`. Unsafe generated
+responses fall back to deterministic NLG.
 
 Evaluate the LLM path:
 

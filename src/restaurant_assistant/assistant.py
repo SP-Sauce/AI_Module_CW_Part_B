@@ -20,7 +20,7 @@ from restaurant_assistant.date_utils import (
     resolve_weekday_date,
 )
 from restaurant_assistant.dialogue_state import BOOKING_SLOTS, DialogueState
-from restaurant_assistant.llm_generator import GroundedResponseGenerator
+from restaurant_assistant.llm_generator import GroundedResponseGenerator, validate_generated_response
 from restaurant_assistant.nlg import NaturalLanguageGenerator, contains_json_or_debug_leakage, safe_user_text
 from restaurant_assistant.ranking import RankedRestaurant, rank_candidates
 from restaurant_assistant.retrieval import RestaurantRetriever, RetrievedRestaurant
@@ -72,11 +72,17 @@ class RestaurantAssistant:
                 self.slot_extractor = OptionalLLMSlotExtractor(self.settings.slot_model_name)
         else:
             self.slot_extractor = RuleBasedSlotExtractor()
-        self.generator = GroundedResponseGenerator(enable_llm=llm_enabled, model_name=self.settings.model_name)
+        self.generator = GroundedResponseGenerator(
+            enable_llm=self.settings.enable_response_llm,
+            model_name=self.settings.response_model_name,
+            pretrained_fallback=self.settings.enable_response_pretrained_fallback,
+            known_restaurants=self.restaurants,
+        )
         self.nlg = NaturalLanguageGenerator()
         self.booking = BookingManager(store=booking_store, session_id=session_id, user_id=user_id)
 
     def process(self, user_message: str, *, debug: bool = False) -> AssistantResponse:
+        self.generator.last_result = None
         turn_time = self.clock()
         extraction = self.slot_extractor.extract(user_message)
         if self._mentions_next_week_without_day(user_message, extraction.slots):
@@ -474,8 +480,13 @@ class RestaurantAssistant:
         candidate_response: str,
         generation_mode: str,
     ) -> tuple[str, str]:
-        if contains_json_or_debug_leakage(candidate_response):
-            plan.warnings.append("discarded_candidate_response_with_json_or_debug_leakage")
+        validation = validate_generated_response(
+            candidate_response,
+            evidence_records=self._plan_evidence_records(plan),
+            known_restaurant_records=self.restaurants,
+        )
+        if not validation.ok:
+            plan.warnings.append(f"discarded_candidate_response:{validation.reason}")
             return self.nlg.generate(plan), "nlg:safe_fallback"
         return safe_user_text(candidate_response), generation_mode
 
@@ -486,8 +497,13 @@ class RestaurantAssistant:
         plan: ResponsePlan,
         ranked: list[RankedRestaurant],
     ) -> tuple[str, str]:
-        if contains_json_or_debug_leakage(candidate_response):
-            plan.warnings.append("discarded_candidate_response_with_json_or_debug_leakage")
+        validation = validate_generated_response(
+            candidate_response,
+            evidence_records=self._plan_evidence_records(plan),
+            known_restaurant_records=self.restaurants,
+        )
+        if not validation.ok:
+            plan.warnings.append(f"discarded_candidate_response:{validation.reason}")
             return self.nlg.generate(plan), "nlg:safe_fallback"
         if generation_mode.startswith("transformers:") and not self._response_mentions_only_ranked_restaurants(
             candidate_response,
@@ -496,6 +512,29 @@ class RestaurantAssistant:
             plan.warnings.append("discarded_ungrounded_llm_response")
             return self.nlg.generate(plan), "nlg:grounded_fallback"
         return candidate_response, generation_mode
+
+    def _plan_evidence_records(self, plan: ResponsePlan) -> list[dict[str, Any]]:
+        records: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for record in [*plan.retrieved_restaurants, *plan.alternatives]:
+            self._append_plan_evidence(records, seen, record)
+        self._append_plan_evidence(records, seen, plan.selected_restaurant)
+        return records
+
+    def _append_plan_evidence(
+        self,
+        records: list[dict[str, Any]],
+        seen: set[str],
+        record: dict[str, Any] | None,
+    ) -> None:
+        public = public_restaurant(record)
+        if not public:
+            return
+        key = str(public.get("name") or public.get("address") or public)
+        if key in seen:
+            return
+        seen.add(key)
+        records.append(public)
 
     def _response_mentions_only_ranked_restaurants(
         self,
@@ -1167,6 +1206,13 @@ class RestaurantAssistant:
         relative_resolution: dict[str, Any] | None,
         response_plan: ResponsePlan,
     ) -> dict[str, Any]:
+        response_generation = self.generator.last_result
+        response_generation_mode = (
+            response_generation.response_generation_mode
+            if response_generation is not None
+            else ("disabled" if not self.settings.enable_response_llm else "not_attempted")
+        )
+        final_response_mode = response_generation.final_response_mode if response_generation is not None else generation_mode
         return {
             "turn_timestamp": turn_timestamp,
             "intent": extraction.intent,
@@ -1178,6 +1224,13 @@ class RestaurantAssistant:
             "slot_extraction_used_llm": extraction.used_llm,
             "slot_extraction_errors": extraction.errors,
             "slot_model_name": self.settings.slot_model_name if self.llm_enabled else None,
+            "response_generation_enabled": self.settings.enable_response_llm,
+            "response_model_name": self.settings.response_model_name,
+            "response_generation_attempted": bool(response_generation.attempted) if response_generation else False,
+            "response_generation_used_llm": bool(response_generation.used_llm) if response_generation else False,
+            "response_generation_mode": response_generation_mode,
+            "response_generation_rejected_reason": response_generation.rejected_reason if response_generation else None,
+            "final_response_mode": final_response_mode,
             "dialogue_state": self.state.to_dict(),
             "retrieved_restaurants": [
                 {"name": item.record.get("name"), "similarity": round(item.similarity, 4)} for item in retrieved

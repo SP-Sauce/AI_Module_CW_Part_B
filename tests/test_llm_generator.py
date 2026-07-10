@@ -84,7 +84,7 @@ def test_generator_uses_template_for_missing_booking_slots_even_when_llm_enabled
 
     assert result.used_llm is False
     assert result.mode == "template"
-    assert "To complete the booking for pipasha restaurant" in result.text
+    assert "Great, I can create a booking record for pipasha restaurant" in result.text
     assert '"user":' not in result.text
 
 
@@ -120,4 +120,5 @@ def test_generator_rejects_prompt_leak_and_falls_back_to_template():
 
     assert result.used_llm is False
     assert result.mode == "template"
-    assert result.text == "I found Test Restaurant (cheap italian) in the south area."
+    assert "I found Test Restaurant (cheap italian) in the south area" in result.text
+    assert "which matches your request" in result.text

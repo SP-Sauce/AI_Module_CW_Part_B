@@ -64,11 +64,12 @@ next action and debug-only warnings/internal notes.
 phrasing. It rejects JSON-like text, raw database/debug fields and ungrounded
 optional generation before a message is returned to the user.
 
-`llm_generator.py` produces grounded responses. If Hugging Face Transformers and
-a local/downloadable model are available, it can use a small encoder-decoder
-model such as `google/flan-t5-small`. Otherwise it uses safe templates. Both
-paths are instructed to use only retrieved restaurant evidence, and optional
-LLM output is discarded when it fails the response safety checks.
+`llm_generator.py` produces optional guarded responses. `--enable-llm` is only
+for slot extraction; response generation requires `--enable-response-llm`.
+The default response model is `google/flan-t5-base`, and a trained response LoRA
+adapter can be supplied with `--response-model-name`. Safe deterministic NLG is
+always the final fallback, and optional LLM output is discarded when it fails the
+response safety checks.
 
 `scripts/build_slot_training_data.py` creates strict train/dev JSONL files for
 the slot extractor without copying exact evaluation fixture text. Targets are

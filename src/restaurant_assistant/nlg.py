@@ -56,8 +56,8 @@ class NaturalLanguageGenerator:
         self._counters: dict[str, int] = defaultdict(int)
         self._phrases = {
             "greeting": [
-                "Hello. I can help find MultiWOZ restaurant records and create booking records.",
-                "Hi. I can help with restaurant searches and booking records from the loaded MultiWOZ data.",
+                "Hi - I can help find MultiWOZ restaurant records and create booking records.",
+                "Hello - I can help with restaurant searches and booking records from the loaded MultiWOZ data.",
             ],
             "thanks": [
                 "You're welcome. I can help with the current session booking if you need to view, change or cancel it.",
@@ -134,6 +134,14 @@ class NaturalLanguageGenerator:
         restaurant = plan.selected_restaurant or self._first(plan.retrieved_restaurants)
         if not restaurant:
             return self._render_no_results(plan)
+        constraint_text = self._constraint_text(plan.constraints)
+        if constraint_text:
+            contact = self._restaurant_contact_sentence(restaurant)
+            suffix = f" {contact}" if contact else ""
+            return (
+                f"I found {self._restaurant_summary(restaurant)}, which matches your request for "
+                f"{constraint_text}.{suffix}"
+            )
         return f"I found {self._restaurant_detail(restaurant)}."
 
     def _render_restaurant_details(self, plan: ResponsePlan) -> str:
@@ -145,7 +153,7 @@ class NaturalLanguageGenerator:
     def _render_booking_missing_details(self, plan: ResponsePlan) -> str:
         missing = plan.missing_constraints
         if "restaurant" in missing:
-            return "Please choose a restaurant first, or tell me the food type, area and price range to search."
+            return "Sure - please choose a restaurant first, or tell me the food type, area and price range to search."
         readable = {
             "food": "food type",
             "area": "area",
@@ -158,10 +166,12 @@ class NaturalLanguageGenerator:
         restaurant = plan.selected_restaurant
         restaurant_name = restaurant.get("name") if restaurant else "the restaurant"
         if any(slot in {"day", "time", "people"} for slot in missing):
-            detail = ""
-            if restaurant:
-                detail = self._restaurant_summary(restaurant) + ". "
-            return f"{detail}To complete the booking for {restaurant_name}, please provide: {missing_text}."
+            return (
+                f"Great, I can create a booking record for {restaurant_name}. "
+                f"To complete the booking for {restaurant_name}, I still need the {missing_text}."
+            )
+        if missing == ["food"]:
+            return "Sure - what kind of food would you like me to search for?"
         return f"Please tell me your preferred {missing_text}."
 
     def _render_booking_confirmation(self, plan: ResponsePlan) -> str:
@@ -173,10 +183,10 @@ class NaturalLanguageGenerator:
         people = plan.metadata.get("people")
         if reference:
             return (
-                f"I have created a booking record for {name} on {date_text} at {time} "
+                f"Great, I have created a booking record for {name} on {date_text} at {time} "
                 f"for {people} people. Your reference is {reference}."
             )
-        return f"I have created a booking record for {name}."
+        return f"Great, I have created a booking record for {name}."
 
     def _render_booking_rescheduled(self, plan: ResponsePlan) -> str:
         restaurant = plan.selected_restaurant or {}
@@ -196,7 +206,7 @@ class NaturalLanguageGenerator:
             return str(message)
         reference = plan.metadata.get("reference")
         if reference:
-            return f"I have cancelled booking {reference}."
+            return f"Done - I have cancelled booking {reference}."
         return "There is no active booking to cancel."
 
     def _render_booking_list(self, plan: ResponsePlan) -> str:
@@ -362,15 +372,30 @@ class NaturalLanguageGenerator:
             detail += ". " + ". ".join(fields)
         return detail
 
+    def _restaurant_contact_sentence(self, record: dict[str, Any]) -> str:
+        fields = []
+        if record.get("address"):
+            fields.append(f"Address: {record['address']}")
+        if record.get("postcode"):
+            fields.append(f"Postcode: {record['postcode']}")
+        if record.get("phone"):
+            fields.append(f"Phone: {record['phone']}")
+        return ". ".join(fields) + "." if fields else ""
+
     def _constraint_text(self, constraints: dict[str, Any]) -> str:
         parts = []
         if constraints.get("pricerange"):
             parts.append(str(constraints["pricerange"]))
         if constraints.get("food"):
             parts.append(str(constraints["food"]))
+        phrase = " ".join(parts)
+        if phrase:
+            phrase += " restaurant"
+        elif constraints.get("area"):
+            phrase = "a restaurant"
         if constraints.get("area"):
-            parts.append(f"in the {constraints['area']}")
-        return " ".join(parts)
+            phrase += f" in the {constraints['area']} area"
+        return phrase
 
     def _plan_date_text(self, plan: ResponsePlan) -> str:
         return format_booking_date(plan.metadata.get("booking_date"), plan.metadata.get("day"))

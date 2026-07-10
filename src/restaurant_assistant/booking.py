@@ -45,7 +45,7 @@ class BookingManager:
         name = self._restaurant_name(state)
         date_text = format_booking_date(state.booking_date, state.day)
         message = (
-            f"I have created a booking record for {name} on {date_text} at {state.time} "
+            f"Great, I have created a booking record for {name} on {date_text} at {state.time} "
             f"for {state.people} people. Your reference is {state.booking_reference}."
         )
         self._persist(state)
@@ -60,7 +60,7 @@ class BookingManager:
         name = self._restaurant_name(state)
         date_text = format_booking_date(state.booking_date, state.day)
         message = (
-            f"I have updated booking {state.booking_reference} for {name} "
+            f"Done, I have updated booking {state.booking_reference} for {name} "
             f"to {date_text} at {state.time} for {state.people} people."
         )
         self._persist(state)
@@ -71,7 +71,7 @@ class BookingManager:
             return BookingResult(False, "There is no active booking to cancel.", ["booking"])
         reference = state.booking_reference
         state.booking_status = "cancelled"
-        message = f"I have cancelled booking {reference}."
+        message = f"Done - I have cancelled booking {reference}."
         self._persist(state)
         return BookingResult(True, message)
 

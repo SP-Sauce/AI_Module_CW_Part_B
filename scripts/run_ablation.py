@@ -22,8 +22,10 @@ from restaurant_assistant.retrieval import RestaurantRetriever
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run simple ablation comparisons.")
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
-    parser.add_argument("--enable-llm", action="store_true", help="Run the final system with LLM extraction/generation enabled.")
-    parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
+    parser.add_argument("--enable-llm", action="store_true", help="Run the final system with LLM slot extraction enabled.")
+    parser.add_argument("--enable-response-llm", action="store_true", help="Run the final system with guarded LLM response generation enabled.")
+    parser.add_argument("--response-model-name", default=None, help="Transformers model name or adapter path for response generation.")
+    parser.add_argument("--model-name", default=None, help="Deprecated alias for --response-model-name.")
     parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
     return parser
 
@@ -70,12 +72,19 @@ def llm_only_placeholder() -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     settings = get_settings()
-    if args.model_name:
-        settings = replace(settings, model_name=args.model_name)
+    response_model_name = args.response_model_name or args.model_name
+    if response_model_name:
+        settings = replace(
+            settings,
+            model_name=response_model_name,
+            response_model_name=response_model_name,
+        )
     if args.slot_model_name:
         settings = replace(settings, slot_model_name=args.slot_model_name)
     if args.enable_llm:
         settings = replace(settings, enable_llm=True)
+    if args.enable_response_llm:
+        settings = replace(settings, enable_response_llm=True)
     restaurants = load_restaurants(settings, use_sample=args.sample_data)
     target = next(
         (

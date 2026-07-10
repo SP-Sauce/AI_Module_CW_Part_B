@@ -37,8 +37,10 @@ SLOT_FIXTURE = ROOT / "tests" / "fixtures" / "slot_cases.json"
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Evaluate the restaurant assistant.")
     parser.add_argument("--sample-data", action="store_true", help="Use bundled sample restaurants.")
-    parser.add_argument("--enable-llm", action="store_true", help="Evaluate with LLM extraction and generation enabled.")
-    parser.add_argument("--model-name", default=None, help="Transformers model name for grounded response generation.")
+    parser.add_argument("--enable-llm", action="store_true", help="Evaluate with LLM slot extraction enabled.")
+    parser.add_argument("--enable-response-llm", action="store_true", help="Evaluate with optional guarded LLM response generation enabled.")
+    parser.add_argument("--response-model-name", default=None, help="Transformers model name or adapter path for response generation.")
+    parser.add_argument("--model-name", default=None, help="Deprecated alias for --response-model-name.")
     parser.add_argument("--slot-model-name", default=None, help="Transformers model name or adapter path for LLM slot extraction.")
     parser.add_argument("--slot-num-beams", type=int, default=None, help="Beam count for slot-model JSON generation.")
     parser.add_argument("--report-path", type=Path, default=None, help="Optional path to write the JSON report.")
@@ -516,20 +518,25 @@ def run_evaluation(
     *,
     sample_data: bool,
     enable_llm: bool,
+    enable_response_llm: bool = False,
     model_name: str | None = None,
+    response_model_name: str | None = None,
     slot_model_name: str | None = None,
     slot_num_beams: int | None = None,
     slot_fixture: Path = SLOT_FIXTURE,
 ) -> dict[str, Any]:
     settings = get_settings()
-    if model_name:
-        settings = replace(settings, model_name=model_name)
+    response_name = response_model_name or model_name
+    if response_name:
+        settings = replace(settings, model_name=response_name, response_model_name=response_name)
     if slot_model_name:
         settings = replace(settings, slot_model_name=slot_model_name)
     if slot_num_beams is not None:
         settings = replace(settings, slot_num_beams=slot_num_beams)
     if enable_llm:
         settings = replace(settings, enable_llm=True)
+    if enable_response_llm:
+        settings = replace(settings, enable_response_llm=True)
     restaurants = load_restaurants(settings, use_sample=sample_data)
     results = {
         "slot_extraction": evaluate_slots(
@@ -551,7 +558,9 @@ def main(argv: list[str] | None = None) -> None:
     output = run_evaluation(
         sample_data=args.sample_data,
         enable_llm=args.enable_llm,
+        enable_response_llm=args.enable_response_llm,
         model_name=args.model_name,
+        response_model_name=args.response_model_name,
         slot_model_name=args.slot_model_name,
         slot_fixture=args.slot_fixture,
         slot_num_beams=args.slot_num_beams,
