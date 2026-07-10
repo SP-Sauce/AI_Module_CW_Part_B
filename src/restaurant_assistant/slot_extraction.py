@@ -25,7 +25,6 @@ ALLOWED_SLOT_KEYS = {
     "day_modifier",
     "time",
     "people",
-    "restaurant_name",
     "booking_reference",
 }
 
@@ -34,31 +33,55 @@ STRICT_MODEL_INTENTS = {
     "list",
     "restaurant_info",
     "book",
-    "update_booking",
-    "cancel_booking",
+    "reschedule",
+    "cancel",
+    "booking_info",
     "booking_list",
+    "filter_info",
+    "cuisine_help",
+    "dish_preference",
+    "distance_info",
+    "table_view",
     "greeting",
     "thanks",
-    "goodbye",
     "unsupported",
+    "correct",
+    "date_clarification",
+    "alternative",
+    "unknown",
 }
 
 STRICT_MODEL_SLOT_KEYS = {
     "food",
     "food_candidates",
     "cuisine_group",
+    "dish",
     "area",
     "pricerange",
     "day",
+    "relative_day",
+    "day_modifier",
     "time",
     "people",
-    "restaurant_name",
     "booking_reference",
 }
 
 MODEL_INTENT_ALIASES = {
+    "cancel booking": "cancel",
     "update_booking": "reschedule",
     "cancel_booking": "cancel",
+    "update booking": "reschedule",
+    "reschedule_booking": "reschedule",
+    "reschedule booking": "reschedule",
+    "goodbye": "thanks",
+    "bye": "thanks",
+    "farewell": "thanks",
+    "see you": "thanks",
+    "good afternoon": "greeting",
+    "good morning": "greeting",
+    "good evening": "greeting",
+    "hello": "greeting",
+    "hi": "greeting",
 }
 
 
@@ -69,10 +92,11 @@ def adapter_slot_prompt(text: str) -> str:
         "Return only one valid minified JSON object.\n"
         "Do not explain.\n"
         "Do not use markdown.\n"
-        "Allowed intents: search, list, restaurant_info, book, update_booking, cancel_booking, "
-        "booking_list, greeting, thanks, goodbye, unsupported.\n"
-        "Allowed slots: food, food_candidates, cuisine_group, area, pricerange, day, time, people, "
-        "restaurant_name, booking_reference.\n"
+        "Allowed intents: search, list, book, reschedule, cancel, booking_info, booking_list, "
+        "restaurant_info, filter_info, cuisine_help, dish_preference, distance_info, table_view, "
+        "greeting, thanks, unsupported, correct, date_clarification, alternative, unknown.\n"
+        "Allowed slots: food, area, pricerange, day, relative_day, day_modifier, time, people, "
+        "booking_reference, dish, cuisine_group, food_candidates.\n"
         f"User: {text}\n"
         "JSON:"
     )
@@ -130,13 +154,75 @@ def strict_parse_llm_json_output(text: str) -> dict[str, Any]:
     return parsed
 
 
-def canonicalize_model_intent(intent: Any) -> str:
+ALLOWED_INTENTS = {
+    "search",
+    "list",
+    "book",
+    "reschedule",
+    "cancel",
+    "booking_info",
+    "booking_list",
+    "restaurant_info",
+    "filter_info",
+    "cuisine_help",
+    "dish_preference",
+    "distance_info",
+    "table_view",
+    "greeting",
+    "thanks",
+    "unsupported",
+    "correct",
+    "date_clarification",
+    "alternative",
+    "unknown",
+}
+
+
+def _normalise_intent_token(intent: str) -> str:
+    return " ".join(re.sub(r"[_-]+", " ", intent.strip().casefold()).split())
+
+
+def canonicalize_model_intent(
+    intent: Any,
+    *,
+    slots: dict[str, Any] | None = None,
+    message: str | None = None,
+) -> str:
     """Map strict-model labels onto internal assistant intent labels."""
 
     if not isinstance(intent, str):
         return "unknown"
-    normalized = intent.strip()
-    return MODEL_INTENT_ALIASES.get(normalized, normalized)
+    normalized = _normalise_intent_token(intent)
+    alias = MODEL_INTENT_ALIASES.get(normalized) or MODEL_INTENT_ALIASES.get(normalized.replace(" ", "_"))
+    if alias is not None:
+        return alias
+    if normalized == "order":
+        has_restaurant_slot = bool({"food", "area", "pricerange"} & set(slots or {}))
+        message_text = str(message or "").casefold()
+        clearly_search = has_restaurant_slot and re.search(
+            r"\b(find|search|show|list|restaurant|restaurants|place|places|food|eat)\b",
+            message_text,
+        )
+        clearly_non_restaurant_search = re.search(
+            r"\b(taxi|train|flight|hotel|takeaway|delivery|deliver|payment|pay|buy)\b",
+            message_text,
+        )
+        return "search" if clearly_search and not clearly_non_restaurant_search else "unsupported"
+    normalized_key = normalized.replace(" ", "_")
+    if normalized_key in ALLOWED_INTENTS:
+        return normalized_key
+    return "unknown"
+
+
+def _model_intent_is_known_or_alias(intent: Any) -> bool:
+    if not isinstance(intent, str):
+        return False
+    normalized = _normalise_intent_token(intent)
+    if normalized == "order":
+        return True
+    if normalized in MODEL_INTENT_ALIASES or normalized.replace(" ", "_") in MODEL_INTENT_ALIASES:
+        return True
+    return normalized.replace(" ", "_") in ALLOWED_INTENTS
 
 
 def _first_json_value_after_key(text: str, key: str) -> Any:
@@ -151,40 +237,109 @@ def _first_json_value_after_key(text: str, key: str) -> Any:
     raise ValueError(f"LLM output did not contain a valid value for {key!r}")
 
 
-def repair_llm_json_output(text: str) -> tuple[dict[str, Any], str]:
-    """Repair a narrow malformed intent/slots fragment into canonical JSON."""
+def _clean_llm_output_fragment(text: str) -> str:
+    candidate_text = _text_after_last_json_marker(text).strip()
+    fenced = re.search(r"```(?:json)?\s*(.*?)\s*```", candidate_text, flags=re.IGNORECASE | re.DOTALL)
+    if fenced:
+        candidate_text = fenced.group(1).strip()
+    return candidate_text
+
+
+def _extract_intent_token(raw_output: str) -> str | None:
+    candidate_text = _clean_llm_output_fragment(raw_output)
+    intent_match = re.search(r'"intent"\s*:\s*"(?P<intent>(?:\\.|[^"\\])*)"', candidate_text)
+    if intent_match is None:
+        return None
+    raw_intent = intent_match.group("intent")
     try:
-        parsed = parse_llm_json_output(text)
+        return str(json.loads(f'"{raw_intent}"'))
+    except json.JSONDecodeError:
+        return raw_intent
+
+
+def _slot_value_is_simple(value: Any) -> bool:
+    if isinstance(value, (str, int)):
+        return True
+    if isinstance(value, list):
+        return all(isinstance(item, (str, int)) for item in value)
+    return False
+
+
+def _normalise_repaired_slots(slots: Any) -> dict[str, Any]:
+    if not isinstance(slots, dict):
+        return {}
+    repaired: dict[str, Any] = {}
+    for key, value in slots.items():
+        if key not in ALLOWED_SLOT_KEYS or key in repaired or not _slot_value_is_simple(value):
+            continue
+        if key == "people":
+            try:
+                value = int(value)
+            except (TypeError, ValueError):
+                continue
+        repaired[key] = value
+    return repaired
+
+
+def _normalise_repaired_payload(payload: dict[str, Any], *, message: str | None = None) -> dict[str, Any]:
+    slots = _normalise_repaired_slots(payload.get("slots", {}))
+    intent = canonicalize_model_intent(payload.get("intent"), slots=slots, message=message)
+    return {"intent": intent, "slots": slots}
+
+
+def repair_pseudo_json_output(raw_output: str, *, message: str | None = None) -> dict[str, Any] | None:
+    """Repair recurring pseudo-JSON model output without executing it."""
+    try:
+        parsed = parse_llm_json_output(raw_output)
     except ValueError:
         parsed = None
     if parsed is not None:
-        repaired_output = json.dumps(parsed, ensure_ascii=True, separators=(",", ":"))
-        return parsed, repaired_output
+        return _normalise_repaired_payload(parsed, message=message)
 
-    candidate_text = _text_after_last_json_marker(text)
-    intent = _first_json_value_after_key(candidate_text, "intent")
-    if not isinstance(intent, str):
-        raise ValueError("LLM output intent was not a string")
+    candidate_text = _clean_llm_output_fragment(raw_output)
+    intent = _extract_intent_token(candidate_text)
+    if intent is None:
+        return None
 
-    slots_marker = re.search(r'"slots"\s*:\s*', candidate_text)
-    if slots_marker is None:
-        raise ValueError("LLM output did not contain a slots fragment")
-
-    slot_fragment = candidate_text[slots_marker.end() :]
     slots: dict[str, Any] = {}
-    key_pattern = re.compile(r'"(?P<key>[^"]+)"\s*:\s*')
-    decoder = json.JSONDecoder()
-    for match in key_pattern.finditer(slot_fragment):
-        key = match.group("key")
-        if key not in ALLOWED_SLOT_KEYS or key in slots:
-            continue
+    slots_marker = re.search(r'"slots"\s*:\s*', candidate_text)
+    if slots_marker is not None:
+        slot_fragment = candidate_text[slots_marker.end() :]
         try:
-            value, _ = decoder.raw_decode(slot_fragment, match.end())
+            slots_value, _ = json.JSONDecoder().raw_decode(slot_fragment)
         except json.JSONDecodeError:
-            continue
-        slots[key] = value
+            slots_value = None
+        if isinstance(slots_value, dict):
+            slots = _normalise_repaired_slots(slots_value)
 
-    repaired = {"intent": intent, "slots": slots}
+        if not slots:
+            key_pattern = re.compile(r'"(?P<key>[^"]+)"\s*:\s*')
+            decoder = json.JSONDecoder()
+            for match in key_pattern.finditer(slot_fragment):
+                key = match.group("key")
+                if key not in ALLOWED_SLOT_KEYS or key in slots:
+                    continue
+                try:
+                    value, _ = decoder.raw_decode(slot_fragment, match.end())
+                except json.JSONDecodeError:
+                    continue
+                if not _slot_value_is_simple(value):
+                    continue
+                if key == "people":
+                    try:
+                        value = int(value)
+                    except (TypeError, ValueError):
+                        continue
+                slots[key] = value
+
+    return {"intent": canonicalize_model_intent(intent, slots=slots, message=message), "slots": slots}
+
+
+def repair_llm_json_output(text: str, *, message: str | None = None) -> tuple[dict[str, Any], str]:
+    """Repair malformed intent/slots output into canonical JSON."""
+    repaired = repair_pseudo_json_output(text, message=message)
+    if repaired is None:
+        raise ValueError("LLM output did not contain a repairable intent/slots fragment")
     repaired_output = json.dumps(repaired, ensure_ascii=True, separators=(",", ":"))
     return repaired, repaired_output
 
@@ -359,38 +514,11 @@ NUMBER_WORDS = {
     "ten": 10,
 }
 
-ALLOWED_INTENTS = {
-    "search",
-    "book",
-    "reschedule",
-    "update_booking",
-    "cancel",
-    "cancel_booking",
-    "greeting",
-    "thanks",
-    "goodbye",
-    "alternative",
-    "list",
-    "correct",
-    "booking_info",
-    "booking_list",
-    "table_view",
-    "restaurant_info",
-    "filter_info",
-    "cuisine_help",
-    "dish_preference",
-    "distance_info",
-    "date_clarification",
-    "unsupported",
-    "unknown",
-}
-
 RULE_GUARDED_INTENTS = {
     "book",
     "booking_info",
     "booking_list",
     "cancel",
-    "cancel_booking",
     "correct",
     "cuisine_help",
     "date_clarification",
@@ -398,10 +526,8 @@ RULE_GUARDED_INTENTS = {
     "distance_info",
     "filter_info",
     "greeting",
-    "goodbye",
     "restaurant_info",
     "reschedule",
-    "update_booking",
     "table_view",
     "thanks",
     "unsupported",
@@ -418,6 +544,9 @@ class SlotExtractionResult:
     llm_parse_success: bool = False
     llm_repair_success: bool = False
     llm_repair_weak: bool = False
+    llm_repair_strategy: str = "fallback"
+    llm_repaired_intent: str | None = None
+    llm_trusted_slots: dict[str, Any] = field(default_factory=dict)
     llm_intent_trusted: bool = False
     llm_slots_trusted: bool = False
     llm_meaningful_slot_contribution: bool = False
@@ -576,6 +705,7 @@ class RuleBasedSlotExtractor:
         return None
 
     def _extract_area(self, text: str) -> str | None:
+        original_text = text
         text = re.sub(r"\bmiddle[- ]eastern\b", "middleeastern", text)
         text = re.sub(r"\b(?:south|east|south[- ]?east|southeast)\s+asian\b", "regionalasian", text)
         text = re.sub(r"\b(?:west|east|north|south)\s+african\b", "african", text)
@@ -595,6 +725,13 @@ class RuleBasedSlotExtractor:
             "west": [r"\bwest\b", r"\bwestern\b"],
         }
         for area, patterns in area_patterns.items():
+            if any(
+                re.search(rf"\b(?:actually|make that|i said|should be|instead)\b\s+(?:the\s+area\s+)?{pattern}", original_text)
+                or re.search(rf"{pattern}\s+(?:rather than|instead of)\b", original_text)
+                for pattern in patterns
+            ):
+                return area
+        for area, patterns in area_patterns.items():
             if any(re.search(pattern, text) for pattern in patterns):
                 return area
         return None
@@ -611,6 +748,26 @@ class RuleBasedSlotExtractor:
         return None
 
     def _extract_price(self, text: str) -> str | None:
+        price_patterns = {
+            "cheap": [
+                r"\bcheap\b",
+                r"\bbudget\b",
+                r"\binexpensive\b",
+                r"\blow cost\b",
+                r"\bnot pricey\b",
+                r"\bnothing pricey\b",
+                r"\bnot expensive\b",
+            ],
+            "moderate": [r"\bmoderate\b", r"\bmoderately\b", r"\bmid[- ]?range\b", r"\breasonable\b"],
+            "expensive": [r"\bexpensive\b", r"\bupscale\b", r"\bupmarket\b", r"\bhigh end\b", r"\bpricey\b"],
+        }
+        for price, patterns in price_patterns.items():
+            if any(
+                re.search(rf"\b(?:actually|make that|i said|should be|instead)\b\s+(?:it\s+|that\s+|the\s+price\s+)?{pattern}", text)
+                or re.search(rf"{pattern}\s+(?:rather than|instead of)\b", text)
+                for pattern in patterns
+            ):
+                return price
         numeric_range = re.search(
             r"(?:£|\bpounds?\b|\bpriced?\b|\bprice\b|\baround\b|\babout\b|\bunder\b|\bmax\b|\bmaximum\b)?\s*"
             r"(\d{1,3})\s*(?:-|to|–|—)\s*[£! ]*(\d{1,3})\s*(?:pounds?)?",
@@ -636,11 +793,6 @@ class RuleBasedSlotExtractor:
             if amount <= 25:
                 return "moderate"
             return "expensive"
-        price_patterns = {
-            "cheap": [r"\bcheap\b", r"\bbudget\b", r"\binexpensive\b", r"\blow cost\b"],
-            "moderate": [r"\bmoderate\b", r"\bmoderately\b", r"\bmid[- ]?range\b", r"\breasonable\b"],
-            "expensive": [r"\bexpensive\b", r"\bupscale\b", r"\bupmarket\b", r"\bhigh end\b"],
-        }
         for price, patterns in price_patterns.items():
             if any(re.search(pattern, text) for pattern in patterns):
                 return price
@@ -727,13 +879,16 @@ class RuleBasedSlotExtractor:
         ):
             return "unsupported"
         if re.search(r"\b(goodbye|bye|see you|see ya|farewell)\b", text):
-            return "goodbye"
-        if re.search(r"^(hi|hello|hey|good morning|good afternoon|good evening)\b", text) and not re.search(
+            return "thanks"
+        if re.search(r"^(hi|hiya|hello|hey|morning|good morning|good afternoon|good evening)\b", text) and not re.search(
             r"\b(book|reserve|find|search|restaurants?|cuisines?|food|what to eat|suggest)\b",
             text,
         ):
             return "greeting"
-        if re.search(r"\b(thanks|thank you|cheers|ta)\b", text):
+        if re.search(r"\b(thanks|thank you|cheers|ta)\b", text) and not slots and not re.search(
+            r"\b(book|reserve|find|search|restaurants?|cuisines?|food|need|looking|recommend|list|show|place|places)\b",
+            text,
+        ):
             return "thanks"
         if slots.get("cuisine_group"):
             if re.search(r"\b(other|another|alternatives?|else|anymore|any more|more options?|more restaurants?)\b", text):
@@ -747,7 +902,7 @@ class RuleBasedSlotExtractor:
             return "dish_preference"
         if re.search(r"\bwhat\b.*\brestaurants?\b.*\b(?:are there|available)\b", text):
             return "list"
-        if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b", text) or (
+        if re.search(r"\bhow\s+far\b|\bdistance\b|\btravel\s+time\b|\bnear\s+to\b|\bwalkable\b", text) or (
             "area" in slots and re.search(r"\b(?:is|are)\b.*\bnear\b", text)
         ):
             return "distance_info"
@@ -795,10 +950,13 @@ class RuleBasedSlotExtractor:
             slots.get("booking_reference") or re.search(r"\b(booking|reservation|reference|it|this)\b", text)
         ):
             return "booking_info"
-        if re.search(
-            r"\b(i said|actually|instead|meant|no pm|no am|not pm|not am|i booked it for|it was for|should be|why is)\b",
+        correction_cue = re.search(
+            r"\b(i said|make that|rather than|instead|meant|no pm|no am|not pm|not am|i booked it for|it was for|should be|why is)\b",
             text,
-        ) and any(slot in slots for slot in ("day", "relative_day", "time", "people")):
+        ) or (re.search(r"\bactually\b", text) and not re.search(r"\b(?:i\s+)?like\b", text))
+        if correction_cue and any(
+            slot in slots for slot in ("food", "area", "pricerange", "day", "relative_day", "time", "people")
+        ):
             return "correct"
         if re.fullmatch(r"(?:next|following)\s+week", text):
             return "date_clarification"
@@ -808,6 +966,10 @@ class RuleBasedSlotExtractor:
             text,
         ):
             return "list"
+        if re.search(r"\b(find|search|need|looking|recommend)\b", text) and any(
+            slot in slots for slot in ("food", "area", "pricerange")
+        ):
+            return "search"
         if "pricerange" in slots and re.search(r"\b(that are|which are|ones that|around|about)\b", text):
             return "list"
         if re.search(r"\b(other|different|another)\s+cuisines?\b|\bnot\s+(?:just|only)\b", text) and re.search(
@@ -888,11 +1050,6 @@ def validate_slots(slots: dict[str, Any]) -> dict[str, Any]:
             people = 0
         if people > 0:
             valid["people"] = people
-    if "restaurant_name" in slots:
-        restaurant_name = re.sub(r"\s+", " ", str(slots["restaurant_name"]).strip().lower())
-        restaurant_name = re.sub(r"[^a-z0-9 '&.-]", "", restaurant_name)
-        if restaurant_name:
-            valid["restaurant_name"] = restaurant_name[:120]
     if "booking_reference" in slots:
         reference = str(slots["booking_reference"]).strip().upper()
         if re.fullmatch(r"(?:BK|SIM)-[A-Z0-9]{6}", reference):
@@ -917,6 +1074,188 @@ def validate_llm_slots(slots: Any) -> dict[str, Any]:
         if not re.fullmatch(r"(?:BK|SIM)-[A-Z0-9]{6}", reference):
             candidates.pop("booking_reference")
     return validate_slots(candidates)
+
+
+AREA_EVIDENCE_PATTERNS = {
+    "centre": [
+        r"\bcentre\b",
+        r"\bcenter\b",
+        r"\bcentral\b",
+        r"\bcity\s+centre\b",
+        r"\bcity\s+center\b",
+    ],
+    "north": [r"\bnorth\b", r"\bnorthern\b", r"\bnorth\s+side\b", r"\bup\s+north\b"],
+    "south": [r"\bsouth\b", r"\bsouthern\b", r"\bsouth\s+side\b", r"\bdown\s+south\b"],
+    "east": [r"\beast\b", r"\beastern\b", r"\beast\s+side\b", r"\bout\s+east\b"],
+    "west": [r"\bwest\b", r"\bwestern\b", r"\bwest\s+side\b", r"\bout\s+west\b"],
+}
+
+PRICE_EVIDENCE_PATTERNS = {
+    "cheap": [
+        r"\bcheap\b",
+        r"\bbudget\b",
+        r"\blow\s+cost\b",
+        r"\binexpensive\b",
+        r"\bnothing\s+pricey\b",
+        r"\bnot\s+pricey\b",
+    ],
+    "moderate": [
+        r"\bmoderate(?:ly)?\b",
+        r"\breasonable(?:ly)?(?:\s+priced|\s+price)?\b",
+        r"\bmid[- ]?range\b",
+        r"\baverage\s+price\b",
+    ],
+    "expensive": [
+        r"\bexpensive\b",
+        r"\bupmarket\b",
+        r"\bupscale\b",
+        r"\bhigh[- ]?end\b",
+        r"\bpricey\b",
+    ],
+}
+
+
+def _slot_value_for_comparison(value: Any) -> Any:
+    if isinstance(value, list):
+        return tuple(value)
+    return value
+
+
+def _slot_matches_rule(rule_slots: dict[str, Any], key: str, value: Any) -> bool:
+    return key in rule_slots and _slot_value_for_comparison(rule_slots[key]) == _slot_value_for_comparison(value)
+
+
+def _message_has_any(message: str, patterns: list[str]) -> bool:
+    return any(re.search(pattern, message) for pattern in patterns)
+
+
+def _food_has_message_evidence(message: str, food: Any) -> bool:
+    normalized_food = FOOD_ALIASES.get(normalize_food(food), normalize_food(food))
+    if not normalized_food:
+        return False
+    phrases = {normalized_food}
+    phrases.update(alias for alias, canonical in FOOD_ALIASES.items() if canonical == normalized_food)
+    if any(re.search(rf"\b{re.escape(phrase)}\b", message) for phrase in phrases):
+        return True
+    for spec in DISH_CUISINE_SUGGESTIONS.values():
+        if len(spec["foods"]) == 1 and normalized_food in spec["foods"] and _message_has_any(message, spec["patterns"]):
+            return True
+    return False
+
+
+def _cuisine_group_has_message_evidence(message: str, group: Any) -> bool:
+    group_label = str(group).strip().lower()
+    for label, spec in CUISINE_GROUP_SUGGESTIONS.items():
+        if label.lower() == group_label and _message_has_any(message, spec["patterns"]):
+            return True
+    return False
+
+
+def _food_candidates_have_message_evidence(message: str, candidates: Any) -> bool:
+    if not isinstance(candidates, list):
+        return False
+    normalized_candidates = [FOOD_ALIASES.get(normalize_food(value), normalize_food(value)) for value in candidates]
+    if not normalized_candidates:
+        return False
+    for spec in CUISINE_GROUP_SUGGESTIONS.values():
+        if _message_has_any(message, spec["patterns"]) and all(food in spec["foods"] for food in normalized_candidates):
+            return True
+    for spec in DISH_CUISINE_SUGGESTIONS.values():
+        if _message_has_any(message, spec["patterns"]) and all(food in spec["foods"] for food in normalized_candidates):
+            return True
+    return all(_food_has_message_evidence(message, food) for food in normalized_candidates)
+
+
+def _dish_has_message_evidence(message: str, dish: Any) -> bool:
+    dish_text = str(dish).strip().lower()
+    if not dish_text:
+        return False
+    for label, spec in DISH_CUISINE_SUGGESTIONS.items():
+        if label == dish_text and _message_has_any(message, spec["patterns"]):
+            return True
+    return re.search(rf"\b{re.escape(dish_text)}\b", message) is not None
+
+
+def _time_has_message_evidence(message: str, value: Any) -> bool:
+    normalized_time = normalize_time(str(value))
+    if not re.fullmatch(r"\d{2}:\d{2}", normalized_time):
+        return False
+    hour = int(normalized_time[:2])
+    minute = normalized_time[3:]
+    if re.search(rf"\b{re.escape(normalized_time)}\b", message):
+        return True
+    twelve_hour = hour % 12 or 12
+    suffix = "am" if hour < 12 else "pm"
+    if minute == "00" and re.search(rf"\b{twelve_hour}\s*{suffix}\b", message):
+        return True
+    return re.search(rf"\b{twelve_hour}[:.]{minute}\s*{suffix}?\b", message) is not None
+
+
+def _people_has_message_evidence(message: str, value: Any) -> bool:
+    try:
+        people = int(value)
+    except (TypeError, ValueError):
+        return False
+    words = {word for word, number in NUMBER_WORDS.items() if number == people}
+    tokens = {str(people), *words}
+    number_pattern = "|".join(re.escape(token) for token in sorted(tokens, key=len, reverse=True))
+    return re.search(
+        rf"\b(?:party\s+of|table\s+for|for)\s+(?:{number_pattern})\b|"
+        rf"\b(?:{number_pattern})\s+(?:people|persons|guests|diners)\b",
+        message,
+    ) is not None
+
+
+def _slot_has_message_evidence(message: str, key: str, value: Any) -> bool:
+    text = RuleBasedSlotExtractor()._normalize_message(message)
+    if key == "area":
+        area = normalize_area(value)
+        return area in AREA_EVIDENCE_PATTERNS and _message_has_any(text, AREA_EVIDENCE_PATTERNS[area])
+    if key == "pricerange":
+        price = normalize_price(value)
+        if price == "expensive" and re.search(r"\b(?:not|nothing)\s+pricey\b", text):
+            return False
+        return price in PRICE_EVIDENCE_PATTERNS and _message_has_any(text, PRICE_EVIDENCE_PATTERNS[price])
+    if key == "food":
+        return _food_has_message_evidence(text, value)
+    if key == "cuisine_group":
+        return _cuisine_group_has_message_evidence(text, value)
+    if key == "food_candidates":
+        return _food_candidates_have_message_evidence(text, value)
+    if key == "dish":
+        return _dish_has_message_evidence(text, value)
+    if key == "day":
+        day = str(value).strip().lower()
+        return day in DAY_VALUES and re.search(rf"\b{re.escape(day)}\b", text) is not None
+    if key == "relative_day":
+        phrase = str(value).strip().lower().replace("_", " ")
+        return bool(phrase) and re.search(rf"\b{re.escape(phrase)}\b", text) is not None
+    if key == "day_modifier":
+        modifier = str(value).strip().lower().replace("_", " ")
+        return bool(modifier) and re.search(rf"\b{re.escape(modifier)}\b", text) is not None
+    if key == "time":
+        return _time_has_message_evidence(text, value)
+    if key == "people":
+        return _people_has_message_evidence(text, value)
+    if key == "booking_reference":
+        reference = str(value).strip().upper()
+        return bool(reference) and reference.lower() in text
+    return False
+
+
+def trust_llm_slots(
+    message: str,
+    rule_slots: dict[str, Any],
+    llm_slots: dict[str, Any],
+) -> dict[str, Any]:
+    """Keep only LLM slots supported by rules or explicit message evidence."""
+    trusted: dict[str, Any] = {}
+    for key, value in llm_slots.items():
+        if key not in ALLOWED_SLOT_KEYS:
+            continue
+        if _slot_matches_rule(rule_slots, key, value) or _slot_has_message_evidence(message, key, value):
+            trusted[key] = value
+    return trusted
 
 
 def _explicitly_named_food(message: str, food: Any, cuisine_group: Any) -> bool:
@@ -1049,21 +1388,36 @@ class OptionalLLMSlotExtractor:
         repaired_output: str | None = None
         parse_success = False
         repair_success = False
+        repair_strategy = "fallback"
+        repaired_intent: str | None = None
+        trusted_llm_slots: dict[str, Any] = {}
         parse_error: ValueError | None = None
         try:
             raw_output = self._generate(prompt)
+            raw_intent_token = _extract_intent_token(raw_output)
             try:
                 parsed = parse_llm_json_output(raw_output)
                 parse_success = True
+                repair_strategy = "strict_json"
             except ValueError as exc:
                 parse_error = exc
-                parsed, repaired_output = repair_llm_json_output(raw_output)
+                parsed, repaired_output = repair_llm_json_output(raw_output, message=message)
                 repair_success = True
+                repair_strategy = "pseudo_json_repair"
 
             raw_intent = parsed.get("intent")
-            candidate_intent = canonicalize_model_intent(raw_intent)
-            intent_is_valid = candidate_intent in ALLOWED_INTENTS
             llm_slots = validate_llm_slots(parsed.get("slots", {}))
+            candidate_intent = canonicalize_model_intent(raw_intent, slots=llm_slots, message=message)
+            repaired_intent = candidate_intent
+            intent_is_known = _model_intent_is_known_or_alias(raw_intent_token if raw_intent_token is not None else raw_intent)
+            intent_is_valid = intent_is_known and candidate_intent in ALLOWED_INTENTS
+            if repaired_output is None:
+                repaired_output = json.dumps(
+                    {"intent": candidate_intent, "slots": llm_slots},
+                    ensure_ascii=True,
+                    separators=(",", ":"),
+                )
+            trusted_llm_slots = trust_llm_slots(message, rule_result.slots, llm_slots)
 
             rule_intent_confident = rule_result.intent != "unknown"
             intent_conflict = (
@@ -1073,22 +1427,23 @@ class OptionalLLMSlotExtractor:
             )
             dangling_slots, complete_slots_object = _repaired_slots_shape(raw_output)
             repair_weak = repair_success and (
-                (dangling_slots and not llm_slots)
+                (dangling_slots and not trusted_llm_slots)
                 or not intent_is_valid
-                or (not llm_slots and bool(rule_result.slots))
+                or (not trusted_llm_slots and bool(rule_result.slots))
                 or intent_conflict
             )
 
             llm_intent_trusted = False
             intent = rule_result.intent
             if rule_result.intent not in RULE_GUARDED_INTENTS:
-                if parse_success and intent_is_valid:
+                if parse_success and intent_is_valid and candidate_intent != "unknown":
                     intent = candidate_intent
                     llm_intent_trusted = True
                 elif (
                     repair_success
                     and not repair_weak
                     and intent_is_valid
+                    and candidate_intent != "unknown"
                     and (
                         complete_slots_object
                         or (candidate_intent != "unknown" and not intent_conflict)
@@ -1100,9 +1455,9 @@ class OptionalLLMSlotExtractor:
             merged_slots, meaningful_slot_contribution = merge_llm_slots(
                 message,
                 rule_result.slots,
-                llm_slots,
+                trusted_llm_slots,
             )
-            llm_slots_trusted = bool(llm_slots)
+            llm_slots_trusted = bool(trusted_llm_slots)
 
             return SlotExtractionResult(
                 intent=intent,
@@ -1113,6 +1468,9 @@ class OptionalLLMSlotExtractor:
                 llm_parse_success=parse_success,
                 llm_repair_success=repair_success,
                 llm_repair_weak=repair_weak,
+                llm_repair_strategy=repair_strategy,
+                llm_repaired_intent=repaired_intent,
+                llm_trusted_slots=trusted_llm_slots,
                 llm_intent_trusted=llm_intent_trusted,
                 llm_slots_trusted=llm_slots_trusted,
                 llm_meaningful_slot_contribution=meaningful_slot_contribution,
@@ -1126,6 +1484,9 @@ class OptionalLLMSlotExtractor:
             fallback.llm_attempted = True
             fallback.llm_parse_success = parse_success
             fallback.llm_repair_success = repair_success
+            fallback.llm_repair_strategy = repair_strategy
+            fallback.llm_repaired_intent = repaired_intent
+            fallback.llm_trusted_slots = trusted_llm_slots
             fallback.llm_raw_output = _raw_output_preview(raw_output) if raw_output is not None else None
             fallback.llm_repaired_output = repaired_output
             if parse_error is not None:

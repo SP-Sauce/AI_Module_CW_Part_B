@@ -7,6 +7,7 @@ from restaurant_assistant.slot_extraction import (
     adapter_slot_prompt,
     parse_llm_json_output,
     repair_llm_json_output,
+    repair_pseudo_json_output,
 )
 
 
@@ -92,7 +93,7 @@ def test_adapter_prompt_uses_strict_answer_marker_without_examples():
 
     assert "Task: Extract the restaurant assistant intent and slots." in prompt
     assert "Return only one valid minified JSON object." in prompt
-    assert "Allowed intents: search, list, restaurant_info, book, update_booking" in prompt
+    assert "Allowed intents: search, list, book, reschedule, cancel" in prompt
     assert prompt.endswith("User: hello\nJSON:")
     assert '{"intent":' not in prompt
 
@@ -177,6 +178,35 @@ def test_json_repair_keeps_already_valid_structured_output():
     assert repaired_output == '{"intent":"thanks","slots":{}}'
 
 
+@pytest.mark.parametrize(
+    ("raw_output", "expected"),
+    [
+        (
+            '"intent":"search","slots":"area":"centre","food":"chinese"',
+            {"intent": "search", "slots": {"area": "centre", "food": "chinese"}},
+        ),
+        (
+            '"intent":"book","slots":"day":"today","people":2,"time":"19:00"',
+            {"intent": "book", "slots": {"day": "today", "people": 2, "time": "19:00"}},
+        ),
+        (
+            '"intent":"cancel_booking","slots":"booking_reference":"BK-X9Y8Z7"',
+            {"intent": "cancel", "slots": {"booking_reference": "BK-X9Y8Z7"}},
+        ),
+        (
+            '"intent":"restaurant_info","slots":',
+            {"intent": "restaurant_info", "slots": {}},
+        ),
+        (
+            '"intent":"search","slots":"restaurant_name":"restaurant_name","area":"east"',
+            {"intent": "search", "slots": {"area": "east"}},
+        ),
+    ],
+)
+def test_pseudo_json_repair_contract(raw_output, expected):
+    assert repair_pseudo_json_output(raw_output) == expected
+
+
 def test_optional_extractor_tracks_repaired_output_without_hiding_parse_failure():
     extractor = OptionalLLMSlotExtractor("fake-slot-model")
     extractor._pipeline = FakeText2TextPipeline(
@@ -188,6 +218,9 @@ def test_optional_extractor_tracks_repaired_output_without_hiding_parse_failure(
     assert result.used_llm is True
     assert result.llm_parse_success is False
     assert result.llm_repair_success is True
+    assert result.llm_repair_strategy == "pseudo_json_repair"
+    assert result.llm_repaired_intent == "list"
+    assert result.llm_trusted_slots == {"area": "centre"}
     assert result.llm_repair_weak is False
     assert result.llm_intent_trusted is True
     assert result.llm_slots_trusted is True
@@ -274,14 +307,33 @@ def test_guarded_rule_intent_is_preserved_even_after_strict_parse():
 def test_llm_slots_fill_missing_values_but_do_not_override_rule_slots():
     extractor = OptionalLLMSlotExtractor("fake-slot-model")
     extractor._pipeline = FakeText2TextPipeline(
-        {"intent": "search", "slots": {"area": "west", "food": "thai"}}
+        {"intent": "search", "slots": {"area": "west", "food": "japanese"}}
     )
 
-    result = extractor.extract("Find a restaurant in the east")
+    result = extractor.extract("Find a sushi place in the east")
 
     assert result.llm_slots_trusted is True
     assert result.llm_meaningful_slot_contribution is True
-    assert result.slots == {"area": "east", "food": "thai"}
+    assert result.slots == {
+        "dish": "sushi",
+        "food_candidates": ["japanese"],
+        "area": "east",
+        "food": "japanese",
+    }
+
+
+def test_hallucinated_repaired_slots_are_not_trusted_or_merged():
+    extractor = OptionalLLMSlotExtractor("fake-slot-model")
+    extractor._pipeline = FakeText2TextPipeline(
+        '"intent":"search","slots":"area":"east","food":"thai","pricerange":"moderate"'
+    )
+
+    result = extractor.extract("Need a reasonable priced thai place please")
+
+    assert result.llm_repair_success is True
+    assert result.llm_repair_strategy == "pseudo_json_repair"
+    assert result.llm_trusted_slots == {"food": "thai", "pricerange": "moderate"}
+    assert result.slots == {"food": "thai", "pricerange": "moderate"}
 
 
 @pytest.mark.parametrize(

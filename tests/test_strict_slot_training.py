@@ -43,7 +43,7 @@ def test_generated_training_labels_are_valid_json_and_do_not_copy_eval_text():
     eval_texts = builder.load_eval_texts(builder.DEFAULT_EVAL_FILES)
 
     assert summary["count"] == 1500
-    assert {"search", "list", "book", "update_booking", "cancel_booking", "unsupported"} <= set(
+    assert {"search", "list", "book", "reschedule", "cancel", "unsupported"} <= set(
         summary["intent_counts"]
     )
     for item in rows:

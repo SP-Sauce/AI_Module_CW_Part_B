@@ -20,9 +20,9 @@ data/runtime/*
 results/*
 !results/README.md
 outputs/
+report/
 
 # Model/cache artifacts
-models/
 .cache/
 *.log
 *.sqlite

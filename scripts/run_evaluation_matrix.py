@@ -32,6 +32,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--model-name", default=None, help="Optional response-generation model override.")
     parser.add_argument(
+        "--slot-model-name",
+        default=None,
+        help="Optional explicit slot extractor model or adapter path to include in the matrix.",
+    )
+    parser.add_argument(
         "--adapter-path",
         type=Path,
         default=DEFAULT_ADAPTER_PATH,
@@ -80,8 +85,8 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
     lines = [
         "# Evaluation Matrix",
         "",
-        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Raw Parse Errors | LLM Attempted | Strict Parse Success | Repair Success | Weak Repair | Intent Trusted | Slots Trusted | Meaningful LLM Slots | Valid or Repaired | Strict Parse Failed | Unrepaired Failure | Fallback Used | Mean Slot Latency (s) | Slot Model |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Configuration | Status | Intent Accuracy | Exact Slot Accuracy | Slot Precision | Slot Recall | Slot F1 | Raw Parse Errors | LLM Attempted | Strict Parse Success | Pseudo Repair Rate | Repaired Model Intent | Repaired Model Slot F1 | Repair Success | Weak Repair | Intent Trusted | Slots Trusted | Meaningful LLM Slots | Valid or Repaired | Strict Parse Failed | Unrepaired Failure | Fallback Used | Mean Slot Latency (s) | Slot Model |",
+        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         slot_metrics = row.get("metrics", {}).get("slot_extraction", {})
@@ -99,6 +104,9 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
                     _metric(slot_metrics.get("invalid_json_or_parse_error_count")),
                     _metric(slot_metrics.get("llm_attempted_cases")),
                     _metric(slot_metrics.get("llm_parse_success_cases")),
+                    _metric(slot_metrics.get("pseudo_json_repair_success_rate")),
+                    _metric(slot_metrics.get("repaired_model_intent_accuracy")),
+                    _metric(slot_metrics.get("repaired_model_slot_f1")),
                     _metric(slot_metrics.get("llm_repair_success_cases")),
                     _metric(slot_metrics.get("llm_repair_weak_cases")),
                     _metric(slot_metrics.get("llm_intent_trusted_cases")),
@@ -136,10 +144,13 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
             predicted = case.get("predicted", {})
             raw_output = str(predicted.get("llm_raw_output") or "<no output>")
             repaired_output = str(predicted.get("llm_repaired_output") or "<not repaired>")
+            repair_strategy = str(predicted.get("llm_repair_strategy") or "<none>")
+            trusted_slots = json.dumps(predicted.get("llm_trusted_slots") or {}, sort_keys=True)
             errors = "; ".join(str(error) for error in predicted.get("errors", []))
             lines.append(
                 f"- `{configuration}` - input: `{case.get('text', '')}`; "
                 f"raw output: `{raw_output}`; repaired output: `{repaired_output}`; "
+                f"repair strategy: `{repair_strategy}`; trusted slots: `{trusted_slots}`; "
                 f"repair success: `{bool(predicted.get('llm_repair_success'))}`; "
                 f"weak repair: `{bool(predicted.get('llm_repair_weak'))}`; "
                 f"intent trusted: `{bool(predicted.get('llm_intent_trusted'))}`; errors: `{errors}`"
@@ -148,6 +159,7 @@ def _markdown_table(rows: list[dict[str, Any]]) -> str:
 
 
 def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
+    explicit_slot_model = getattr(args, "slot_model_name", None)
     configs = [
         {
             "name": "baseline_rule_based",
@@ -159,19 +171,32 @@ def run_matrix(args: argparse.Namespace) -> list[dict[str, Any]]:
             "enable_llm": True,
             "slot_model_name": "google/flan-t5-small",
         },
-        {
-            "name": "qlora_adapter",
-            "enable_llm": True,
-            "slot_model_name": str(args.adapter_path),
-            "adapter_path": args.adapter_path,
-        },
-        {
-            "name": "qlora_adapter_base",
-            "enable_llm": True,
-            "slot_model_name": str(args.base_adapter_path),
-            "adapter_path": args.base_adapter_path,
-        },
     ]
+    if explicit_slot_model:
+        configs.append(
+            {
+                "name": "selected_slot_model",
+                "enable_llm": True,
+                "slot_model_name": explicit_slot_model,
+            }
+        )
+    else:
+        configs.extend(
+            [
+                {
+                    "name": "qlora_adapter",
+                    "enable_llm": True,
+                    "slot_model_name": str(args.adapter_path),
+                    "adapter_path": args.adapter_path,
+                },
+                {
+                    "name": "qlora_adapter_base",
+                    "enable_llm": True,
+                    "slot_model_name": str(args.base_adapter_path),
+                    "adapter_path": args.base_adapter_path,
+                },
+            ]
+        )
     rows: list[dict[str, Any]] = []
     for config in configs:
         command = _command_for_config(

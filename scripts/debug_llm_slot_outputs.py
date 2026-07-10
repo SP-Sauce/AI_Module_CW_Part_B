@@ -67,9 +67,12 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Raw LLM output: {result.llm_raw_output if result.llm_raw_output is not None else '<none>'}")
         print(f"Strict parse success: {result.llm_parse_success}")
         print(f"Repair success: {result.llm_repair_success}")
+        print(f"Repair strategy: {result.llm_repair_strategy}")
         print(f"Weak repair: {result.llm_repair_weak}")
+        print(f"Repaired intent: {result.llm_repaired_intent}")
         print(f"Intent trusted: {result.llm_intent_trusted}")
         print(f"Slots trusted: {result.llm_slots_trusted}")
+        print(f"Trusted LLM slots: {json.dumps(result.llm_trusted_slots, ensure_ascii=False)}")
         print(f"Meaningful LLM slot contribution: {result.llm_meaningful_slot_contribution}")
         if result.llm_repaired_output is not None:
             print(f"Repaired JSON: {result.llm_repaired_output}")

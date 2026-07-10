@@ -1,0 +1,51 @@
+{
+  "base_model": "google/flan-t5-base",
+  "train_file": "data/training/slot_train_strict.jsonl",
+  "dev_file": "data/training/slot_dev_strict.jsonl",
+  "num_train_examples": 1870,
+  "num_dev_examples": 330,
+  "seed": 6062026,
+  "lora": {
+    "r": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "target_modules": [
+      "q",
+      "v"
+    ],
+    "load_in_4bit": false
+  },
+  "max_steps": 800,
+  "learning_rate": 0.0002,
+  "train_loss": 0.20175984531641006,
+  "eval_loss": 0.021613895893096924,
+  "best_model_checkpoint": "models/slot-extractor-lora-strict/checkpoint-800",
+  "strict_dev_metrics": {
+    "strict_json_parse_success_rate": 0.0,
+    "raw_parse_error_count": 330,
+    "strict_intent_accuracy": 0.0,
+    "strict_slot_precision": 0.0,
+    "strict_slot_recall": 0.0,
+    "strict_slot_f1": 0.0,
+    "evaluated_cases": 330
+  },
+  "timestamp": "2026-07-09T19:31:26.058995+00:00",
+  "cuda": {
+    "cuda_available": true,
+    "device_count": 2,
+    "devices": [
+      {
+        "index": 0,
+        "name": "Tesla T4",
+        "total_memory_gb": 14.56
+      },
+      {
+        "index": 1,
+        "name": "Tesla T4",
+        "total_memory_gb": 14.56
+      }
+    ],
+    "python": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+    "platform": "Linux-6.12.90+-x86_64-with-glibc2.35"
+  }
+}

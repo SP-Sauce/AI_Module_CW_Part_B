@@ -129,6 +129,10 @@ def evaluate_slots(
     raw_true_positive_slots = 0
     raw_false_positive_slots = 0
     raw_false_negative_slots = 0
+    repaired_model_intent_correct = 0
+    repaired_model_true_positive_slots = 0
+    repaired_model_false_positive_slots = 0
+    repaired_model_false_negative_slots = 0
     strict_json_parse_success = 0
     raw_parse_error_count = 0
     invalid_json_or_parse_errors = 0
@@ -183,6 +187,19 @@ def evaluate_slots(
         else:
             raw_predicted_pairs = set()
         expected_pairs = _slot_pairs(expected_slots)
+        repaired_model_prediction: dict[str, Any] | None = None
+        if enable_llm and result.llm_attempted:
+            repaired_model_slots = result.llm_trusted_slots
+            repaired_model_prediction = {
+                "intent": result.llm_repaired_intent,
+                "slots": repaired_model_slots,
+            }
+            repaired_model_intent_correct += int(result.llm_repaired_intent == expected_intent)
+            repaired_model_predicted_pairs = _slot_pairs(repaired_model_slots)
+            repaired_model_matched_pairs = repaired_model_predicted_pairs & expected_pairs
+            repaired_model_true_positive_slots += len(repaired_model_matched_pairs)
+            repaired_model_false_positive_slots += len(repaired_model_predicted_pairs - expected_pairs)
+            repaired_model_false_negative_slots += len(expected_pairs - repaired_model_predicted_pairs)
         raw_matched_pairs = raw_predicted_pairs & expected_pairs
         raw_true_positive_slots += len(raw_matched_pairs)
         raw_false_positive_slots += len(raw_predicted_pairs - expected_pairs)
@@ -209,12 +226,16 @@ def evaluate_slots(
                     "llm_parse_success": result.llm_parse_success,
                     "llm_repair_success": result.llm_repair_success,
                     "llm_repair_weak": result.llm_repair_weak,
+                    "llm_repair_strategy": result.llm_repair_strategy,
+                    "llm_repaired_intent": result.llm_repaired_intent,
+                    "llm_trusted_slots": result.llm_trusted_slots,
                     "llm_intent_trusted": result.llm_intent_trusted,
                     "llm_slots_trusted": result.llm_slots_trusted,
                     "llm_meaningful_slot_contribution": result.llm_meaningful_slot_contribution,
                     "llm_raw_output": _raw_output_preview(result.llm_raw_output),
                     "llm_repaired_output": _raw_output_preview(result.llm_repaired_output),
                     "raw_strict_prediction": raw_prediction,
+                    "repaired_model_prediction": repaired_model_prediction,
                     "raw_strict_parse_success": raw_prediction is not None,
                     "raw_strict_parse_error": raw_parse_error,
                     "errors": result.errors,
@@ -236,10 +257,31 @@ def evaluate_slots(
         if raw_slot_precision + raw_slot_recall
         else 0.0
     )
+    repaired_model_slot_precision = _safe_divide(
+        repaired_model_true_positive_slots,
+        repaired_model_true_positive_slots + repaired_model_false_positive_slots,
+    )
+    repaired_model_slot_recall = _safe_divide(
+        repaired_model_true_positive_slots,
+        repaired_model_true_positive_slots + repaired_model_false_negative_slots,
+    )
+    repaired_model_slot_f1 = (
+        round(
+            2
+            * repaired_model_slot_precision
+            * repaired_model_slot_recall
+            / (repaired_model_slot_precision + repaired_model_slot_recall),
+            4,
+        )
+        if repaired_model_slot_precision + repaired_model_slot_recall
+        else 0.0
+    )
     attempted_denominator = llm_attempted if enable_llm else 0
     raw_denominator = attempted_denominator or len(slot_cases)
     strict_json_parse_success_rate = _safe_divide(strict_json_parse_success, raw_denominator)
+    pseudo_json_repair_success_rate = _safe_divide(llm_repair_success, attempted_denominator)
     repaired_json_success_rate = _safe_divide(llm_parse_success + llm_repair_success, attempted_denominator)
+    repaired_model_intent_accuracy = _safe_divide(repaired_model_intent_correct, attempted_denominator)
     return {
         "fixture": str(slot_fixture),
         "case_count": len(slot_cases),
@@ -255,6 +297,11 @@ def evaluate_slots(
         "strict_slot_precision": raw_slot_precision,
         "strict_slot_recall": raw_slot_recall,
         "strict_slot_f1": raw_slot_f1,
+        "pseudo_json_repair_success_rate": pseudo_json_repair_success_rate,
+        "repaired_model_intent_accuracy": repaired_model_intent_accuracy,
+        "repaired_model_slot_precision": repaired_model_slot_precision,
+        "repaired_model_slot_recall": repaired_model_slot_recall,
+        "repaired_model_slot_f1": repaired_model_slot_f1,
         "repaired_json_success_rate": repaired_json_success_rate,
         "final_intent_accuracy": round(final_intent_correct / len(slot_cases), 4),
         "final_slot_precision": slot_precision,
@@ -267,6 +314,14 @@ def evaluate_slots(
             "strict_slot_precision": raw_slot_precision,
             "strict_slot_recall": raw_slot_recall,
             "strict_slot_f1": raw_slot_f1,
+        },
+        "repaired_model_metrics": {
+            "pseudo_json_repair_success_rate": pseudo_json_repair_success_rate,
+            "repaired_json_success_rate": repaired_json_success_rate,
+            "repaired_model_intent_accuracy": repaired_model_intent_accuracy,
+            "repaired_model_slot_precision": repaired_model_slot_precision,
+            "repaired_model_slot_recall": repaired_model_slot_recall,
+            "repaired_model_slot_f1": repaired_model_slot_f1,
         },
         "after_repair_fallback_metrics": {
             "repaired_json_success_rate": repaired_json_success_rate,

@@ -226,9 +226,9 @@ def _list_examples() -> Iterable[dict[str, str]]:
 
 def _restaurant_info_examples() -> Iterable[dict[str, str]]:
     for name in RESTAURANTS:
-        yield row(f"what is the address of {name}", "restaurant_info", {"restaurant_name": name})
-        yield row(f"tell me about {name} please", "restaurant_info", {"restaurant_name": name})
-        yield row(f"phone number for {name}?", "restaurant_info", {"restaurant_name": name})
+        yield row(f"what is the address of {name}", "restaurant_info", {})
+        yield row(f"tell me about {name} please", "restaurant_info", {})
+        yield row(f"phone number for {name}?", "restaurant_info", {})
     for phrase in [
         "what is the address",
         "tell me about it",
@@ -252,8 +252,8 @@ def _booking_examples() -> Iterable[dict[str, str]]:
             )
             index += 1
     for name in RESTAURANTS:
-        yield row(f"reserve {name} for 2 people", "book", {"restaurant_name": name, "people": 2})
-        yield row(f"book a table at {name} tomorrow 7pm", "book", {"restaurant_name": name, "day": "tomorrow", "time": "19:00"})
+        yield row(f"reserve {name} for 2 people", "book", {"people": 2})
+        yield row(f"book a table at {name} tomorrow 7pm", "book", {"day": "tomorrow", "time": "19:00"})
     for food in FOODS[:8]:
         yield row(f"book me a {food} restaurant for four", "book", {"food": food, "people": 4})
     for phrase in ["can you book it", "reserve a table please", "i want to make a booking", "book that one mate"]:
@@ -265,17 +265,17 @@ def _update_examples() -> Iterable[dict[str, str]]:
         for day in DAYS[:7]:
             yield row(
                 f"move booking {reference} to {day}",
-                "update_booking",
+                "reschedule",
                 {"booking_reference": reference, "day": day},
             )
         for time in TIMES[2:]:
             yield row(
                 f"change {reference} to {time.lstrip('0')}",
-                "update_booking",
+                "reschedule",
                 {"booking_reference": reference, "time": time},
             )
     for people in PEOPLE:
-        yield row(f"actually make it for {people} people", "update_booking", {"people": people})
+        yield row(f"actually make it for {people} people", "reschedule", {"people": people})
     for phrase in [
         "reschedule the booking",
         "change the time please",
@@ -284,16 +284,16 @@ def _update_examples() -> Iterable[dict[str, str]]:
         "no i meant friday",
     ]:
         slots = {"day": "friday"} if "friday" in phrase else {}
-        yield row(phrase, "update_booking", slots)
+        yield row(phrase, "reschedule", slots)
 
 
 def _cancel_examples() -> Iterable[dict[str, str]]:
     for reference in REFERENCES:
-        yield row(f"cancel booking {reference}", "cancel_booking", {"booking_reference": reference})
-        yield row(f"please delete {reference}", "cancel_booking", {"booking_reference": reference})
-        yield row(f"i no longer need reservation {reference}", "cancel_booking", {"booking_reference": reference})
+        yield row(f"cancel booking {reference}", "cancel", {"booking_reference": reference})
+        yield row(f"please delete {reference}", "cancel", {"booking_reference": reference})
+        yield row(f"i no longer need reservation {reference}", "cancel", {"booking_reference": reference})
     for phrase in ["cancel it", "delete my booking", "scrap the reservation", "call off the table please"]:
-        yield row(phrase, "cancel_booking", {})
+        yield row(phrase, "cancel", {})
 
 
 def _booking_list_examples() -> Iterable[dict[str, str]]:
@@ -308,13 +308,39 @@ def _booking_list_examples() -> Iterable[dict[str, str]]:
         yield row(phrase, "booking_list", {})
 
 
+def _assistant_action_examples() -> Iterable[dict[str, str]]:
+    for phrase in ["show another option", "any alternative restaurants", "different place please"]:
+        yield row(phrase, "alternative", {})
+    for reference in REFERENCES[:3]:
+        yield row(f"what is booking {reference}", "booking_info", {"booking_reference": reference})
+        yield row(f"status for reservation {reference}", "booking_info", {"booking_reference": reference})
+    for area in AREAS:
+        yield row(f"actually make the area {area}", "correct", {"area": area})
+    for price in PRICES:
+        yield row(f"no make it {price} instead", "correct", {"pricerange": price})
+    for phrase in ["what cuisines can you search", "which food types do you support", "suggest some cuisine types"]:
+        yield row(phrase, "cuisine_help", {})
+    for phrase in ["next week", "the following week", "next week please"]:
+        yield row(phrase, "date_clarification", {})
+    for dish, food in DISH_ALIASES.items():
+        yield row(f"i feel like {dish}", "dish_preference", {"dish": dish, "food_candidates": [food]})
+    for area in AREAS:
+        yield row(f"how far is it from the {area} side", "distance_info", {"area": area})
+    for phrase in ["which areas can i filter by", "what price filters are available", "show the supported filters"]:
+        yield row(phrase, "filter_info", {})
+    for phrase in ["show results as a table", "display those options in table format", "table view please"]:
+        yield row(phrase, "table_view", {})
+    for phrase in ["hmm", "not sure", "maybe later", "just thinking"]:
+        yield row(phrase, "unknown", {})
+
+
 def _small_talk_examples() -> Iterable[dict[str, str]]:
     for phrase in ["hello", "hi there", "good morning", "hey mate", "hiya", "hello restaurant assistant"]:
         yield row(phrase, "greeting", {})
     for phrase in ["thanks", "thank you", "cheers", "ta", "nice one thanks", "much appreciated"]:
         yield row(phrase, "thanks", {})
     for phrase in ["bye", "goodbye", "see you", "see ya later", "farewell", "that is all goodbye"]:
-        yield row(phrase, "goodbye", {})
+        yield row(phrase, "thanks", {})
 
 
 def _unsupported_examples() -> Iterable[dict[str, str]]:
@@ -341,6 +367,7 @@ def candidate_rows() -> list[dict[str, str]]:
         _update_examples,
         _cancel_examples,
         _booking_list_examples,
+        _assistant_action_examples,
         _small_talk_examples,
         _unsupported_examples,
     ]:

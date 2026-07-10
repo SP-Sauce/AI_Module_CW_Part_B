@@ -103,6 +103,13 @@ def test_thanks_is_extracted():
     assert result.intent == "thanks"
 
 
+def test_polite_tail_does_not_override_search_intent():
+    result = extract_slots("Need summat cheap and Italian out east, ta")
+
+    assert result.intent == "search"
+    assert result.slots == {"food": "italian", "area": "east", "pricerange": "cheap"}
+
+
 def test_greeting_typos_are_extracted():
     result = extract_slots("hellow")
 
@@ -264,3 +271,18 @@ def test_relative_day_slots_are_extracted():
     assert typo_weekday.slots["day_modifier"] == "next_week"
     assert typo_weekday.slots["time"] == "16:00"
     assert typo_weekday.slots["people"] == 4
+
+
+def test_correction_area_price_and_walkable_distance_are_extracted():
+    area = extract_slots("Actually west, not east")
+    price = extract_slots("Oops make that expensive rather than cheap")
+    not_pricey = extract_slots("I'm after British cooking in the centre, nothing pricey")
+    walkable = extract_slots("Is this place walkable from the centre?")
+
+    assert area.intent == "correct"
+    assert area.slots == {"area": "west"}
+    assert price.intent == "correct"
+    assert price.slots == {"pricerange": "expensive"}
+    assert not_pricey.slots["pricerange"] == "cheap"
+    assert walkable.intent == "distance_info"
+    assert walkable.slots["area"] == "centre"
