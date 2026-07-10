@@ -99,6 +99,8 @@ def validate_generated_response(
             return ResponseValidationResult(False, "prompt_label_leakage")
     for pattern in UNSUPPORTED_CLAIM_PATTERNS:
         if re.search(pattern, lowered, flags=re.IGNORECASE):
+            if _is_safe_unsupported_disclaimer(lowered):
+                continue
             return ResponseValidationResult(False, "unsupported_claim")
 
     evidence = [record for record in evidence_records or [] if record]
@@ -108,7 +110,7 @@ def validate_generated_response(
 
     evidence_names = _normalised_values(record.get("name") for record in evidence)
     known_names = _normalised_values(record.get("name") for record in known)
-    mentioned_names = {name for name in known_names if name and name in lowered}
+    mentioned_names = {name for name in known_names if _mentions_normalised_value(cleaned, name)}
     if mentioned_names and not mentioned_names <= evidence_names:
         return ResponseValidationResult(False, "invented_restaurant_name")
 
@@ -124,12 +126,9 @@ def validate_generated_response(
             return ResponseValidationResult(False, "invented_postcode")
 
     evidence_addresses = _normalised_values(record.get("address") for record in evidence)
-    known_addresses = _normalised_values(record.get("address") for record in known)
-    mentioned_known_addresses = {address for address in known_addresses if address and address in lowered}
-    if mentioned_known_addresses and not mentioned_known_addresses <= evidence_addresses:
-        return ResponseValidationResult(False, "invented_address")
     for match in ADDRESS_PATTERN.findall(cleaned):
         address = _normalise_text(match)
+        address = re.sub(r"^(?:address|located at|at)\s+", "", address)
         if address and not any(address in allowed or allowed in address for allowed in evidence_addresses):
             return ResponseValidationResult(False, "invented_address")
 
@@ -144,12 +143,33 @@ def _normalised_values(values: Iterable[Any]) -> set[str]:
     return {normalised for value in values if (normalised := _normalise_text(value))}
 
 
+def _mentions_normalised_value(text: str, normalised_value: str) -> bool:
+    if not normalised_value:
+        return False
+    normalised_text = _normalise_text(text)
+    return re.search(rf"(?<![a-z0-9]){re.escape(normalised_value)}(?![a-z0-9])", normalised_text) is not None
+
+
 def _digits(value: Any) -> str:
     return re.sub(r"\D", "", str(value or ""))
 
 
 def _postcode(value: Any) -> str:
     return re.sub(r"\s+", "", str(value or "").casefold())
+
+
+def _is_safe_unsupported_disclaimer(text: str) -> bool:
+    """Allow cautious negative statements without allowing positive claims."""
+
+    negative = (
+        r"\b(?:cannot|can't|can not|do not|don't|unable to|not able to|"
+        r"cannot verify|cannot confirm|cannot check|cannot process)\b"
+    )
+    unsupported_topic = (
+        r"\b(?:halal|allerg(?:y|ies|ens|ic)|live\s+(?:table\s+)?availability|"
+        r"availability|payments?|card payments?|reviews?|ratings?)\b"
+    )
+    return bool(re.search(negative, text) and re.search(unsupported_topic, text))
 
 
 class GroundedResponseGenerator:

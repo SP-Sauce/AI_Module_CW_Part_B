@@ -200,6 +200,7 @@ def _metrics(cases: list[dict[str, Any]], key: str) -> dict[str, Any]:
         skipped += int(bool(result.get("skipped")))
     denominator = max(count, 1)
     return {
+        "status": "skipped" if skipped == count and count else "completed",
         "case_count": count,
         "groundedness_rate": round(grounded / denominator, 4),
         "json_debug_leakage_rate": round(leakage / denominator, 4),
@@ -366,20 +367,21 @@ def _markdown_report(payload: dict[str, Any]) -> str:
         "final_guarded_response",
     ]:
         item = metrics[key]
+        skipped = item.get("status") == "skipped"
         lines.append(
             "| "
             + " | ".join(
                 [
                     key,
                     str(item["case_count"]),
-                    f"{item['groundedness_rate']:.4f}",
-                    f"{item['json_debug_leakage_rate']:.4f}",
-                    f"{item['unsupported_claim_rate']:.4f}",
-                    f"{item['response_nonempty_rate']:.4f}",
-                    f"{item['fallback_rate']:.4f}",
-                    f"{item['average_latency_seconds']:.6f}",
-                    f"{item['simple_clarity_check_pass_rate']:.4f}",
-                    f"{item['exact_evidence_preservation_rate']:.4f}",
+                    "N/A" if skipped else f"{item['groundedness_rate']:.4f}",
+                    "N/A" if skipped else f"{item['json_debug_leakage_rate']:.4f}",
+                    "N/A" if skipped else f"{item['unsupported_claim_rate']:.4f}",
+                    "N/A" if skipped else f"{item['response_nonempty_rate']:.4f}",
+                    "N/A" if skipped else f"{item['fallback_rate']:.4f}",
+                    "N/A" if skipped else f"{item['average_latency_seconds']:.6f}",
+                    "N/A" if skipped else f"{item['simple_clarity_check_pass_rate']:.4f}",
+                    "N/A" if skipped else f"{item['exact_evidence_preservation_rate']:.4f}",
                     str(item["skipped_cases"]),
                 ]
             )

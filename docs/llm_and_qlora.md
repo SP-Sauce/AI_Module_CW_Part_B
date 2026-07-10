@@ -50,6 +50,153 @@ For a trained response adapter, replace the response model with
 `--response-model-name models/response-generator-lora`. Unsafe generated
 responses fall back to deterministic NLG.
 
+## Response Generation Dataset
+
+The response-generator LoRA dataset is built offline with deterministic
+templates. Restaurant names, addresses, postcodes and phone numbers come from
+trusted MultiWOZ restaurant records loaded by the repository; user wording comes
+from controlled paraphrase pools. The responses are synthetic supervision, not
+manual human annotations, so they may favour the current system's target style.
+Safety validation and leakage checks are useful safeguards, but trained response
+models still need separate human review.
+
+Generate the full response datasets:
+
+```powershell
+python scripts/build_response_training_data.py `
+  --train-count 800 `
+  --eval-count 160 `
+  --challenge-count 100 `
+  --seed 6062026
+```
+
+Run a smaller sample-data validation:
+
+```powershell
+python scripts/build_response_training_data.py `
+  --sample-data `
+  --train-count 80 `
+  --eval-count 20 `
+  --challenge-count 20 `
+  --seed 6062026
+```
+
+Check response-data leakage:
+
+```powershell
+python scripts/check_response_data_leakage.py
+```
+
+The builder splits restaurants before generating rows. With enough processed
+records, train, standard evaluation and challenge records are restaurant-level
+disjoint. The checker also verifies exact normalised user-message overlap,
+complete input overlap, duplicate rows, duplicate input/output pairs, restaurant
+identifier overlap, booking-reference grounding and JSONL schema validity.
+
+Codex did not execute response-model training or response-model evaluation.
+Run the following commands manually in Kaggle only.
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!pip install -q -U -r requirements-qlora.txt
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+import torch
+print("CUDA available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("GPU:", torch.cuda.get_device_name(0))
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!python scripts/build_response_training_data.py \
+  --train-count 800 \
+  --eval-count 160 \
+  --challenge-count 100 \
+  --seed 6062026
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!python scripts/check_response_data_leakage.py
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!rm -rf models/response-generator-lora
+!mkdir -p outputs/evaluation reports
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!python scripts/train_lora_response_generator.py \
+  --base-model google/flan-t5-base \
+  --train-file data/training/response_generation_examples.jsonl \
+  --eval-file data/evaluation/response_generation_eval.jsonl \
+  --output-dir models/response-generator-lora \
+  --metadata-path outputs/evaluation/response_lora_training_metadata.json \
+  --max-steps 300 \
+  --batch-size 1 \
+  --gradient-accumulation-steps 8 \
+  --learning-rate 2e-4 \
+  --eval-steps 50 \
+  --save-steps 50 \
+  --seed 6062026
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!python scripts/evaluate_response_generation.py \
+  --run-llm \
+  --response-model-name google/flan-t5-base \
+  --adapter-path models/response-generator-lora \
+  --eval-file data/evaluation/response_generation_eval.jsonl \
+  --json-report reports/response_generation_comparison_trained.json \
+  --markdown-report reports/response_generation_comparison_trained.md
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!python scripts/evaluate_response_generation.py \
+  --run-llm \
+  --response-model-name google/flan-t5-base \
+  --adapter-path models/response-generator-lora \
+  --eval-file data/evaluation/response_generation_challenge.jsonl \
+  --json-report reports/response_generation_challenge_trained.json \
+  --markdown-report reports/response_generation_challenge_trained.md
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!cat reports/response_generation_comparison_trained.md
+!cat reports/response_generation_challenge_trained.md
+```
+
+**NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**
+
+```python
+!zip -r response_generator_lora_artifacts.zip \
+  models/response-generator-lora \
+  outputs/evaluation/response_lora_training_metadata.json \
+  reports/response_generation_comparison_trained.json \
+  reports/response_generation_comparison_trained.md \
+  reports/response_generation_challenge_trained.json \
+  reports/response_generation_challenge_trained.md \
+  reports/response_generation_dataset_report.json \
+  reports/response_generation_dataset_report.md
+```
+
 Evaluate the LLM path:
 
 ```powershell
@@ -166,6 +313,7 @@ directories are skipped instead of failing the whole evaluation.
 Recommended wording:
 
 > The final prototype is an LLM-assisted retrieval-grounded dialogue system.
-> An LLM performs JSON intent/slot extraction and grounded response generation,
-> while deterministic validation, retrieval and dialogue state tracking prevent
-> hallucinated restaurants, unsupported booking claims and unsafe state changes.
+> An LLM performs JSON intent/slot extraction, and optional trained response
+> generation can be enabled separately, while deterministic validation,
+> retrieval and dialogue state tracking prevent hallucinated restaurants,
+> unsupported booking claims and unsafe state changes.

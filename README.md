@@ -61,11 +61,11 @@ provided MultiWOZ repository locally, then run:
 python scripts/prepare_multiwoz.py --multiwoz-path C:\path\to\multiwoz
 ```
 
-For this local workspace, the MultiWOZ clone is currently one folder above this
-project:
+For a local workspace where the MultiWOZ clone is one folder above this
+project, use:
 
 ```powershell
-python scripts/prepare_multiwoz.py --multiwoz-path "C:\Users\salih\OneDrive\Documents\Work\ai_module\Implementation\multiwoz"
+python scripts/prepare_multiwoz.py --multiwoz-path "..\multiwoz"
 ```
 
 If the full dataset is unavailable, the project still runs with:
@@ -317,6 +317,166 @@ That command enables the trained slot extractor only. To try guarded response
 generation as well, add `--enable-response-llm --response-model-name
 models/response-generator-lora` or use the default `google/flan-t5-base`
 response model.
+
+## Response Generation Dataset
+
+The optional response-generator LoRA uses deterministic synthetic supervision.
+The examples are generated from trusted MultiWOZ restaurant records, controlled
+paraphrase pools and grounded response templates. They are not manually written
+human annotations, and template-generated data may favour the system's target
+response style. Automatic safety checks help catch leakage and unsupported
+claims, but they do not replace human evaluation of trained model outputs.
+
+Generate the expanded default response datasets:
+
+```powershell
+python scripts/build_response_training_data.py `
+  --train-count 800 `
+  --eval-count 160 `
+  --challenge-count 100 `
+  --seed 6062026
+```
+
+This writes:
+
+```text
+data/training/response_generation_examples.jsonl
+data/evaluation/response_generation_eval.jsonl
+data/evaluation/response_generation_challenge.jsonl
+reports/response_generation_dataset_report.json
+reports/response_generation_dataset_report.md
+```
+
+Use the bundled sample restaurants for a smaller CPU-only validation run:
+
+```powershell
+python scripts/build_response_training_data.py `
+  --sample-data `
+  --train-count 80 `
+  --eval-count 20 `
+  --challenge-count 20 `
+  --seed 6062026
+```
+
+The builder splits restaurant records before generating examples. With enough
+processed records, train, standard evaluation and challenge restaurant records
+are disjoint. With the small sample dataset, the report clearly states any
+restaurant-diversity limitation. In all cases the builder avoids exact input
+overlap, exact normalised user-message overlap and duplicate rows.
+
+Run the response-data leakage checker:
+
+```powershell
+python scripts/check_response_data_leakage.py
+```
+
+Codex did not execute response-model training or response-model evaluation.
+Those steps are performed separately in Kaggle.
+
+### Kaggle Response LoRA Commands
+
+Every command in this subsection is **NOT EXECUTED BY CODEX - RUN MANUALLY IN KAGGLE**.
+
+Install dependencies:
+
+```python
+!pip install -q -U -r requirements-qlora.txt
+```
+
+Confirm GPU:
+
+```python
+import torch
+print("CUDA available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("GPU:", torch.cuda.get_device_name(0))
+```
+
+Generate the full response datasets, if not already generated locally:
+
+```python
+!python scripts/build_response_training_data.py \
+  --train-count 800 \
+  --eval-count 160 \
+  --challenge-count 100 \
+  --seed 6062026
+```
+
+Run the response-data leakage checker:
+
+```python
+!python scripts/check_response_data_leakage.py
+```
+
+Remove any previous response adapter:
+
+```python
+!rm -rf models/response-generator-lora
+!mkdir -p outputs/evaluation reports
+```
+
+Train the response LoRA adapter:
+
+```python
+!python scripts/train_lora_response_generator.py \
+  --base-model google/flan-t5-base \
+  --train-file data/training/response_generation_examples.jsonl \
+  --eval-file data/evaluation/response_generation_eval.jsonl \
+  --output-dir models/response-generator-lora \
+  --metadata-path outputs/evaluation/response_lora_training_metadata.json \
+  --max-steps 300 \
+  --batch-size 1 \
+  --gradient-accumulation-steps 8 \
+  --learning-rate 2e-4 \
+  --eval-steps 50 \
+  --save-steps 50 \
+  --seed 6062026
+```
+
+Evaluate the pretrained and trained response models on the standard set:
+
+```python
+!python scripts/evaluate_response_generation.py \
+  --run-llm \
+  --response-model-name google/flan-t5-base \
+  --adapter-path models/response-generator-lora \
+  --eval-file data/evaluation/response_generation_eval.jsonl \
+  --json-report reports/response_generation_comparison_trained.json \
+  --markdown-report reports/response_generation_comparison_trained.md
+```
+
+Evaluate the pretrained and trained response models on the challenge set:
+
+```python
+!python scripts/evaluate_response_generation.py \
+  --run-llm \
+  --response-model-name google/flan-t5-base \
+  --adapter-path models/response-generator-lora \
+  --eval-file data/evaluation/response_generation_challenge.jsonl \
+  --json-report reports/response_generation_challenge_trained.json \
+  --markdown-report reports/response_generation_challenge_trained.md
+```
+
+Inspect the reports:
+
+```python
+!cat reports/response_generation_comparison_trained.md
+!cat reports/response_generation_challenge_trained.md
+```
+
+Archive the response adapter and evidence:
+
+```python
+!zip -r response_generator_lora_artifacts.zip \
+  models/response-generator-lora \
+  outputs/evaluation/response_lora_training_metadata.json \
+  reports/response_generation_comparison_trained.json \
+  reports/response_generation_comparison_trained.md \
+  reports/response_generation_challenge_trained.json \
+  reports/response_generation_challenge_trained.md \
+  reports/response_generation_dataset_report.json \
+  reports/response_generation_dataset_report.md
+```
 
 Evaluate and save reports:
 
