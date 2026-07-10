@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from restaurant_assistant.llm_generator import DEFAULT_RESPONSE_MODEL, validate_generated_response
+from restaurant_assistant.response_prompt import parse_response_input, prompt_from_row
 
 
 DEFAULT_TRAIN_FILE = ROOT / "data" / "training" / "response_generation_examples.jsonl"
@@ -50,29 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def format_prompt(row: dict[str, str]) -> str:
-    return f"{row['instruction']}\n{row['input']}"
+    return prompt_from_row(row)
 
 
 def evidence_records_from_input(input_text: str) -> list[dict[str, str]]:
-    for line in input_text.splitlines():
-        if not line.startswith("Evidence:"):
-            continue
-        raw = line.split(":", 1)[1].strip()
-        records: list[dict[str, str]] = []
-        for chunk in raw.split("|"):
-            record: dict[str, str] = {}
-            for part in chunk.split(";"):
-                if "=" not in part:
-                    continue
-                key, value = part.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                if key and value:
-                    record[key] = value
-            if record:
-                records.append(record)
-        return records
-    return []
+    return parse_response_input(input_text).evidence_records
 
 
 def load_jsonl_examples(path: Path) -> list[dict[str, str]]:

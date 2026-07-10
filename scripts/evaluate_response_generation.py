@@ -1,4 +1,4 @@
-"""Compare baseline, optional LLM, and final guarded response generation."""
+"""Compare deterministic, raw model, and final guarded response generation."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import argparse
 import json
 import statistics
 import sys
-import time
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -20,10 +20,12 @@ from restaurant_assistant.dialogue_state import DialogueState
 from restaurant_assistant.llm_generator import (
     DEFAULT_RESPONSE_MODEL,
     GroundedResponseGenerator,
+    RawGenerationResult,
     validate_generated_response,
 )
 from restaurant_assistant.nlg import contains_json_or_debug_leakage
 from restaurant_assistant.ranking import RankedRestaurant
+from restaurant_assistant.response_prompt import ResponsePromptFields, parse_response_input
 
 try:
     from .build_response_training_data import build_rows
@@ -35,6 +37,13 @@ DEFAULT_EVAL_FILE = ROOT / "data" / "evaluation" / "response_generation_eval.jso
 DEFAULT_JSON_REPORT = ROOT / "reports" / "response_generation_comparison.json"
 DEFAULT_MD_REPORT = ROOT / "reports" / "response_generation_comparison.md"
 DEFAULT_ADAPTER_PATH = ROOT / "models" / "response-generator-lora"
+
+METRIC_KEYS = (
+    "deterministic_baseline_response",
+    "raw_pretrained_model_response",
+    "raw_trained_lora_response",
+    "final_guarded_response",
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -64,163 +73,284 @@ def _load_rows(path: Path, restaurants: list[dict[str, Any]]) -> list[dict[str, 
     return build_rows(restaurants)[::4]
 
 
-def _first_restaurant_from_output(output: str, restaurants: list[dict[str, Any]]) -> dict[str, Any] | None:
-    lowered = output.casefold()
-    for record in restaurants:
-        name = str(record.get("name") or "").casefold()
-        if name and name in lowered:
+def _normalise(value: Any) -> str:
+    return " ".join(str(value or "").casefold().split())
+
+
+def _coerce_people(value: Any) -> int | None:
+    try:
+        people = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return people if people > 0 else None
+
+
+def _find_restaurant(
+    *,
+    name: str,
+    evidence_records: list[dict[str, Any]],
+    restaurants: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    wanted = _normalise(name)
+    if not wanted:
+        return evidence_records[0] if evidence_records else None
+    for record in [*evidence_records, *restaurants]:
+        if _normalise(record.get("name")) == wanted:
             return record
-    return None
+    return evidence_records[0] if evidence_records else None
 
 
-def _intent_from_input(input_text: str) -> str:
-    for line in input_text.splitlines():
-        if line.startswith("Intent:"):
-            return line.split(":", 1)[1].strip()
-    return "search"
-
-
-def _user_from_input(input_text: str) -> str:
-    for line in input_text.splitlines():
-        if line.startswith("User:"):
-            return line.split(":", 1)[1].strip()
-    return ""
-
-
-def _missing_slots_from_input(input_text: str) -> list[str]:
-    for line in input_text.splitlines():
-        if line.startswith("Missing slots:"):
-            raw = line.split(":", 1)[1].strip()
-            try:
-                parsed = json.loads(raw.replace("'", '"'))
-                return [str(item) for item in parsed] if isinstance(parsed, list) else []
-            except json.JSONDecodeError:
-                return []
-    return []
-
-
-def _evidence_records_from_input(input_text: str) -> list[dict[str, str]]:
-    for line in input_text.splitlines():
-        if not line.startswith("Evidence:"):
-            continue
-        raw = line.split(":", 1)[1].strip()
-        records: list[dict[str, str]] = []
-        for chunk in raw.split("|"):
-            record: dict[str, str] = {}
-            for part in chunk.split(";"):
-                if "=" not in part:
-                    continue
-                key, value = part.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                if key and value:
-                    record[key] = value
-            if record:
-                records.append(record)
-        return records
-    return []
-
-
-def _state_for_record(record: dict[str, Any] | None) -> DialogueState:
-    if not record:
-        return DialogueState()
+def _state_from_prompt(
+    fields: ResponsePromptFields,
+    restaurants: list[dict[str, Any]],
+) -> DialogueState:
+    evidence_records = fields.evidence_records
+    state_values = fields.state
+    restaurant = _find_restaurant(
+        name=state_values.get("restaurant", ""),
+        evidence_records=evidence_records,
+        restaurants=restaurants,
+    )
+    booking_status = state_values.get("booking_status") or state_values.get("status") or "none"
+    selected = restaurant if restaurant else (evidence_records[0] if evidence_records else None)
     return DialogueState(
-        food=record.get("food"),
-        area=record.get("area"),
-        pricerange=record.get("pricerange"),
-        selected_restaurant=record,
+        food=state_values.get("food") or (selected or {}).get("food"),
+        area=state_values.get("area") or (selected or {}).get("area"),
+        pricerange=state_values.get("pricerange") or (selected or {}).get("pricerange"),
+        day=state_values.get("day"),
+        time=state_values.get("time"),
+        people=_coerce_people(state_values.get("people")),
+        selected_restaurant=selected,
+        booking_restaurant=selected if fields.intent in {"book", "reschedule", "cancel", "booking_info", "booking_list"} else None,
+        booking_status=booking_status,
+        booking_reference=state_values.get("booking_reference"),
     )
 
 
-def _ranked(record: dict[str, Any] | None) -> list[RankedRestaurant]:
-    if not record:
-        return []
-    return [
-        RankedRestaurant(
-            record=record,
-            score=1.0,
-            matched_constraints=["food", "area", "pricerange"],
-            missing_unmatched_constraints=[],
-            explanation="response generation evaluation evidence",
-            similarity=1.0,
+def _ranked(records: list[dict[str, Any]]) -> list[RankedRestaurant]:
+    ranked: list[RankedRestaurant] = []
+    for record in records:
+        ranked.append(
+            RankedRestaurant(
+                record=record,
+                score=1.0,
+                matched_constraints=["food", "area", "pricerange"],
+                missing_unmatched_constraints=[],
+                explanation="response generation evaluation evidence",
+                similarity=1.0,
+            )
         )
-    ]
+    return ranked
 
 
-def _clarity_pass(text: str) -> bool:
-    stripped = " ".join(str(text or "").split())
-    if not stripped:
-        return False
-    if len(stripped.split()) > 120:
-        return False
-    return stripped[-1] in ".!?"
-
-
-def _exact_evidence_preserved(text: str, record: dict[str, Any] | None) -> bool:
-    if not record:
-        return True
-    lowered = text.casefold()
-    contact_values = [
-        str(record.get("phone") or "").casefold(),
-        str(record.get("postcode") or "").casefold(),
-        str(record.get("address") or "").casefold(),
-    ]
-    mentioned_any = any(value and value in lowered for value in contact_values)
-    if not mentioned_any:
-        return True
-    return all(value in lowered for value in contact_values if value and value in lowered)
-
-
-def _metrics(cases: list[dict[str, Any]], key: str) -> dict[str, Any]:
-    latencies = [case[key].get("latency_seconds", 0.0) for case in cases]
-    count = len(cases)
-    grounded = 0
-    leakage = 0
-    unsupported = 0
-    nonempty = 0
-    clarity = 0
-    exact = 0
-    fallback = 0
-    skipped = 0
-    for case in cases:
-        result = case[key]
-        text = result.get("text", "")
-        validation = validate_generated_response(
-            text,
-            evidence_records=case.get("evidence_records", []),
-            known_restaurant_records=case.get("known_restaurants", []),
-        )
-        grounded += int(validation.ok)
-        leakage += int(contains_json_or_debug_leakage(text))
-        unsupported += int(validation.reason == "unsupported_claim")
-        nonempty += int(bool(str(text).strip()))
-        clarity += int(_clarity_pass(text))
-        exact += int(_exact_evidence_preserved(text, case.get("record")))
-        fallback += int(bool(result.get("fallback")))
-        skipped += int(bool(result.get("skipped")))
-    denominator = max(count, 1)
+def _validation_payload(
+    text: str,
+    *,
+    evidence_records: list[dict[str, Any]],
+    known_restaurant_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    validation = validate_generated_response(
+        text,
+        evidence_records=evidence_records,
+        known_restaurant_records=known_restaurant_records,
+    )
     return {
-        "status": "skipped" if skipped == count and count else "completed",
-        "case_count": count,
-        "groundedness_rate": round(grounded / denominator, 4),
-        "json_debug_leakage_rate": round(leakage / denominator, 4),
-        "unsupported_claim_rate": round(unsupported / denominator, 4),
-        "response_nonempty_rate": round(nonempty / denominator, 4),
-        "fallback_rate": round(fallback / denominator, 4),
-        "average_latency_seconds": round(statistics.mean(latencies), 6) if latencies else 0.0,
-        "simple_clarity_check_pass_rate": round(clarity / denominator, 4),
-        "exact_evidence_preservation_rate": round(exact / denominator, 4),
-        "skipped_cases": skipped,
+        "ok": validation.ok,
+        "rejection_reason": validation.reason,
     }
 
 
-def _result(text: str, *, latency: float = 0.0, fallback: bool = False, skipped: bool = False, mode: str = "") -> dict[str, Any]:
+def _baseline_result(
+    text: str,
+    *,
+    evidence_records: list[dict[str, Any]],
+    known_restaurant_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    validation = _validation_payload(
+        text,
+        evidence_records=evidence_records,
+        known_restaurant_records=known_restaurant_records,
+    )
     return {
         "text": text,
-        "latency_seconds": round(latency, 6),
-        "fallback": fallback,
-        "skipped": skipped,
+        "mode": "deterministic_baseline",
+        "attempted": False,
+        "accepted": False,
+        "rejected": False,
+        "fallback": False,
+        "skipped": False,
+        "latency_seconds": 0.0,
+        "validation": validation,
+        "final_validation": validation,
+        "rejection_reason": None,
+    }
+
+
+def _skipped_model_result(mode: str, reason: str) -> dict[str, Any]:
+    return {
+        "text": "",
         "mode": mode,
+        "attempted": False,
+        "accepted": False,
+        "rejected": False,
+        "fallback": False,
+        "skipped": True,
+        "latency_seconds": 0.0,
+        "validation": {"ok": None, "rejection_reason": reason},
+        "final_validation": {"ok": None, "rejection_reason": reason},
+        "rejection_reason": reason,
+    }
+
+
+def _raw_model_result(
+    raw: RawGenerationResult,
+    *,
+    evidence_records: list[dict[str, Any]],
+    known_restaurant_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    validation = _validation_payload(
+        raw.text,
+        evidence_records=evidence_records,
+        known_restaurant_records=known_restaurant_records,
+    )
+    accepted = bool(raw.attempted and validation["ok"])
+    rejected = bool(raw.attempted and not accepted)
+    reason = raw.error or validation["rejection_reason"]
+    return {
+        "text": raw.text,
+        "mode": raw.mode,
+        "attempted": raw.attempted,
+        "accepted": accepted,
+        "rejected": rejected,
+        "fallback": False,
+        "skipped": False,
+        "latency_seconds": raw.latency_seconds,
+        "validation": validation,
+        "final_validation": validation,
+        "rejection_reason": reason if rejected else None,
+    }
+
+
+def _final_guarded_result(
+    *,
+    baseline_text: str,
+    candidate: dict[str, Any] | None,
+    run_llm: bool,
+    evidence_records: list[dict[str, Any]],
+    known_restaurant_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if run_llm and candidate and candidate.get("attempted") and candidate.get("accepted"):
+        text = candidate["text"]
+        mode = f"accepted_{candidate['mode']}"
+        fallback = False
+    else:
+        text = baseline_text
+        fallback = bool(run_llm and candidate and candidate.get("attempted") and not candidate.get("accepted"))
+        mode = "deterministic_baseline_fallback" if fallback else "deterministic_baseline"
+
+    final_validation = _validation_payload(
+        text,
+        evidence_records=evidence_records,
+        known_restaurant_records=known_restaurant_records,
+    )
+    pre_validation = candidate.get("validation") if candidate else {"ok": None, "rejection_reason": "not_attempted"}
+    return {
+        "text": text,
+        "text_before_fallback": candidate.get("text", "") if candidate else "",
+        "mode": mode,
+        "attempted": bool(candidate and candidate.get("attempted")),
+        "accepted": bool(candidate and candidate.get("accepted")),
+        "rejected": bool(candidate and candidate.get("rejected")),
+        "fallback": fallback,
+        "skipped": False,
+        "latency_seconds": float(candidate.get("latency_seconds", 0.0)) if candidate else 0.0,
+        "validation": pre_validation,
+        "final_validation": final_validation,
+        "rejection_reason": candidate.get("rejection_reason") if candidate and candidate.get("rejected") else None,
+    }
+
+
+def _guard_candidate(
+    *,
+    pretrained: dict[str, Any],
+    trained: dict[str, Any],
+    adapter_available: bool,
+) -> dict[str, Any] | None:
+    if adapter_available and not trained.get("skipped"):
+        return trained
+    if trained.get("attempted"):
+        return trained
+    if pretrained.get("attempted"):
+        return pretrained
+    return None
+
+
+def _rate(numerator: int, denominator: int) -> float | None:
+    if denominator <= 0:
+        return None
+    return round(numerator / denominator, 4)
+
+
+def _metrics(cases: list[dict[str, Any]], key: str) -> dict[str, Any]:
+    results = [case[key] for case in cases]
+    count = len(results)
+    skipped = sum(int(result.get("skipped")) for result in results)
+    active_count = count - skipped
+    attempted = sum(int(result.get("attempted")) for result in results)
+    accepted = sum(int(result.get("accepted")) for result in results)
+    rejected = sum(int(result.get("rejected")) for result in results)
+    fallback = sum(int(result.get("fallback")) for result in results)
+    before_validations = [result.get("validation", {}) for result in results if result.get("attempted")]
+    after_validations = [
+        result.get("final_validation") or result.get("validation", {})
+        for result in results
+        if not result.get("skipped")
+    ]
+    before_texts = [
+        result.get("text_before_fallback", result.get("text", ""))
+        for result in results
+        if result.get("attempted")
+    ]
+    latencies = [float(result.get("latency_seconds", 0.0)) for result in results if not result.get("skipped")]
+    rejection_reasons = Counter(
+        str(result.get("rejection_reason") or result.get("validation", {}).get("rejection_reason"))
+        for result in results
+        if result.get("rejected")
+    )
+    before_denominator = len(before_validations)
+    after_denominator = len(after_validations)
+    return {
+        "status": "skipped" if skipped == count and count else "completed",
+        "case_count": count,
+        "model_attempt_count": attempted,
+        "accepted_model_output_count": accepted,
+        "rejected_model_output_count": rejected,
+        "fallback_count": fallback,
+        "fallback_rate": _rate(fallback, active_count),
+        "groundedness_before_fallback": _rate(
+            sum(int(validation.get("ok") is True) for validation in before_validations),
+            before_denominator,
+        ),
+        "groundedness_after_fallback": _rate(
+            sum(int(validation.get("ok") is True) for validation in after_validations),
+            after_denominator,
+        ),
+        "json_debug_leakage_before_fallback": _rate(
+            sum(int(contains_json_or_debug_leakage(text)) for text in before_texts),
+            before_denominator,
+        ),
+        "unsupported_claim_rate_before_fallback": _rate(
+            sum(int(validation.get("rejection_reason") == "unsupported_claim") for validation in before_validations),
+            before_denominator,
+        ),
+        "average_latency_seconds": round(statistics.mean(latencies), 6) if latencies else 0.0,
+        "response_latency_seconds": {
+            "mean": round(statistics.mean(latencies), 6) if latencies else 0.0,
+            "median": round(statistics.median(latencies), 6) if latencies else 0.0,
+            "max": round(max(latencies), 6) if latencies else 0.0,
+        },
+        "rejection_reason_counts": dict(sorted(rejection_reasons.items())),
+        "skipped_cases": skipped,
     }
 
 
@@ -228,6 +358,7 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
     settings = get_settings()
     restaurants = load_restaurants(settings, use_sample=args.sample_data)
     rows = _load_rows(args.eval_file, restaurants)
+    adapter_available = args.adapter_path.exists()
     cases: list[dict[str, Any]] = []
 
     pretrained_generator = GroundedResponseGenerator(
@@ -236,118 +367,117 @@ def evaluate(args: argparse.Namespace) -> dict[str, Any]:
         known_restaurants=restaurants,
     )
     trained_generator = GroundedResponseGenerator(
-        enable_llm=args.run_llm and args.adapter_path.exists(),
+        enable_llm=args.run_llm and adapter_available,
         model_name=str(args.adapter_path),
-        known_restaurants=restaurants,
-    )
-    final_generator = GroundedResponseGenerator(
-        enable_llm=args.run_llm,
-        model_name=str(args.adapter_path) if args.adapter_path.exists() else args.response_model_name,
+        pretrained_fallback=False,
         known_restaurants=restaurants,
     )
 
     for row in rows:
         input_text = str(row.get("input") or "")
-        baseline_text = str(row.get("output") or "")
-        evidence_records = _evidence_records_from_input(input_text)
-        record = evidence_records[0] if evidence_records else _first_restaurant_from_output(baseline_text, restaurants)
-        intent = _intent_from_input(input_text)
-        user = _user_from_input(input_text)
-        missing_slots = _missing_slots_from_input(input_text)
-        state = _state_for_record(record)
-        ranked = _ranked(record)
-        case: dict[str, Any] = {
-            "intent": intent,
-            "user": user,
-            "record": record,
-            "evidence_records": evidence_records or ([record] if record else []),
-            "known_restaurants": [*restaurants, *evidence_records],
-            "baseline_template": _result(baseline_text, mode="baseline_template"),
-        }
+        reference_output = str(row.get("output") or "")
+        fields = parse_response_input(input_text)
+        evidence_records = fields.evidence_records
+        known_restaurant_records = [*restaurants, *evidence_records]
+        state = _state_from_prompt(fields, restaurants)
+        ranked = _ranked(evidence_records)
+
+        baseline = _baseline_result(
+            reference_output,
+            evidence_records=evidence_records,
+            known_restaurant_records=known_restaurant_records,
+        )
 
         if args.run_llm:
-            start = time.perf_counter()
-            pretrained = pretrained_generator.generate(
-                user,
+            pretrained_raw = pretrained_generator.generate_raw(
+                fields.user,
                 state,
                 ranked,
-                intent=intent,
-                missing_slots=missing_slots,
-                baseline_text=baseline_text,
+                intent=fields.intent,
+                missing_slots=fields.missing_slots,
             )
-            case["pretrained_flan_t5_base_response"] = _result(
-                pretrained.text,
-                latency=time.perf_counter() - start,
-                fallback=not pretrained.used_llm,
-                mode=pretrained.final_response_mode,
+            pretrained = _raw_model_result(
+                pretrained_raw,
+                evidence_records=evidence_records,
+                known_restaurant_records=known_restaurant_records,
             )
         else:
-            case["pretrained_flan_t5_base_response"] = _result(
-                "",
-                skipped=True,
-                mode="not_run",
-            )
+            pretrained = _skipped_model_result("not_run", "run_llm_false")
 
-        if args.run_llm and args.adapter_path.exists():
-            start = time.perf_counter()
-            trained = trained_generator.generate(
-                user,
+        if args.run_llm and adapter_available:
+            trained_raw = trained_generator.generate_raw(
+                fields.user,
                 state,
                 ranked,
-                intent=intent,
-                missing_slots=missing_slots,
-                baseline_text=baseline_text,
+                intent=fields.intent,
+                missing_slots=fields.missing_slots,
             )
-            case["trained_lora_response"] = _result(
-                trained.text,
-                latency=time.perf_counter() - start,
-                fallback=not trained.used_llm,
-                mode=trained.final_response_mode,
+            trained = _raw_model_result(
+                trained_raw,
+                evidence_records=evidence_records,
+                known_restaurant_records=known_restaurant_records,
             )
         else:
-            case["trained_lora_response"] = _result(
-                "",
-                skipped=True,
-                mode="adapter_missing" if not args.adapter_path.exists() else "not_run",
+            trained = _skipped_model_result(
+                "adapter_missing" if not adapter_available else "not_run",
+                "adapter_missing" if not adapter_available else "run_llm_false",
             )
 
-        if args.run_llm:
-            start = time.perf_counter()
-            final = final_generator.generate(
-                user,
-                state,
-                ranked,
-                intent=intent,
-                missing_slots=missing_slots,
-                baseline_text=baseline_text,
-            )
-            case["final_guarded_response"] = _result(
-                final.text,
-                latency=time.perf_counter() - start,
-                fallback=not final.used_llm,
-                mode=final.final_response_mode,
-            )
-        else:
-            case["final_guarded_response"] = _result(
-                baseline_text,
-                mode="baseline_template",
-            )
-        cases.append(case)
+        candidate = _guard_candidate(
+            pretrained=pretrained,
+            trained=trained,
+            adapter_available=adapter_available,
+        )
+        final_guarded = _final_guarded_result(
+            baseline_text=reference_output,
+            candidate=candidate,
+            run_llm=args.run_llm,
+            evidence_records=evidence_records,
+            known_restaurant_records=known_restaurant_records,
+        )
 
-    metrics = {
-        "baseline_template": _metrics(cases, "baseline_template"),
-        "pretrained_flan_t5_base_response": _metrics(cases, "pretrained_flan_t5_base_response"),
-        "trained_lora_response": _metrics(cases, "trained_lora_response"),
-        "final_guarded_response": _metrics(cases, "final_guarded_response"),
-    }
+        cases.append(
+            {
+                "intent": fields.intent,
+                "user": fields.user,
+                "state": fields.state,
+                "food": state.food,
+                "area": state.area,
+                "pricerange": state.pricerange,
+                "day": state.day,
+                "time": state.time,
+                "people": state.people,
+                "booking_status": state.booking_status,
+                "booking_reference": state.booking_reference,
+                "missing_slots": fields.missing_slots,
+                "restaurant_evidence": evidence_records,
+                "reference_output": reference_output,
+                "deterministic_baseline_response": baseline,
+                "raw_pretrained_model_response": pretrained,
+                "raw_trained_lora_response": trained,
+                "final_guarded_response": final_guarded,
+            }
+        )
+
+    metrics = {key: _metrics(cases, key) for key in METRIC_KEYS}
     return {
         "run_llm": args.run_llm,
         "response_model_name": args.response_model_name,
         "adapter_path": str(args.adapter_path),
+        "adapter_available": adapter_available,
+        "device_selection": "cuda_if_available_else_cpu",
         "headline": "final_guarded_response",
         "metrics": metrics,
         "cases": cases,
     }
+
+
+def _format_metric(value: float | int | None, *, places: int = 4) -> str:
+    if value is None:
+        return "N/A"
+    if isinstance(value, int):
+        return str(value)
+    return f"{value:.{places}f}"
 
 
 def _markdown_report(payload: dict[str, Any]) -> str:
@@ -355,33 +485,30 @@ def _markdown_report(payload: dict[str, Any]) -> str:
     lines = [
         "# Response Generation Comparison",
         "",
-        "Headline result: `final_guarded_response`, because this is what the user sees.",
+        "Headline result: `final_guarded_response`, because this is what the user sees after validation and deterministic fallback.",
         "",
-        "| Mode | Cases | Groundedness | JSON/debug leakage | Unsupported claims | Nonempty | Fallback | Avg latency (s) | Clarity | Evidence preservation | Skipped |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| Mode | Cases | Attempts | Accepted | Rejected | Fallback | Grounded before | Grounded after | JSON/debug before | Unsupported before | Avg latency (s) | Rejection reasons | Skipped |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |",
     ]
-    for key in [
-        "baseline_template",
-        "pretrained_flan_t5_base_response",
-        "trained_lora_response",
-        "final_guarded_response",
-    ]:
+    for key in METRIC_KEYS:
         item = metrics[key]
-        skipped = item.get("status") == "skipped"
+        reasons = ", ".join(f"{name}: {count}" for name, count in item["rejection_reason_counts"].items()) or "-"
         lines.append(
             "| "
             + " | ".join(
                 [
                     key,
                     str(item["case_count"]),
-                    "N/A" if skipped else f"{item['groundedness_rate']:.4f}",
-                    "N/A" if skipped else f"{item['json_debug_leakage_rate']:.4f}",
-                    "N/A" if skipped else f"{item['unsupported_claim_rate']:.4f}",
-                    "N/A" if skipped else f"{item['response_nonempty_rate']:.4f}",
-                    "N/A" if skipped else f"{item['fallback_rate']:.4f}",
-                    "N/A" if skipped else f"{item['average_latency_seconds']:.6f}",
-                    "N/A" if skipped else f"{item['simple_clarity_check_pass_rate']:.4f}",
-                    "N/A" if skipped else f"{item['exact_evidence_preservation_rate']:.4f}",
+                    str(item["model_attempt_count"]),
+                    str(item["accepted_model_output_count"]),
+                    str(item["rejected_model_output_count"]),
+                    str(item["fallback_count"]),
+                    _format_metric(item["groundedness_before_fallback"]),
+                    _format_metric(item["groundedness_after_fallback"]),
+                    _format_metric(item["json_debug_leakage_before_fallback"]),
+                    _format_metric(item["unsupported_claim_rate_before_fallback"]),
+                    _format_metric(item["average_latency_seconds"], places=6),
+                    reasons,
                     str(item["skipped_cases"]),
                 ]
             )
@@ -391,7 +518,7 @@ def _markdown_report(payload: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "Local LLM loading was not requested. Re-run with `--run-llm` to populate the pretrained and trained adapter columns.",
+                "Local LLM loading was not requested. Re-run with `--run-llm` to populate raw pretrained and trained-adapter model attempts.",
             ]
         )
     return "\n".join(lines) + "\n"

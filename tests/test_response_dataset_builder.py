@@ -1,9 +1,15 @@
 import json
 import re
 
+from restaurant_assistant.dialogue_state import DialogueState
 from restaurant_assistant.llm_generator import validate_generated_response
+from restaurant_assistant.llm_generator import GroundedResponseGenerator
+from restaurant_assistant.ranking import RankedRestaurant
+from restaurant_assistant.response_prompt import build_response_prompt, parse_response_input, prompt_from_row
 from scripts import build_response_training_data as builder
 from scripts import check_response_data_leakage as leakage
+from scripts import evaluate_response_generation as response_eval
+from scripts import train_lora_response_generator as train_response
 
 
 def _restaurants(count=12):
@@ -83,6 +89,126 @@ def test_response_targets_are_safe_and_booking_references_are_grounded():
 
     assert result.report["safety_validation_failure_count"] == 0
     assert result.report["booking_reference_grounding_failure_count"] == 0
+
+
+def test_shared_response_prompt_is_aligned_and_does_not_include_target():
+    result = builder.build_dataset(_restaurants(24), train_count=80, eval_count=24, challenge_count=24, seed=6062026)
+    row = next(
+        item
+        for item in result.train_rows
+        if (fields := parse_response_input(item["input"])).intent == "search"
+        and {"food", "area", "pricerange"} <= set(fields.state)
+        and fields.evidence_records
+    )
+    fields = parse_response_input(row["input"])
+    shared_prompt = build_response_prompt(
+        intent=fields.intent,
+        user=fields.user,
+        state=fields.state,
+        evidence_records=fields.evidence_records,
+        missing_slots=fields.missing_slots,
+        instruction=row["instruction"],
+    )
+    runtime_state = DialogueState(
+        food=fields.state.get("food"),
+        area=fields.state.get("area"),
+        pricerange=fields.state.get("pricerange"),
+        day=fields.state.get("day"),
+        time=fields.state.get("time"),
+        people=int(fields.state["people"]) if fields.state.get("people", "").isdigit() else None,
+        booking_status=fields.state.get("booking_status") or fields.state.get("status") or "none",
+        booking_reference=fields.state.get("booking_reference"),
+    )
+    runtime_prompt = GroundedResponseGenerator(enable_llm=False)._build_prompt(
+        fields.user,
+        runtime_state,
+        fields.evidence_records,
+        intent=fields.intent,
+        missing_slots=fields.missing_slots,
+        baseline_text=row["output"],
+    )
+
+    assert prompt_from_row(row) == shared_prompt
+    assert train_response.format_prompt(row) == shared_prompt
+    assert runtime_prompt == shared_prompt
+    assert "Baseline response:" not in runtime_prompt
+    assert row["output"] not in runtime_prompt
+
+
+def test_matching_labelled_restaurants_satisfy_prompt_constraints():
+    result = builder.build_dataset(_restaurants(45), train_count=140, eval_count=50, challenge_count=50, seed=6062026)
+    matching_rows = 0
+    available_rows = 0
+    for row in result.train_rows + result.eval_rows + result.challenge_rows:
+        output = row["output"]
+        if not output.startswith(("Matching restaurants:", "Other matching options:", "Other available records:")):
+            continue
+        fields = parse_response_input(row["input"])
+        constraints = {
+            key: value.casefold()
+            for key, value in fields.state.items()
+            if key in {"food", "area", "pricerange"} and value
+        }
+        if output.startswith("Other available records:"):
+            available_rows += 1
+            assert "may not match every preference" in output
+            continue
+        matching_rows += 1
+        assert constraints, row
+        for record in fields.evidence_records:
+            for key, value in constraints.items():
+                assert str(record.get(key, "")).casefold() == value, (key, value, record, row)
+
+    assert matching_rows > 0
+    assert available_rows >= 0
+
+
+def test_response_evaluator_separates_baseline_raw_and_guarded_rows(tmp_path):
+    result = builder.build_dataset(_restaurants(18), train_count=30, eval_count=10, challenge_count=10, seed=6062026)
+    eval_file = tmp_path / "eval.jsonl"
+    builder.write_jsonl(eval_file, result.eval_rows[:2])
+    args = response_eval.build_parser().parse_args(
+        [
+            "--sample-data",
+            "--eval-file",
+            str(eval_file),
+            "--json-report",
+            str(tmp_path / "comparison.json"),
+            "--markdown-report",
+            str(tmp_path / "comparison.md"),
+        ]
+    )
+
+    payload = response_eval.evaluate(args)
+    case = payload["cases"][0]
+
+    assert set(payload["metrics"]) == {
+        "deterministic_baseline_response",
+        "raw_pretrained_model_response",
+        "raw_trained_lora_response",
+        "final_guarded_response",
+    }
+    assert case["deterministic_baseline_response"]["text"] == case["reference_output"]
+    assert case["raw_pretrained_model_response"]["skipped"] is True
+    assert case["raw_trained_lora_response"]["skipped"] is True
+    assert case["final_guarded_response"]["text"] == case["reference_output"]
+    assert "model_attempt_count" in payload["metrics"]["final_guarded_response"]
+    assert "rejection_reason_counts" in payload["metrics"]["final_guarded_response"]
+
+
+def test_synthetic_language_uses_natural_articles_and_people_wording():
+    result = builder.build_dataset(_restaurants(45), train_count=140, eval_count=50, challenge_count=50, seed=6062026)
+    text = "\n".join(row["input"] + "\n" + row["output"] for row in result.train_rows + result.eval_rows + result.challenge_rows).casefold()
+
+    assert "1 people" not in text
+    assert "a expensive" not in text
+    assert "a inexpensive" not in text
+    assert "a upmarket" not in text
+    assert "for expensive" not in text
+    assert "1 person" in text
+    assert "2 people" in text
+    assert "an expensive" in text
+    assert "a cheap" in text
 
 
 def test_sample_sized_dataset_is_handled_gracefully_and_challenge_wording_differs():

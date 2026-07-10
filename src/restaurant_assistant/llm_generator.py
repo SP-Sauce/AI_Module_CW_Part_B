@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import re
 import time
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from restaurant_assistant.dialogue_state import DialogueState
 from restaurant_assistant.llm_runtime import llm_backend_error
 from restaurant_assistant.nlg import contains_json_or_debug_leakage
 from restaurant_assistant.ranking import RankedRestaurant
+from restaurant_assistant.response_prompt import build_response_prompt
 
 
 DEFAULT_RESPONSE_MODEL = "google/flan-t5-base"
@@ -78,6 +78,15 @@ class GenerationResult:
     latency_seconds: float = 0.0
 
 
+@dataclass(frozen=True)
+class RawGenerationResult:
+    text: str
+    mode: str
+    attempted: bool
+    latency_seconds: float = 0.0
+    error: str | None = None
+
+
 def validate_generated_response(
     text: str,
     *,
@@ -111,7 +120,12 @@ def validate_generated_response(
     evidence_names = _normalised_values(record.get("name") for record in evidence)
     known_names = _normalised_values(record.get("name") for record in known)
     mentioned_names = {name for name in known_names if _mentions_normalised_value(cleaned, name)}
-    if mentioned_names and not mentioned_names <= evidence_names:
+    unsupported_names = {
+        name
+        for name in mentioned_names
+        if not any(name == allowed or name in allowed or allowed in name for allowed in evidence_names)
+    }
+    if unsupported_names:
         return ResponseValidationResult(False, "invented_restaurant_name")
 
     evidence_phones = {_digits(record.get("phone")) for record in evidence if _digits(record.get("phone"))}
@@ -247,7 +261,6 @@ class GroundedResponseGenerator:
                 evidence,
                 intent=intent,
                 missing_slots=missing_slots,
-                baseline_text=template_text,
             )
             if error:
                 rejected_reason = error
@@ -284,6 +297,60 @@ class GroundedResponseGenerator:
         self.last_result = result
         return result
 
+    def generate_raw(
+        self,
+        user_message: str,
+        state: DialogueState,
+        ranked_results: Iterable[RankedRestaurant] | None = None,
+        *,
+        intent: str = "search",
+        missing_slots: list[str] | None = None,
+    ) -> RawGenerationResult:
+        """Return the raw model output before validation or deterministic fallback."""
+
+        start = time.perf_counter()
+        if not self.enable_llm:
+            return RawGenerationResult(
+                text="",
+                mode="llm_disabled",
+                attempted=False,
+                latency_seconds=round(time.perf_counter() - start, 6),
+                error="llm_disabled",
+            )
+
+        results = list(ranked_results or [])
+        evidence = self._evidence_records(state, results)
+        last_mode = "not_attempted"
+        last_error: str | None = None
+        for model_name, mode in self._attempt_chain():
+            last_mode = mode
+            generated_text, error = self._try_llm(
+                model_name,
+                mode,
+                user_message,
+                state,
+                evidence,
+                intent=intent,
+                missing_slots=missing_slots,
+            )
+            if error:
+                last_error = error
+                continue
+            return RawGenerationResult(
+                text=generated_text,
+                mode=mode,
+                attempted=True,
+                latency_seconds=round(time.perf_counter() - start, 6),
+            )
+
+        return RawGenerationResult(
+            text="",
+            mode=last_mode,
+            attempted=True,
+            latency_seconds=round(time.perf_counter() - start, 6),
+            error=last_error or "response_model_unavailable",
+        )
+
     def _attempt_chain(self) -> list[tuple[str, str]]:
         if self._is_adapter_path(self.model_name):
             attempts = [(self.model_name, "trained_lora_response")]
@@ -307,7 +374,6 @@ class GroundedResponseGenerator:
         *,
         intent: str,
         missing_slots: list[str] | None,
-        baseline_text: str,
     ) -> tuple[str, str | None]:
         pipe = self._load_pipeline(model_name, mode)
         if not pipe:
@@ -318,7 +384,6 @@ class GroundedResponseGenerator:
             evidence,
             intent=intent,
             missing_slots=missing_slots,
-            baseline_text=baseline_text,
         )
         try:
             output = pipe(prompt, max_new_tokens=120, do_sample=False)[0]["generated_text"].strip()
@@ -337,26 +402,29 @@ class GroundedResponseGenerator:
         *,
         intent: str,
         missing_slots: list[str] | None,
-        baseline_text: str,
+        baseline_text: str | None = None,
     ) -> str:
+        return build_response_prompt(
+            intent=intent,
+            user=user_message,
+            state=self._prompt_state(state),
+            evidence_records=evidence,
+            missing_slots=missing_slots,
+        )
+
+    def _prompt_state(self, state: DialogueState) -> dict[str, Any]:
         safe_state = {
             key: value
             for key, value in state.to_dict().items()
-            if key in {"food", "area", "pricerange", "day", "time", "people", "booking_status"}
-            and value not in (None, "")
+            if key in {"food", "area", "pricerange", "day", "time", "people", "booking_status", "booking_reference"}
+            and value not in (None, "", [])
         }
-        return (
-            "Task: Generate a grounded restaurant assistant response.\n"
-            "Rules: Use only the evidence. Do not mention JSON, state, slots, scores, source ids, "
-            "payments, reviews, live availability, halal status, allergies, or unsupported facts.\n"
-            f"Intent: {intent}\n"
-            f"User: {user_message}\n"
-            f"State: {json.dumps(safe_state, sort_keys=True)}\n"
-            f"Evidence: {json.dumps(evidence, sort_keys=True)}\n"
-            f"Missing slots: {missing_slots or []}\n"
-            f"Baseline response: {baseline_text}\n"
-            "Response:"
-        )
+        if safe_state.get("booking_status") == "none":
+            safe_state.pop("booking_status")
+        restaurant = state.selected_restaurant or state.booking_restaurant
+        if restaurant and restaurant.get("name"):
+            safe_state["restaurant"] = restaurant["name"]
+        return safe_state
 
     def _clean_llm_output(self, output: str) -> str:
         text = output.strip()
@@ -387,7 +455,7 @@ class GroundedResponseGenerator:
             else:
                 from transformers import pipeline
 
-                pipe = pipeline("text2text-generation", model=model_name)
+                pipe = pipeline("text2text-generation", model=model_name, device=self._pipeline_device())
             self._pipelines[cache_key] = pipe
             if model_name == self.model_name:
                 self._pipeline = pipe
@@ -408,7 +476,14 @@ class GroundedResponseGenerator:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_source)
         base_model = AutoModelForSeq2SeqLM.from_pretrained(base_model_name)
         model = PeftModel.from_pretrained(base_model, adapter_path)
-        return pipeline("text2text-generation", model=model, tokenizer=tokenizer)
+        return pipeline("text2text-generation", model=model, tokenizer=tokenizer, device=self._pipeline_device())
+
+    def _pipeline_device(self) -> int:
+        try:
+            import torch
+        except Exception:
+            return -1
+        return 0 if torch.cuda.is_available() else -1
 
     def _template_response(
         self,

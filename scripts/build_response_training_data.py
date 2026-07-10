@@ -21,6 +21,13 @@ sys.path.insert(0, str(ROOT / "src"))
 from restaurant_assistant.config import get_settings
 from restaurant_assistant.data_loader import load_restaurants
 from restaurant_assistant.llm_generator import validate_generated_response
+from restaurant_assistant.response_prompt import (
+    RESPONSE_INSTRUCTION,
+    build_response_input,
+    format_evidence,
+    parse_response_input,
+    public_evidence_record,
+)
 
 
 DEFAULT_TRAIN_OUTPUT = ROOT / "data" / "training" / "response_generation_examples.jsonl"
@@ -34,7 +41,7 @@ DEFAULT_EVAL_COUNT = 160
 DEFAULT_CHALLENGE_COUNT = 100
 DEFAULT_SEED = 6062026
 
-INSTRUCTION = "Generate a short grounded restaurant assistant response using only the provided evidence."
+INSTRUCTION = RESPONSE_INSTRUCTION
 REQUIRED_FIELDS = ("instruction", "input", "output")
 BOOKING_REF_RE = re.compile(r"\bBK-[A-Z0-9]{6}\b")
 
@@ -225,42 +232,15 @@ def _field(record: dict[str, Any], key: str, fallback: str = "") -> str:
 
 
 def _public_record(record: dict[str, Any]) -> dict[str, Any]:
-    return {
-        key: record.get(key)
-        for key in ("name", "food", "area", "pricerange", "address", "postcode", "phone", "type")
-        if record.get(key) not in (None, "")
-    }
+    return public_evidence_record(record)
 
 
 def _evidence(records: Iterable[dict[str, Any]]) -> str:
-    chunks = []
-    for record in records:
-        public = _public_record(record)
-        fields = [f"{key}={public[key]}" for key in ("name", "food", "area", "pricerange", "address", "postcode", "phone") if key in public]
-        if fields:
-            chunks.append("; ".join(fields))
-    return " | ".join(chunks)
+    return format_evidence(records)
 
 
 def evidence_records_from_input(input_text: str) -> list[dict[str, str]]:
-    for line in input_text.splitlines():
-        if not line.startswith("Evidence:"):
-            continue
-        records = []
-        for chunk in line.split(":", 1)[1].strip().split("|"):
-            record: dict[str, str] = {}
-            for part in chunk.split(";"):
-                if "=" not in part:
-                    continue
-                key, value = part.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                if key and value:
-                    record[key] = value
-            if record:
-                records.append(record)
-        return records
-    return []
+    return parse_response_input(input_text).evidence_records
 
 
 def _state(**slots: Any) -> str:
@@ -275,19 +255,16 @@ def _input(
     evidence: str = "",
     missing_slots: Iterable[str] | None = None,
 ) -> str:
-    parts = [
-        "Task: Generate a grounded restaurant assistant response.",
-        f"Intent: {intent}",
-        f"User: {user}",
-    ]
-    if state:
-        parts.append(f"State: {state}")
+    evidence_records = []
     if evidence:
-        parts.append(f"Evidence: {evidence}")
-    if missing_slots:
-        parts.append("Missing slots: " + json.dumps(list(missing_slots), ensure_ascii=False))
-    parts.append("Response:")
-    return "\n".join(parts)
+        evidence_records = parse_response_input(f"Evidence: {evidence}").evidence_records
+    return build_response_input(
+        intent=intent,
+        user=user,
+        state=state,
+        evidence_records=evidence_records,
+        missing_slots=missing_slots,
+    )
 
 
 def _summary(record: dict[str, Any]) -> str:
@@ -302,15 +279,52 @@ def _summary(record: dict[str, Any]) -> str:
     return detail
 
 
-def _constraint_phrase(record: dict[str, Any], *, override_area: str | None = None, override_price: str | None = None) -> str:
-    price = override_price or _field(record, "pricerange")
-    food = _field(record, "food")
-    area = override_area or _field(record, "area")
+def article_for(phrase: str) -> str:
+    first_word = re.sub(r"[^A-Za-z].*$", "", str(phrase or "").strip())
+    if not first_word:
+        return "a"
+    return "an" if first_word[0].lower() in "aeiou" else "a"
+
+
+def with_article(phrase: str) -> str:
+    phrase = " ".join(str(phrase or "").split())
+    if not phrase:
+        return "a restaurant"
+    if re.match(r"(?i)^(?:a|an|the)\s+", phrase):
+        return phrase
+    return f"{article_for(phrase)} {phrase}"
+
+
+def people_text(count: Any) -> str:
+    try:
+        value = int(count)
+    except (TypeError, ValueError):
+        return "people"
+    return "1 person" if value == 1 else f"{value} people"
+
+
+def _people_text(index: int) -> str:
+    return people_text(_people(index))
+
+
+def restaurant_request_phrase(
+    *,
+    food: str = "",
+    area: str = "",
+    price: str = "",
+) -> str:
     parts = [part for part in [price, food] if part]
     phrase = " ".join(parts) + " restaurant" if parts else "restaurant"
     if area:
         phrase += f" in the {area} area"
-    return phrase
+    return with_article(phrase)
+
+
+def _constraint_phrase(record: dict[str, Any], *, override_area: str | None = None, override_price: str | None = None) -> str:
+    price = override_price or _field(record, "pricerange")
+    food = _field(record, "food")
+    area = override_area or _field(record, "area")
+    return restaurant_request_phrase(food=food, area=area, price=price)
 
 
 def _word(pool: dict[str, list[str]], value: str, index: int) -> str:
@@ -363,30 +377,40 @@ def _user(category: str, split: str, index: int, record: dict[str, Any] | None, 
     area_word = _word(AREA_WORDS, area, index)
     filler = _filler(split, index)
     challenge = split == "challenge"
+    restaurant_phrase = with_article(f"{price_word} {food} restaurant")
+    place_phrase = with_article(f"{price_word} {food} place")
+    price_place_phrase = with_article(f"{price_word} place")
+    other_price = _other_price(price, index)
+    other_area = _other_area(area, index)
+    other_price_word = _word(PRICE_WORDS, other_price, index)
+    other_area_word = _word(AREA_WORDS, other_area, index)
+    other_place_phrase = with_article(f"{other_price_word} {food} place")
+    price_phrase = with_article(f"{price_word} price")
+    other_price_phrase = with_article(f"{other_price_word} price")
     templates = {
         "greeting": [f"hello {filler}", f"hi there {filler}", f"good afternoon {filler}", f"hiya need restaurant help {filler}"],
         "thanks": [f"thanks {filler}", f"thank you for the help {filler}", f"that's helpful {filler}", f"cheers for that {filler}"],
         "goodbye": [f"goodbye {filler}", f"bye for now {filler}", f"that's all goodbye {filler}", f"end the restaurant chat {filler}"],
         "exact_recommendation": [
-            f"find a {price_word} {food} place in the {area_word} {filler}",
+            f"find {place_phrase} in the {area_word} {filler}",
             f"show me {food} food around {area_word} that is {price_word} {filler}",
-            f"recommend a {price_word} restaurant for {food} in {area_word} {filler}",
+            f"recommend {restaurant_phrase} in {area_word} {filler}",
         ],
         "partial_match": [
-            f"need a {_word(PRICE_WORDS, _other_price(price, index), index)} {food} place in the {_word(AREA_WORDS, _other_area(area, index), index)} {filler}",
-            f"anything exact for {food} {_word(AREA_WORDS, _other_area(area, index), index)} and {_word(PRICE_WORDS, _other_price(price, index), index)} {filler}",
+            f"need {other_place_phrase} in the {other_area_word} {filler}",
+            f"anything exact for {food} in {other_area_word} at {other_price_phrase} {filler}",
         ],
         "no_exact_match": [
-            f"can you find exactly {_word(PRICE_WORDS, _other_price(price, index), index)} {food} in the {_word(AREA_WORDS, _other_area(area, index), index)} {filler}",
-            f"I want an exact match for {food} out {_word(AREA_WORDS, _other_area(area, index), index)} {filler}",
+            f"can you find exactly {with_article(f'{other_price_word} {food} restaurant')} in the {other_area_word} {filler}",
+            f"I want an exact match for {food} in the {other_area_word} {filler}",
         ],
         "no_result": [
             f"find a moon cafe with violin service {filler}",
             f"show me a restaurant with hovercraft parking {filler}",
             f"look for a midnight underwater restaurant {filler}",
         ],
-        "missing_food": [f"I need somewhere to eat in the {area_word} {filler}", f"find a {price_word} place {area_word} {filler}"],
-        "missing_area": [f"find a {price_word} {food} restaurant {filler}", f"I fancy {food} at a {price_word} price {filler}"],
+        "missing_food": [f"I need somewhere to eat in the {area_word} {filler}", f"find {price_place_phrase} in {area_word} {filler}"],
+        "missing_area": [f"find {restaurant_phrase} {filler}", f"I fancy {food} at {price_phrase} {filler}"],
         "missing_price": [f"find {food} food in the {area_word} {filler}", f"show me {food} places around {area_word} {filler}"],
         "missing_multiple_search": [f"I need a restaurant {filler}", f"can you suggest somewhere to eat {filler}"],
         "list_results": [f"list matching {food} restaurants in the {area_word} {filler}", f"show several {price_word} restaurants {area_word} {filler}"],
@@ -394,11 +418,11 @@ def _user(category: str, split: str, index: int, record: dict[str, Any] | None, 
         "address_info": [f"what is the address for {name} {filler}", f"where is {name} located {filler}"],
         "phone_postcode_info": [f"what phone and postcode do you have for {name} {filler}", f"give me contact details for {name} {filler}"],
         "cuisine_help": [f"what cuisines can I search for {filler}", f"which food categories are loaded {filler}"],
-        "booking_missing_day": [f"book {name} at {_time(index)} for {_people(index)} people {filler}", f"reserve {name} for {_people(index)} at {_time(index)} {filler}"],
-        "booking_missing_time": [f"book {name} on {_day(index)} for {_people(index)} people {filler}", f"reserve {name} {_day(index)} for {_people(index)} {filler}"],
+        "booking_missing_day": [f"book {name} at {_time(index)} for {_people_text(index)} {filler}", f"reserve {name} for {_people_text(index)} at {_time(index)} {filler}"],
+        "booking_missing_time": [f"book {name} on {_day(index)} for {_people_text(index)} {filler}", f"reserve {name} {_day(index)} for {_people_text(index)} {filler}"],
         "booking_missing_people": [f"book {name} on {_day(index)} at {_time(index)} {filler}", f"reserve {name} {_day(index)} {_time(index)} {filler}"],
         "booking_missing_multiple": [f"book {name} {filler}", f"I want a booking at {name} {filler}"],
-        "booking_confirmation": [f"book {name} on {_day(index)} at {_time(index)} for {_people(index)} {filler}", f"make booking {ref} for {name} {filler}"],
+        "booking_confirmation": [f"book {name} on {_day(index)} at {_time(index)} for {_people_text(index)} {filler}", f"make booking {ref} for {name} {filler}"],
         "booking_reschedule": [f"move booking {ref} to {_day(index + 1)} at {_time(index + 1)} {filler}", f"change {ref} for {name} to {_day(index + 1)} {_time(index + 1)} {filler}"],
         "booking_cancellation": [f"cancel booking {ref} {filler}", f"please cancel {ref} for {name} {filler}"],
         "booking_info": [f"what is booking {ref} {filler}", f"remind me about {ref} {filler}"],
@@ -430,6 +454,83 @@ def _select_records(records: list[dict[str, Any]], count: int, start: int = 0) -
     return [records[(start + offset) % len(records)] for offset in range(count)]
 
 
+def _constraint_state(constraints: dict[str, str]) -> str:
+    return _state(
+        food=constraints.get("food"),
+        area=constraints.get("area"),
+        pricerange=constraints.get("pricerange"),
+    )
+
+
+def _record_matches(record: dict[str, Any], constraints: dict[str, str]) -> bool:
+    for key, value in constraints.items():
+        if not value:
+            continue
+        if _field(record, key).casefold() != str(value).casefold():
+            return False
+    return True
+
+
+def _matching_records(records: list[dict[str, Any]], constraints: dict[str, str]) -> list[dict[str, Any]]:
+    return [record for record in records if _record_matches(record, constraints)]
+
+
+def _rotate_records(records: list[dict[str, Any]], count: int, start: int) -> list[dict[str, Any]]:
+    if not records:
+        return []
+    return [records[(start + offset) % len(records)] for offset in range(min(count, len(records)))]
+
+
+def _constraint_candidates(record: dict[str, Any]) -> list[dict[str, str]]:
+    food = _field(record, "food")
+    area = _field(record, "area")
+    price = _field(record, "pricerange")
+    return [
+        {key: value for key, value in candidate.items() if value}
+        for candidate in [
+            {"food": food, "area": area, "pricerange": price},
+            {"food": food, "area": area},
+            {"food": food, "pricerange": price},
+            {"area": area, "pricerange": price},
+            {"food": food},
+            {"area": area},
+            {"pricerange": price},
+        ]
+        if any(candidate.values())
+    ]
+
+
+def _matching_choice(
+    records: list[dict[str, Any]],
+    record: dict[str, Any],
+    *,
+    index: int,
+    minimum: int,
+    exclude_selected: bool = False,
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
+    excluded_id = restaurant_id(record) if exclude_selected else ""
+    for constraints in _constraint_candidates(record):
+        matches = [
+            candidate
+            for candidate in _matching_records(records, constraints)
+            if not excluded_id or restaurant_id(candidate) != excluded_id
+        ]
+        if len(matches) >= minimum:
+            return constraints, _rotate_records(matches, 3, index)
+    return {}, []
+
+
+def _available_records(
+    records: list[dict[str, Any]],
+    *,
+    index: int,
+    exclude_record: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    excluded_id = restaurant_id(exclude_record) if exclude_record else ""
+    pool = [record for record in records if not excluded_id or restaurant_id(record) != excluded_id]
+    return _rotate_records(pool or records, 3, index)
+
+
 def _row_from_parts(
     *,
     split: str,
@@ -443,10 +544,15 @@ def _row_from_parts(
     known_restaurants: list[dict[str, Any]] | None = None,
 ) -> Example:
     evidence_records = evidence_records or []
-    evidence_text = _evidence(evidence_records)
     item = {
         "instruction": INSTRUCTION,
-        "input": _input(intent=intent, user=user, state=state, evidence=evidence_text, missing_slots=missing_slots),
+        "input": build_response_input(
+            intent=intent,
+            user=user,
+            state=state,
+            evidence_records=evidence_records,
+            missing_slots=missing_slots,
+        ),
         "output": output,
     }
     validation = validate_generated_response(
@@ -506,7 +612,8 @@ def make_example(
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=_state(food=_field(record, "food"), area=requested_area, pricerange=requested_price), evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "no_exact_match":
         requested_area = _other_area(_field(record, "area"), index)
-        output = f"I do not have an exact match for a {_field(record, 'food')} restaurant in the {requested_area} area, but {_field(record, 'name')} is the supplied closest option."
+        requested = restaurant_request_phrase(food=_field(record, "food"), area=requested_area)
+        output = f"I do not have an exact match for {requested}, but {_field(record, 'name')} is the supplied closest option."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=_state(food=_field(record, "food"), area=requested_area), evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "no_result":
         output = "I could not find a matching restaurant record in the loaded data. Try another food type, area or price range."
@@ -520,13 +627,25 @@ def make_example(
     if category == "missing_multiple_search":
         return _row_from_parts(split=split, category=category, intent=intent, user=user, missing_slots=["food", "area", "pricerange"], output="Please tell me your preferred food type, area and price range.", known_restaurants=all_known)
     if category == "list_results":
-        chosen = _select_records(records, min(3, len(records)), index)
-        output = "Matching restaurants: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1))
-        return _row_from_parts(split=split, category=category, intent=intent, user=user, state=_state(food=_field(record, "food"), area=_field(record, "area")), evidence_records=chosen, output=output, known_restaurants=all_known)
+        constraints, chosen = _matching_choice(records, record, index=index, minimum=2)
+        if chosen:
+            output = "Matching restaurants: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1))
+            state = _constraint_state(constraints)
+        else:
+            chosen = _available_records(records, index=index)
+            output = "Other available records: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1)) + " These may not match every preference."
+            state = _state(food=_field(record, "food"), area=_field(record, "area"), pricerange=_field(record, "pricerange"))
+        return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=chosen, output=output, known_restaurants=all_known)
     if category == "alternative_suggestions":
-        chosen = _select_records(records, min(3, len(records)), index + 1)
-        output = "Other matching options: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1))
-        return _row_from_parts(split=split, category=category, intent=intent, user=user, state=_state(food=_field(record, "food"), area=_field(record, "area")), evidence_records=chosen, output=output, known_restaurants=all_known)
+        constraints, chosen = _matching_choice(records, record, index=index + 1, minimum=1, exclude_selected=True)
+        if chosen:
+            output = "Other matching options: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1))
+            state = _constraint_state(constraints)
+        else:
+            chosen = _available_records(records, index=index + 1, exclude_record=record)
+            output = "Other available records: " + " ".join(f"{pos}. {_summary(item)}." for pos, item in enumerate(chosen, start=1)) + " These may not match every preference."
+            state = _state(food=_field(record, "food"), area=_field(record, "area"), pricerange=_field(record, "pricerange"))
+        return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=chosen, output=output, known_restaurants=all_known)
     if category == "address_info":
         output = f"{name} is in the {_field(record, 'area')} area. Address: {_field(record, 'address')}. Postcode: {_field(record, 'postcode')}."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, evidence_records=[record], output=output, known_restaurants=all_known)
@@ -554,13 +673,13 @@ def make_example(
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=_state(restaurant=name), evidence_records=[record], missing_slots=["day", "time", "people"], output=output, known_restaurants=all_known)
     if category == "booking_confirmation":
         state = _state(booking_reference=ref, restaurant=name, day=day, time=time, people=people)
-        output = f"Great, I have created booking record {ref} for {name} on {day} at {time} for {people} people."
+        output = f"Great, I have created booking record {ref} for {name} on {day} at {time} for {people_text(people)}."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "booking_reschedule":
         new_day = _day(index + 1)
         new_time = _time(index + 1)
         state = _state(booking_reference=ref, restaurant=name, day=new_day, time=new_time, people=people)
-        output = f"Done, I have updated booking {ref} for {name} to {new_day} at {new_time} for {people} people."
+        output = f"Done, I have updated booking {ref} for {name} to {new_day} at {new_time} for {people_text(people)}."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "booking_cancellation":
         state = _state(booking_reference=ref, restaurant=name)
@@ -568,13 +687,13 @@ def make_example(
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "booking_info":
         state = _state(booking_reference=ref, restaurant=name, day=day, time=time, people=people, status="confirmed")
-        output = f"Booking {ref} is confirmed for {name}: {day} at {time} for {people} people."
+        output = f"Booking {ref} is confirmed for {name}: {day} at {time} for {people_text(people)}."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=[record], output=output, known_restaurants=all_known)
     if category == "booking_list":
         ref2 = _booking_reference(rng)
         records_for_list = [record, second] if second else [record]
         state = _state(booking_reference=ref, second_booking_reference=ref2, restaurant=name)
-        output = f"Current session booking records: 1. {ref}: {name} on {day} at {time} for {people} people. 2. {ref2}: {_field(second, 'name', name)} on {_day(index + 1)} at {_time(index + 1)} for {_people(index + 1)} people."
+        output = f"Current session booking records: 1. {ref}: {name} on {day} at {time} for {people_text(people)}. 2. {ref2}: {_field(second, 'name', name)} on {_day(index + 1)} at {_time(index + 1)} for {_people_text(index + 1)}."
         return _row_from_parts(split=split, category=category, intent=intent, user=user, state=state, evidence_records=records_for_list, output=output, known_restaurants=all_known)
     unsupported_outputs = {
         "unsupported_hotel": "I can only help with MultiWOZ restaurant search and restaurant booking records. I cannot book hotels in this demo.",

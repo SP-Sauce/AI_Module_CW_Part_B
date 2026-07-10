@@ -10,9 +10,9 @@
 
 | Split | Requested | Actual | Unique Restaurants | Unique Users | Unique Inputs |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| train | 800 | 800 | 27 | 800 | 800 |
-| eval | 160 | 160 | 8 | 160 | 160 |
-| challenge | 100 | 100 | 6 | 100 | 100 |
+| train | 800 | 800 | 38 | 800 | 800 |
+| eval | 160 | 160 | 12 | 160 | 160 |
+| challenge | 100 | 100 | 10 | 100 | 100 |
 
 ## Intent Counts
 
