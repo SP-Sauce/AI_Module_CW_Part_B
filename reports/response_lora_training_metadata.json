@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-07-10T10:38:00.483319+00:00",
+  "base_model": "google/flan-t5-base",
+  "output_dir": "models/response-generator-lora",
+  "train_file": "data/training/response_generation_examples.jsonl",
+  "eval_file": "data/evaluation/response_generation_eval.jsonl",
+  "train_examples": 800,
+  "eval_examples": 160,
+  "max_steps": 300,
+  "batch_size": 1,
+  "gradient_accumulation_steps": 8,
+  "load_in_4bit": false,
+  "gpu_info": {
+    "cuda_available": true,
+    "device_count": 2,
+    "devices": [
+      {
+        "index": 0,
+        "name": "Tesla T4",
+        "total_memory_gb": 14.56
+      },
+      {
+        "index": 1,
+        "name": "Tesla T4",
+        "total_memory_gb": 14.56
+      }
+    ],
+    "python": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+    "platform": "Linux-6.12.90+-x86_64-with-glibc2.35"
+  },
+  "train_metrics": {
+    "train_runtime": 936.3259,
+    "train_samples_per_second": 5.126,
+    "train_steps_per_second": 0.32,
+    "total_flos": 836390103478272.0,
+    "train_loss": 1.5217331568400065,
+    "epoch": 6.0
+  },
+  "eval_metrics": {
+    "eval_loss": 0.5894328951835632,
+    "eval_runtime": 12.7474,
+    "eval_samples_per_second": 12.552,
+    "eval_steps_per_second": 6.276,
+    "epoch": 6.0
+  }
+}
