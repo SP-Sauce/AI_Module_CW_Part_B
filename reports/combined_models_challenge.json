@@ -1,0 +1,3605 @@
+{
+  "slot_extraction": {
+    "fixture": "data/evaluation/slot_challenge_cases.jsonl",
+    "case_count": 80,
+    "intent_accuracy": 0.725,
+    "slot_accuracy": 0.9151,
+    "exact_slot_object_accuracy": 0.9,
+    "slot_precision": 0.951,
+    "slot_recall": 0.9151,
+    "slot_f1": 0.9327,
+    "strict_json_parse_success_rate": 0.0,
+    "raw_parse_error_count": 80,
+    "strict_intent_accuracy": 0.0,
+    "strict_slot_precision": 0.0,
+    "strict_slot_recall": 0.0,
+    "strict_slot_f1": 0.0,
+    "pseudo_json_repair_success_rate": 1.0,
+    "repaired_model_intent_accuracy": 0.4875,
+    "repaired_model_slot_precision": 0.8767,
+    "repaired_model_slot_recall": 0.6038,
+    "repaired_model_slot_f1": 0.7151,
+    "repaired_json_success_rate": 1.0,
+    "final_intent_accuracy": 0.725,
+    "final_slot_precision": 0.951,
+    "final_slot_recall": 0.9151,
+    "final_slot_f1": 0.9327,
+    "raw_llm_metrics": {
+      "strict_json_parse_success_rate": 0.0,
+      "raw_parse_error_count": 80,
+      "strict_intent_accuracy": 0.0,
+      "strict_slot_precision": 0.0,
+      "strict_slot_recall": 0.0,
+      "strict_slot_f1": 0.0
+    },
+    "repaired_model_metrics": {
+      "pseudo_json_repair_success_rate": 1.0,
+      "repaired_json_success_rate": 1.0,
+      "repaired_model_intent_accuracy": 0.4875,
+      "repaired_model_slot_precision": 0.8767,
+      "repaired_model_slot_recall": 0.6038,
+      "repaired_model_slot_f1": 0.7151
+    },
+    "after_repair_fallback_metrics": {
+      "repaired_json_success_rate": 1.0,
+      "fallback_used_cases": 61,
+      "final_intent_accuracy": 0.725,
+      "final_slot_precision": 0.951,
+      "final_slot_recall": 0.9151,
+      "final_slot_f1": 0.9327
+    },
+    "invalid_json_or_parse_error_count": 80,
+    "mean_slot_latency_seconds": 1.747682,
+    "llm_enabled": true,
+    "llm_used_cases": 80,
+    "llm_attempted_cases": 80,
+    "llm_parse_success_cases": 0,
+    "llm_repair_success_cases": 80,
+    "llm_repair_weak_cases": 52,
+    "llm_intent_trusted_cases": 19,
+    "llm_slots_trusted_cases": 38,
+    "meaningful_llm_slot_contribution_cases": 0,
+    "llm_valid_or_repaired_cases": 80,
+    "llm_parse_failed_cases": 80,
+    "llm_unrepaired_failure_cases": 0,
+    "fallback_used_cases": 61,
+    "slot_model_name": "models/slot-extractor-lora-strict",
+    "cases": [
+      {
+        "text": "Need summat cheap and Italian out east, ta",
+        "expected": {
+          "text": "Need summat cheap and Italian out east, ta",
+          "intent": "search",
+          "slots": {
+            "food": "italian",
+            "area": "east",
+            "pricerange": "cheap"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "italian",
+            "area": "east",
+            "pricerange": "cheap"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "italian",
+            "area": "east",
+            "pricerange": "cheap"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"italian\",\"pricerange\":\"cheap\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"italian\",\"pricerange\":\"cheap\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "italian",
+              "area": "east",
+              "pricerange": "cheap"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"italian\",\"pricerange\":\"cheap\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"italian\",\"pricerange\":\"cheap\"'"
+          ]
+        },
+        "latency_seconds": 14.989073
+      },
+      {
+        "text": "Any upmarket Japanese grub near the north?",
+        "expected": {
+          "text": "Any upmarket Japanese grub near the north?",
+          "intent": "search",
+          "slots": {
+            "food": "japanese",
+            "area": "north",
+            "pricerange": "expensive"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "japanese",
+            "area": "north",
+            "pricerange": "expensive"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "japanese",
+            "area": "north",
+            "pricerange": "expensive"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "japanese",
+              "area": "north",
+              "pricerange": "expensive"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"japanese\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.309847
+      },
+      {
+        "text": "reasonable veggie resturant in west pls",
+        "expected": {
+          "text": "reasonable veggie resturant in west pls",
+          "intent": "search",
+          "slots": {
+            "food": "vegetarian",
+            "area": "west",
+            "pricerange": "moderate"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "vegetarian",
+            "area": "west",
+            "pricerange": "moderate"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "vegetarian",
+            "area": "west",
+            "pricerange": "moderate"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "vegetarian",
+              "area": "west",
+              "pricerange": "moderate"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"vegetarian\",\"pricerange\":\"moderate\"'"
+          ]
+        },
+        "latency_seconds": 2.114278
+      },
+      {
+        "text": "Could I get Thai food somewhere south and cheap?",
+        "expected": {
+          "text": "Could I get Thai food somewhere south and cheap?",
+          "intent": "search",
+          "slots": {
+            "food": "thai",
+            "area": "south",
+            "pricerange": "cheap"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "thai",
+            "area": "south",
+            "pricerange": "cheap"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "thai",
+            "area": "south",
+            "pricerange": "cheap"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"cheap\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"cheap\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "thai",
+              "area": "south",
+              "pricerange": "cheap"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"cheap\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"thai\",\"pricerange\":\"cheap\"'"
+          ]
+        },
+        "latency_seconds": 2.191547
+      },
+      {
+        "text": "I'm after British cooking in the centre, nothing pricey",
+        "expected": {
+          "text": "I'm after British cooking in the centre, nothing pricey",
+          "intent": "search",
+          "slots": {
+            "food": "british",
+            "area": "centre",
+            "pricerange": "cheap"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "british",
+            "area": "centre",
+            "pricerange": "cheap"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "british",
+            "area": "centre"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"british\",\"pricerange\":\"moderate\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"british\",\"pricerange\":\"moderate\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "british",
+              "area": "centre"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"british\",\"pricerange\":\"moderate\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"british\",\"pricerange\":\"moderate\"'"
+          ]
+        },
+        "latency_seconds": 2.155627
+      },
+      {
+        "text": "Find Chinese around east Cambridge at a reasonable price",
+        "expected": {
+          "text": "Find Chinese around east Cambridge at a reasonable price",
+          "intent": "search",
+          "slots": {
+            "food": "chinese",
+            "area": "east",
+            "pricerange": "moderate"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "chinese",
+            "area": "east",
+            "pricerange": "moderate"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "chinese",
+            "area": "east",
+            "pricerange": "moderate"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"chinese\",\"pricerange\":\"moderate\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"east\",\"food\":\"chinese\",\"pricerange\":\"moderate\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "chinese",
+              "area": "east",
+              "pricerange": "moderate"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"chinese\",\"pricerange\":\"moderate\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"east\",\"food\":\"chinese\",\"pricerange\":\"moderate\"'"
+          ]
+        },
+        "latency_seconds": 2.058679
+      },
+      {
+        "text": "Lebanese, north side, make it upmarket",
+        "expected": {
+          "text": "Lebanese, north side, make it upmarket",
+          "intent": "search",
+          "slots": {
+            "food": "lebanese",
+            "area": "north",
+            "pricerange": "expensive"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "lebanese",
+            "area": "north",
+            "pricerange": "expensive"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "lebanese",
+            "area": "north",
+            "pricerange": "expensive"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "lebanese",
+              "area": "north",
+              "pricerange": "expensive"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"lebanese\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.295773
+      },
+      {
+        "text": "Show me Indian food down south on a budget",
+        "expected": {
+          "text": "Show me Indian food down south on a budget",
+          "intent": "search",
+          "slots": {
+            "food": "indian",
+            "area": "south",
+            "pricerange": "cheap"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "indian",
+            "area": "south",
+            "pricerange": "cheap"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "indian",
+            "area": "south"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "indian",
+              "area": "south"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"indian\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.210025
+      },
+      {
+        "text": "Find me a resturant, not sure what kind yet",
+        "expected": {
+          "text": "Find me a resturant, not sure what kind yet",
+          "intent": "search",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.960051
+      },
+      {
+        "text": "I just want somewhere nice to eat pls",
+        "expected": {
+          "text": "I just want somewhere nice to eat pls",
+          "intent": "search",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.977733
+      },
+      {
+        "text": "Could you search for food around town?",
+        "expected": {
+          "text": "Could you search for food around town?",
+          "intent": "search",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"'"
+          ]
+        },
+        "latency_seconds": 1.71206
+      },
+      {
+        "text": "Need a place for dinner, any ideas?",
+        "expected": {
+          "text": "Need a place for dinner, any ideas?",
+          "intent": "search",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.957498
+      },
+      {
+        "text": "List the cheap Chinese choices on the west side",
+        "expected": {
+          "text": "List the cheap Chinese choices on the west side",
+          "intent": "list",
+          "slots": {
+            "food": "chinese",
+            "area": "west",
+            "pricerange": "cheap"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "food": "chinese",
+            "area": "west",
+            "pricerange": "cheap"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {
+            "food": "chinese",
+            "area": "west",
+            "pricerange": "cheap"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":\"area\":\"west\",\"food\":\"chinese\",\"pricerange\":\"cheap\"",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{\"area\":\"west\",\"food\":\"chinese\",\"pricerange\":\"cheap\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {
+              "food": "chinese",
+              "area": "west",
+              "pricerange": "cheap"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"west\",\"food\":\"chinese\",\"pricerange\":\"cheap\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"west\",\"food\":\"chinese\",\"pricerange\":\"cheap\"'"
+          ]
+        },
+        "latency_seconds": 2.126919
+      },
+      {
+        "text": "all Italian options east of town please",
+        "expected": {
+          "text": "all Italian options east of town please",
+          "intent": "list",
+          "slots": {
+            "food": "italian",
+            "area": "east"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "food": "italian",
+            "area": "east"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {
+            "food": "italian",
+            "area": "east"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"italian\"",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"italian\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {
+              "food": "italian",
+              "area": "east"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"italian\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"italian\"'"
+          ]
+        },
+        "latency_seconds": 1.726112
+      },
+      {
+        "text": "What Thai resturants are in the centre?",
+        "expected": {
+          "text": "What Thai resturants are in the centre?",
+          "intent": "list",
+          "slots": {
+            "food": "thai",
+            "area": "centre"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "thai",
+            "area": "centre"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "thai",
+            "area": "centre"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"thai\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"thai\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "thai",
+              "area": "centre"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"thai\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"thai\"'"
+          ]
+        },
+        "latency_seconds": 1.723282
+      },
+      {
+        "text": "show every moderate Indian place in north Cambridge",
+        "expected": {
+          "text": "show every moderate Indian place in north Cambridge",
+          "intent": "list",
+          "slots": {
+            "food": "indian",
+            "area": "north",
+            "pricerange": "moderate"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "indian",
+            "area": "north",
+            "pricerange": "moderate"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {
+            "food": "indian",
+            "area": "north",
+            "pricerange": "moderate"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":\"area\":\"north\",\"food\":\"Indian\",\"pricerange\":\"moderate\"",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{\"area\":\"north\",\"food\":\"Indian\",\"pricerange\":\"moderate\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {
+              "food": "indian",
+              "area": "north",
+              "pricerange": "moderate"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"north\",\"food\":\"Indian\",\"pricerange\":\"moderate\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"north\",\"food\":\"Indian\",\"pricerange\":\"moderate\"'"
+          ]
+        },
+        "latency_seconds": 2.156522
+      },
+      {
+        "text": "Any Lebanese listings for the south?",
+        "expected": {
+          "text": "Any Lebanese listings for the south?",
+          "intent": "list",
+          "slots": {
+            "food": "lebanese",
+            "area": "south"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "lebanese",
+            "area": "south"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {
+            "food": "lebanese",
+            "area": "south"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":\"area\":\"south\",\"food\":\"Lebanese\"",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{\"area\":\"south\",\"food\":\"Lebanese\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {
+              "food": "lebanese",
+              "area": "south"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"south\",\"food\":\"Lebanese\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"south\",\"food\":\"Lebanese\"'"
+          ]
+        },
+        "latency_seconds": 1.877602
+      },
+      {
+        "text": "Fancy something Middle-Eastern around west Cambridge",
+        "expected": {
+          "text": "Fancy something Middle-Eastern around west Cambridge",
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "Middle Eastern",
+            "food_candidates": [
+              "lebanese",
+              "turkish",
+              "mediterranean"
+            ],
+            "area": "west"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "Middle Eastern",
+            "food_candidates": [
+              "lebanese",
+              "turkish",
+              "mediterranean"
+            ],
+            "area": "west"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "lebanese",
+            "area": "west"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"Middle-Eastern\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"Middle-Eastern\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "lebanese",
+              "area": "west"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"Middle-Eastern\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"Middle-Eastern\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.37118
+      },
+      {
+        "text": "What South-Asian choices are there in the east?",
+        "expected": {
+          "text": "What South-Asian choices are there in the east?",
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "South Asian",
+            "food_candidates": [
+              "indian"
+            ],
+            "area": "east"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "South Asian",
+            "food_candidates": [
+              "indian"
+            ],
+            "area": "south"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {
+            "area": "east"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"South Asian\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{\"area\":\"east\",\"food\":\"South Asian\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {
+              "area": "east"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"South Asian\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":\"area\":\"east\",\"food\":\"South Asian\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.133729
+      },
+      {
+        "text": "Show East-Asian food near the north side",
+        "expected": {
+          "text": "Show East-Asian food near the north side",
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "East Asian",
+            "food_candidates": [
+              "chinese",
+              "cantonese",
+              "japanese",
+              "korean",
+              "asian oriental"
+            ],
+            "area": "north"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "East Asian",
+            "food_candidates": [
+              "chinese",
+              "cantonese",
+              "japanese",
+              "korean",
+              "asian oriental"
+            ],
+            "area": "north"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "asian oriental",
+            "area": "north"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"East Asian\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"north\",\"food\":\"East Asian\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "asian oriental",
+              "area": "north"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"East Asian\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"north\",\"food\":\"East Asian\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.150877
+      },
+      {
+        "text": "Any Southeast-Asian places down south?",
+        "expected": {
+          "text": "Any Southeast-Asian places down south?",
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "Southeast Asian",
+            "food_candidates": [
+              "thai",
+              "vietnamese",
+              "asian oriental"
+            ],
+            "area": "south"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "Southeast Asian",
+            "food_candidates": [
+              "thai",
+              "vietnamese",
+              "asian oriental"
+            ],
+            "area": "south"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "asian oriental",
+            "area": "south"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"Southeast Asian\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"south\",\"food\":\"Southeast Asian\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "asian oriental",
+              "area": "south"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"Southeast Asian\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"south\",\"food\":\"Southeast Asian\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.20856
+      },
+      {
+        "text": "West-African cuisine around central Cambridge please",
+        "expected": {
+          "text": "West-African cuisine around central Cambridge please",
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "West African",
+            "food_candidates": [
+              "african"
+            ],
+            "area": "centre"
+          }
+        },
+        "predicted": {
+          "intent": "list",
+          "slots": {
+            "cuisine_group": "West African",
+            "food_candidates": [
+              "african"
+            ],
+            "area": "centre"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "area": "centre"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"west-African\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"centre\",\"food\":\"west-African\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "area": "centre"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"west-African\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"centre\",\"food\":\"west-African\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 2.18949
+      },
+      {
+        "text": "Craving curry but dunno which cuisine",
+        "expected": {
+          "text": "Craving curry but dunno which cuisine",
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "curry",
+            "food_candidates": [
+              "indian",
+              "thai"
+            ]
+          }
+        },
+        "predicted": {
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "curry",
+            "food_candidates": [
+              "indian",
+              "thai"
+            ]
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"food\":\"turkish\",\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"food\":\"turkish\",\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"turkish\",\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"turkish\",\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 1.862352
+      },
+      {
+        "text": "Where might I find proper noodles?",
+        "expected": {
+          "text": "Where might I find proper noodles?",
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "noodles",
+            "food_candidates": [
+              "chinese",
+              "thai",
+              "vietnamese"
+            ]
+          }
+        },
+        "predicted": {
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "noodles",
+            "food_candidates": [
+              "chinese",
+              "asian oriental",
+              "thai",
+              "vietnamese"
+            ]
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.008671
+      },
+      {
+        "text": "Pizza sounds good, suggest a cuisine",
+        "expected": {
+          "text": "Pizza sounds good, suggest a cuisine",
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "pizza",
+            "food_candidates": [
+              "italian"
+            ]
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "food": "italian"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "food": "italian"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"food\":\"italian\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"food\":\"italian\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "food": "italian"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"italian\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"italian\"'"
+          ]
+        },
+        "latency_seconds": 1.399311
+      },
+      {
+        "text": "I fancy mezze tonight, what food type is that?",
+        "expected": {
+          "text": "I fancy mezze tonight, what food type is that?",
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "mezze",
+            "food_candidates": [
+              "lebanese",
+              "mediterranean",
+              "turkish"
+            ]
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"food\":\"meze\",\"food_candidates\":[\"food\"]",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"food\":\"meze\",\"food_candidates\":[\"food\"]}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"meze\",\"food_candidates\":[\"food\"]'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"food\":\"meze\",\"food_candidates\":[\"food\"]'"
+          ]
+        },
+        "latency_seconds": 1.971029
+      },
+      {
+        "text": "Got anywhere doing sushi?",
+        "expected": {
+          "text": "Got anywhere doing sushi?",
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "sushi",
+            "food_candidates": [
+              "japanese"
+            ]
+          }
+        },
+        "predicted": {
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "sushi",
+            "food_candidates": [
+              "japanese"
+            ]
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.972349
+      },
+      {
+        "text": "book a tbale tmrw at 18:00 for a party of 2, challenge 1",
+        "expected": {
+          "text": "book a tbale tmrw at 18:00 for a party of 2, challenge 1",
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow",
+            "time": "18:00",
+            "people": 2
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "time": "18:00",
+            "people": 2
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "time": "18:00",
+            "people": 2
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"18:00\",\"people\":2,\"time\":\"18:00\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"18:00\",\"people\":2,\"time\":\"18:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "time": "18:00",
+              "people": 2
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"18:00\",\"people\":2,\"time\":\"18:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"18:00\",\"people\":2,\"time\":\"18:00\"'"
+          ]
+        },
+        "latency_seconds": 1.91084
+      },
+      {
+        "text": "book a tbale today at 20:00 for a party of 4, challenge 2",
+        "expected": {
+          "text": "book a tbale today at 20:00 for a party of 4, challenge 2",
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "20:00",
+            "people": 4
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "20:00",
+            "people": 4
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "day": "today",
+            "time": "20:00",
+            "people": 4
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":4,\"time\":\"20:00\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":4,\"time\":\"20:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "day": "today",
+              "time": "20:00",
+              "people": 4
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":4,\"time\":\"20:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":4,\"time\":\"20:00\"'"
+          ]
+        },
+        "latency_seconds": 1.884523
+      },
+      {
+        "text": "book a tbale tomorrow at 19:30 for a party of 6, challenge 3",
+        "expected": {
+          "text": "book a tbale tomorrow at 19:30 for a party of 6, challenge 3",
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow",
+            "time": "19:30",
+            "people": 6
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow",
+            "time": "19:30",
+            "people": 6
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "day": "tomorrow",
+            "time": "19:30",
+            "people": 6
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\",\"people\":6,\"time\":\"19:30\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\",\"people\":6,\"time\":\"19:30\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "day": "tomorrow",
+              "time": "19:30",
+              "people": 6
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\",\"people\":6,\"time\":\"19:30\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\",\"people\":6,\"time\":\"19:30\"'"
+          ]
+        },
+        "latency_seconds": 2.022256
+      },
+      {
+        "text": "book a tbale today at 12:30 for a party of 3, challenge 4",
+        "expected": {
+          "text": "book a tbale today at 12:30 for a party of 3, challenge 4",
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "12:30",
+            "people": 3
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "12:30",
+            "people": 3
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "day": "today",
+            "time": "12:30",
+            "people": 3
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":3,\"time\":\"12:30\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":3,\"time\":\"12:30\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "day": "today",
+              "time": "12:30",
+              "people": 3
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":3,\"time\":\"12:30\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":3,\"time\":\"12:30\"'"
+          ]
+        },
+        "latency_seconds": 1.918266
+      },
+      {
+        "text": "book a tbale tmrw at 17:45 for a party of 5, challenge 5",
+        "expected": {
+          "text": "book a tbale tmrw at 17:45 for a party of 5, challenge 5",
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow",
+            "time": "17:45",
+            "people": 5
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "time": "17:45",
+            "people": 5
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "time": "17:45",
+            "people": 5
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"17:45\",\"people\":5,\"time\":\"17:45\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"17:45\",\"people\":5,\"time\":\"17:45\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "time": "17:45",
+              "people": 5
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"17:45\",\"people\":5,\"time\":\"17:45\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"17:45\",\"people\":5,\"time\":\"17:45\"'"
+          ]
+        },
+        "latency_seconds": 2.006137
+      },
+      {
+        "text": "book a tbale today at 21:00 for a party of 8, challenge 6",
+        "expected": {
+          "text": "book a tbale today at 21:00 for a party of 8, challenge 6",
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "21:00",
+            "people": 8
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "relative_day": "today",
+            "time": "21:00",
+            "people": 8
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "day": "today",
+            "time": "21:00",
+            "people": 8
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":8,\"time\":\"21:00\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"today\",\"people\":8,\"time\":\"21:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "day": "today",
+              "time": "21:00",
+              "people": 8
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":8,\"time\":\"21:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"today\",\"people\":8,\"time\":\"21:00\"'"
+          ]
+        },
+        "latency_seconds": 1.89347
+      },
+      {
+        "text": "Can you start a booking for tomorrow?",
+        "expected": {
+          "text": "Can you start a booking for tomorrow?",
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow"
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "relative_day": "tomorrow"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "day": "tomorrow"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"tomorrow\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "day": "tomorrow"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"tomorrow\"'"
+          ]
+        },
+        "latency_seconds": 1.381961
+      },
+      {
+        "text": "I'd like to reserve a table but haven't picked a time",
+        "expected": {
+          "text": "I'd like to reserve a table but haven't picked a time",
+          "intent": "book",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"reserve\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"reserve\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"reserve\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.068298
+      },
+      {
+        "text": "shift BK-C7D8E9 to monday at 6:30pm",
+        "expected": {
+          "text": "shift BK-C7D8E9 to monday at 6:30pm",
+          "intent": "reschedule",
+          "slots": {
+            "booking_reference": "BK-C7D8E9",
+            "day": "monday",
+            "time": "18:30"
+          }
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {
+            "day": "monday",
+            "time": "18:30",
+            "booking_reference": "BK-C7D8E9"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {
+            "day": "monday"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"shift\",\"slots\":\"day\":\"monday\",\"time\":\"19:00\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"day\":\"monday\",\"time\":\"19:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {
+              "day": "monday"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"shift\",\"slots\":\"day\":\"monday\",\"time\":\"19:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"shift\",\"slots\":\"day\":\"monday\",\"time\":\"19:00\"'"
+          ]
+        },
+        "latency_seconds": 1.780776
+      },
+      {
+        "text": "SIM-F1G2H3 needs moving to thursday, 20:00",
+        "expected": {
+          "text": "SIM-F1G2H3 needs moving to thursday, 20:00",
+          "intent": "reschedule",
+          "slots": {
+            "booking_reference": "SIM-F1G2H3",
+            "day": "thursday",
+            "time": "20:00"
+          }
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {
+            "day": "thursday",
+            "time": "20:00",
+            "booking_reference": "SIM-F1G2H3"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {
+            "day": "thursday",
+            "time": "20:00"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"update\",\"slots\":\"day\":\"thursday\",\"food\":\"similar_day\",\"time\":\"20:00\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"day\":\"thursday\",\"food\":\"similar_day\",\"time\":\"20:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {
+              "day": "thursday",
+              "time": "20:00"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"update\",\"slots\":\"day\":\"thursday\",\"food\":\"similar_day\",\"time\":\"20:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"update\",\"slots\":\"day\":\"thursday\",\"food\":\"similar_day\",\"time\":\"20:00\"'"
+          ]
+        },
+        "latency_seconds": 2.236613
+      },
+      {
+        "text": "pls change BK-J4K5L6 to saturday noon",
+        "expected": {
+          "text": "pls change BK-J4K5L6 to saturday noon",
+          "intent": "reschedule",
+          "slots": {
+            "booking_reference": "BK-J4K5L6",
+            "day": "saturday",
+            "time": "12:00"
+          }
+        },
+        "predicted": {
+          "intent": "reschedule",
+          "slots": {
+            "day": "saturday",
+            "time": "12:00",
+            "booking_reference": "BK-J4K5L6"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"update\",\"slots\":\"day_modifier\":\"BK-J4K5L6\",\"time\":\"saturday noon\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"day_modifier\":\"BK-J4K5L6\",\"time\":\"saturday noon\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"update\",\"slots\":\"day_modifier\":\"BK-J4K5L6\",\"time\":\"saturday noon\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"update\",\"slots\":\"day_modifier\":\"BK-J4K5L6\",\"time\":\"saturday noon\"'"
+          ]
+        },
+        "latency_seconds": 2.205399
+      },
+      {
+        "text": "rescheduel SIM-M7N8P9 for friday at quarter past seven",
+        "expected": {
+          "text": "rescheduel SIM-M7N8P9 for friday at quarter past seven",
+          "intent": "reschedule",
+          "slots": {
+            "booking_reference": "SIM-M7N8P9",
+            "day": "friday",
+            "time": "19:15"
+          }
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {
+            "day": "friday",
+            "booking_reference": "SIM-M7N8P9"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {
+            "day": "friday"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"rescheduel\",\"slots\":\"day\":\"friday\",\"people\":7,\"time\":\"19:00\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"day\":\"friday\",\"people\":7,\"time\":\"19:00\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {
+              "day": "friday"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"rescheduel\",\"slots\":\"day\":\"friday\",\"people\":7,\"time\":\"19:00\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"rescheduel\",\"slots\":\"day\":\"friday\",\"people\":7,\"time\":\"19:00\"'"
+          ]
+        },
+        "latency_seconds": 2.180007
+      },
+      {
+        "text": "Move my booking to Tuesday, I don't know the ref",
+        "expected": {
+          "text": "Move my booking to Tuesday, I don't know the ref",
+          "intent": "reschedule",
+          "slots": {
+            "day": "tuesday"
+          }
+        },
+        "predicted": {
+          "intent": "reschedule",
+          "slots": {
+            "day": "tuesday"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"update\",\"slots\":\"day_modifier\":\"Tuesday\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"day_modifier\":\"Tuesday\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"update\",\"slots\":\"day_modifier\":\"Tuesday\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"update\",\"slots\":\"day_modifier\":\"Tuesday\"'"
+          ]
+        },
+        "latency_seconds": 1.637443
+      },
+      {
+        "text": "cancle BK-Q1R2S3 right away",
+        "expected": {
+          "text": "cancle BK-Q1R2S3 right away",
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "BK-Q1R2S3"
+          }
+        },
+        "predicted": {
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "BK-Q1R2S3"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancle BK-Q1R2S3\",\"slots\":\"booking_reference\":\"cancle BK-Q1R2S3\"",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{\"booking_reference\":\"cancle BK-Q1R2S3\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancle BK-Q1R2S3\",\"slots\":\"booking_reference\":\"cancle BK-Q1R2S3\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancle BK-Q1R2S3\",\"slots\":\"booking_reference\":\"cancle BK-Q1R2S3\"'"
+          ]
+        },
+        "latency_seconds": 2.358313
+      },
+      {
+        "text": "please scrap reservation SIM-T4U5V6",
+        "expected": {
+          "text": "please scrap reservation SIM-T4U5V6",
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "SIM-T4U5V6"
+          }
+        },
+        "predicted": {
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "SIM-T4U5V6"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {
+            "booking_reference": "SIM-T4U5V6"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-T4U5V6\"",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-T4U5V6\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {
+              "booking_reference": "SIM-T4U5V6"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-T4U5V6\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-T4U5V6\"'"
+          ]
+        },
+        "latency_seconds": 1.828501
+      },
+      {
+        "text": "I no longer need BK-W7X8Y9",
+        "expected": {
+          "text": "I no longer need BK-W7X8Y9",
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "BK-W7X8Y9"
+          }
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {
+            "booking_reference": "BK-W7X8Y9"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {
+            "booking_reference": "BK-W7X8Y9"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"BK-W7X8Y9\"",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"BK-W7X8Y9\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {
+              "booking_reference": "BK-W7X8Y9"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"BK-W7X8Y9\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"BK-W7X8Y9\"'"
+          ]
+        },
+        "latency_seconds": 1.842576
+      },
+      {
+        "text": "cancel my current table, ref SIM-Z1A2B3",
+        "expected": {
+          "text": "cancel my current table, ref SIM-Z1A2B3",
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "SIM-Z1A2B3"
+          }
+        },
+        "predicted": {
+          "intent": "cancel",
+          "slots": {
+            "booking_reference": "SIM-Z1A2B3"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {
+            "booking_reference": "SIM-Z1A2B3"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-Z1A2B3\"",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{\"booking_reference\":\"SIM-Z1A2B3\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {
+              "booking_reference": "SIM-Z1A2B3"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-Z1A2B3\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":\"booking_reference\":\"SIM-Z1A2B3\"'"
+          ]
+        },
+        "latency_seconds": 1.841392
+      },
+      {
+        "text": "Can you cancel it? I lost the reference",
+        "expected": {
+          "text": "Can you cancel it? I lost the reference",
+          "intent": "cancel",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "cancel",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.998986
+      },
+      {
+        "text": "What's the address for the place you just showed?",
+        "expected": {
+          "text": "What's the address for the place you just showed?",
+          "intent": "restaurant_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "restaurant_info",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "restaurant_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"restaurant_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"restaurant_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "restaurant_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.042926
+      },
+      {
+        "text": "Does that resturant have a phone number?",
+        "expected": {
+          "text": "Does that resturant have a phone number?",
+          "intent": "restaurant_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "restaurant_info",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unsupported",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"unsupported\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unsupported\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unsupported",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"unsupported\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"unsupported\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.001234
+      },
+      {
+        "text": "Tell me the postcode for my selected place",
+        "expected": {
+          "text": "Tell me the postcode for my selected place",
+          "intent": "restaurant_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "restaurant_info",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "restaurant_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"restaurant_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"restaurant_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "restaurant_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.094081
+      },
+      {
+        "text": "More details about this restaurant pls",
+        "expected": {
+          "text": "More details about this restaurant pls",
+          "intent": "restaurant_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "booking_info",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "restaurant_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"restaurant_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"restaurant_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "restaurant_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"restaurant_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.037816
+      },
+      {
+        "text": "look up booking BK-D4E5F6",
+        "expected": {
+          "text": "look up booking BK-D4E5F6",
+          "intent": "booking_info",
+          "slots": {
+            "booking_reference": "BK-D4E5F6"
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "booking_reference": "BK-D4E5F6"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "booking_reference": "BK-D4E5F6"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"booking_reference\":\"BK-D4E5F6\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"booking_reference\":\"BK-D4E5F6\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "booking_reference": "BK-D4E5F6"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"booking_reference\":\"BK-D4E5F6\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"booking_reference\":\"BK-D4E5F6\"'"
+          ]
+        },
+        "latency_seconds": 1.80227
+      },
+      {
+        "text": "What time is SIM-G7H8J9 booked for?",
+        "expected": {
+          "text": "What time is SIM-G7H8J9 booked for?",
+          "intent": "booking_info",
+          "slots": {
+            "booking_reference": "SIM-G7H8J9"
+          }
+        },
+        "predicted": {
+          "intent": "book",
+          "slots": {
+            "booking_reference": "SIM-G7H8J9"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {
+            "booking_reference": "SIM-G7H8J9"
+          },
+          "llm_intent_trusted": true,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"booking_reference\":\"SIM-G7H8J9\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"booking_reference\":\"SIM-G7H8J9\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {
+              "booking_reference": "SIM-G7H8J9"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"booking_reference\":\"SIM-G7H8J9\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"booking_reference\":\"SIM-G7H8J9\"'"
+          ]
+        },
+        "latency_seconds": 1.7964
+      },
+      {
+        "text": "show details of BK-K1L2M3",
+        "expected": {
+          "text": "show details of BK-K1L2M3",
+          "intent": "booking_info",
+          "slots": {
+            "booking_reference": "BK-K1L2M3"
+          }
+        },
+        "predicted": {
+          "intent": "booking_info",
+          "slots": {
+            "booking_reference": "BK-K1L2M3"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "restaurant_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"restaurant_info\",\"slots\":\"restaurant_group\":\"BK-K1L2M3\"",
+          "llm_repaired_output": "{\"intent\":\"restaurant_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "restaurant_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"restaurant_info\",\"slots\":\"restaurant_group\":\"BK-K1L2M3\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"restaurant_info\",\"slots\":\"restaurant_group\":\"BK-K1L2M3\"'"
+          ]
+        },
+        "latency_seconds": 1.818011
+      },
+      {
+        "text": "I need info on my current booking",
+        "expected": {
+          "text": "I need info on my current booking",
+          "intent": "booking_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "booking_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"booking_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"booking_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "booking_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"booking_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"booking_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.080906
+      },
+      {
+        "text": "what reservations are in this session?",
+        "expected": {
+          "text": "what reservations are in this session?",
+          "intent": "booking_list",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "booking_list",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "booking_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"booking_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"booking_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "booking_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"booking_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"booking_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.097938
+      },
+      {
+        "text": "show all the tables I've booked here",
+        "expected": {
+          "text": "show all the tables I've booked here",
+          "intent": "booking_list",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.026085
+      },
+      {
+        "text": "booking history for this chat pls",
+        "expected": {
+          "text": "booking history for this chat pls",
+          "intent": "booking_list",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "booking_info",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"booking_info\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"booking_info\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "booking_info",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"booking_info\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"booking_info\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.10457
+      },
+      {
+        "text": "remind me which filters are on",
+        "expected": {
+          "text": "remind me which filters are on",
+          "intent": "filter_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.977826
+      },
+      {
+        "text": "what criteria narrowed these results?",
+        "expected": {
+          "text": "what criteria narrowed these results?",
+          "intent": "filter_info",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.970153
+      },
+      {
+        "text": "put the current choices into a tbale",
+        "expected": {
+          "text": "put the current choices into a tbale",
+          "intent": "table_view",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "list",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"list\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"list\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "list",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"list\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"list\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.993722
+      },
+      {
+        "text": "switch these booking results to table format",
+        "expected": {
+          "text": "switch these booking results to table format",
+          "intent": "table_view",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "table_view",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"update\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"update\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"update\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.005644
+      },
+      {
+        "text": "order me a taxi to the station",
+        "expected": {
+          "text": "order me a taxi to the station",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unsupported",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"order\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unsupported\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unsupported",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"order\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"order\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.969995
+      },
+      {
+        "text": "find a hotel with late checkout",
+        "expected": {
+          "text": "find a hotel with late checkout",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"day_modifier\":\"late checkout\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"day_modifier\":\"late checkout\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"day_modifier\":\"late checkout\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"day_modifier\":\"late checkout\"'"
+          ]
+        },
+        "latency_seconds": 1.463567
+      },
+      {
+        "text": "when is the next train to London?",
+        "expected": {
+          "text": "when is the next train to London?",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unsupported",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"unsupported\",\"slots\":\"day_modifier\":\"London\"",
+          "llm_repaired_output": "{\"intent\":\"unsupported\",\"slots\":{\"day_modifier\":\"London\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unsupported",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"unsupported\",\"slots\":\"day_modifier\":\"London\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"unsupported\",\"slots\":\"day_modifier\":\"London\"'"
+          ]
+        },
+        "latency_seconds": 1.484991
+      },
+      {
+        "text": "need a dentist open tonight",
+        "expected": {
+          "text": "need a dentist open tonight",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"day\":\"night\",\"food\":\"chinese\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"day\":\"night\",\"food\":\"chinese\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"day\":\"night\",\"food\":\"chinese\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"day\":\"night\",\"food\":\"chinese\"'"
+          ]
+        },
+        "latency_seconds": 1.782229
+      },
+      {
+        "text": "take payment for this booking",
+        "expected": {
+          "text": "take payment for this booking",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.003787
+      },
+      {
+        "text": "I want a refund on my meal",
+        "expected": {
+          "text": "I want a refund on my meal",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unknown",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.026221
+      },
+      {
+        "text": "place a takeaway order for curry",
+        "expected": {
+          "text": "place a takeaway order for curry",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "dish_preference",
+          "slots": {
+            "dish": "curry",
+            "food_candidates": [
+              "indian",
+              "thai"
+            ]
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unsupported",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"order\",\"slots\":\"food\":\"turkish\"",
+          "llm_repaired_output": "{\"intent\":\"unsupported\",\"slots\":{\"food\":\"turkish\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unsupported",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"order\",\"slots\":\"food\":\"turkish\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"order\",\"slots\":\"food\":\"turkish\"'"
+          ]
+        },
+        "latency_seconds": 1.449941
+      },
+      {
+        "text": "where can I buy fireworks nearby?",
+        "expected": {
+          "text": "where can I buy fireworks nearby?",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 0.980583
+      },
+      {
+        "text": "book me a flight for the weekend",
+        "expected": {
+          "text": "book me a flight for the weekend",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "book",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"book\",\"slots\":\"day\":\"weekend\"",
+          "llm_repaired_output": "{\"intent\":\"book\",\"slots\":{\"day\":\"weekend\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "book",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"weekend\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"book\",\"slots\":\"day\":\"weekend\"'"
+          ]
+        },
+        "latency_seconds": 1.365087
+      },
+      {
+        "text": "store my credit card for later",
+        "expected": {
+          "text": "store my credit card for later",
+          "intent": "unsupported",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "unsupported",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unsupported",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"unsupported\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unsupported\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unsupported",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"unsupported\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"unsupported\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.018718
+      },
+      {
+        "text": "hiya, you alright?",
+        "expected": {
+          "text": "hiya, you alright?",
+          "intent": "greeting",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "greeting",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "greeting",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"greeting\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"greeting\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "greeting",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"greeting\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"greeting\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.062277
+      },
+      {
+        "text": "morning bot, let's find some food",
+        "expected": {
+          "text": "morning bot, let's find some food",
+          "intent": "greeting",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "search",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.028653
+      },
+      {
+        "text": "cheers mate, sorted",
+        "expected": {
+          "text": "cheers mate, sorted",
+          "intent": "thanks",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "thanks",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "greeting",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"greeting\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"greeting\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "greeting",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"greeting\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"greeting\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.053135
+      },
+      {
+        "text": "ta very much, that's everything",
+        "expected": {
+          "text": "ta very much, that's everything",
+          "intent": "thanks",
+          "slots": {}
+        },
+        "predicted": {
+          "intent": "thanks",
+          "slots": {},
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "thanks",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"thanks\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"thanks\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "thanks",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"thanks\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"thanks\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.029857
+      },
+      {
+        "text": "How far is that from the west side of Cambridge?",
+        "expected": {
+          "text": "How far is that from the west side of Cambridge?",
+          "intent": "distance_info",
+          "slots": {
+            "area": "west"
+          }
+        },
+        "predicted": {
+          "intent": "distance_info",
+          "slots": {
+            "area": "west"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": false,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "distance_info",
+          "llm_trusted_slots": {
+            "area": "west"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"distance_info\",\"slots\":\"area\":\"west\",\"food\":\"chinese\"",
+          "llm_repaired_output": "{\"intent\":\"distance_info\",\"slots\":{\"area\":\"west\",\"food\":\"chinese\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "distance_info",
+            "slots": {
+              "area": "west"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"distance_info\",\"slots\":\"area\":\"west\",\"food\":\"chinese\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"distance_info\",\"slots\":\"area\":\"west\",\"food\":\"chinese\"'"
+          ]
+        },
+        "latency_seconds": 1.867516
+      },
+      {
+        "text": "Is this place walkable from the centre?",
+        "expected": {
+          "text": "Is this place walkable from the centre?",
+          "intent": "distance_info",
+          "slots": {
+            "area": "centre"
+          }
+        },
+        "predicted": {
+          "intent": "distance_info",
+          "slots": {
+            "area": "centre"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "restaurant_info",
+          "llm_trusted_slots": {
+            "area": "centre"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"restaurant_info\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"",
+          "llm_repaired_output": "{\"intent\":\"restaurant_info\",\"slots\":{\"area\":\"centre\",\"food\":\"chinese\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "restaurant_info",
+            "slots": {
+              "area": "centre"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"restaurant_info\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"restaurant_info\",\"slots\":\"area\":\"centre\",\"food\":\"chinese\"'"
+          ]
+        },
+        "latency_seconds": 1.852658
+      },
+      {
+        "text": "distance from the north, roughly?",
+        "expected": {
+          "text": "distance from the north, roughly?",
+          "intent": "distance_info",
+          "slots": {
+            "area": "north"
+          }
+        },
+        "predicted": {
+          "intent": "distance_info",
+          "slots": {
+            "area": "north"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "unknown",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"north\",\"slots\":",
+          "llm_repaired_output": "{\"intent\":\"unknown\",\"slots\":{}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "unknown",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"north\",\"slots\":'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"north\",\"slots\":'"
+          ]
+        },
+        "latency_seconds": 1.043503
+      },
+      {
+        "text": "Actually west, not east",
+        "expected": {
+          "text": "Actually west, not east",
+          "intent": "correct",
+          "slots": {
+            "area": "west"
+          }
+        },
+        "predicted": {
+          "intent": "correct",
+          "slots": {
+            "area": "west"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "area": "west"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"indian\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"area\":\"west\",\"food\":\"indian\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "area": "west"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"indian\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"area\":\"west\",\"food\":\"indian\"'"
+          ]
+        },
+        "latency_seconds": 1.63894
+      },
+      {
+        "text": "Oops make that expensive rather than cheap",
+        "expected": {
+          "text": "Oops make that expensive rather than cheap",
+          "intent": "correct",
+          "slots": {
+            "pricerange": "expensive"
+          }
+        },
+        "predicted": {
+          "intent": "correct",
+          "slots": {
+            "pricerange": "expensive"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "search",
+          "llm_trusted_slots": {
+            "pricerange": "expensive"
+          },
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": true,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"search\",\"slots\":\"pricerange\":\"expensive\"",
+          "llm_repaired_output": "{\"intent\":\"search\",\"slots\":{\"pricerange\":\"expensive\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "search",
+            "slots": {
+              "pricerange": "expensive"
+            }
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"search\",\"slots\":\"pricerange\":\"expensive\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"search\",\"slots\":\"pricerange\":\"expensive\"'"
+          ]
+        },
+        "latency_seconds": 1.527234
+      },
+      {
+        "text": "No, I said 8pm not 8am",
+        "expected": {
+          "text": "No, I said 8pm not 8am",
+          "intent": "correct",
+          "slots": {
+            "time": "20:00"
+          }
+        },
+        "predicted": {
+          "intent": "correct",
+          "slots": {
+            "time": "20:00"
+          },
+          "used_llm": true,
+          "llm_attempted": true,
+          "llm_parse_success": false,
+          "llm_repair_success": true,
+          "llm_repair_weak": true,
+          "llm_repair_strategy": "pseudo_json_repair",
+          "llm_repaired_intent": "cancel",
+          "llm_trusted_slots": {},
+          "llm_intent_trusted": false,
+          "llm_slots_trusted": false,
+          "llm_meaningful_slot_contribution": false,
+          "llm_raw_output": "\"intent\":\"cancel\",\"slots\":\"day_modifier\":\"8pm\"",
+          "llm_repaired_output": "{\"intent\":\"cancel\",\"slots\":{\"day_modifier\":\"8pm\"}}",
+          "raw_strict_prediction": null,
+          "repaired_model_prediction": {
+            "intent": "cancel",
+            "slots": {}
+          },
+          "raw_strict_parse_success": false,
+          "raw_strict_parse_error": "LLM output had trailing text after JSON. Raw output: '\"intent\":\"cancel\",\"slots\":\"day_modifier\":\"8pm\"'",
+          "errors": [
+            "LLM output did not contain a valid intent/slots JSON object. Raw output: '\"intent\":\"cancel\",\"slots\":\"day_modifier\":\"8pm\"'"
+          ]
+        },
+        "latency_seconds": 1.510174
+      }
+    ]
+  },
+  "retrieval": {
+    "recall_at_1": 1.0,
+    "recall_at_3": 1.0,
+    "mrr": 1.0
+  },
+  "response_generation": {
+    "fallback_grounded_check": true,
+    "forbidden_claims_present": [],
+    "json_or_debug_leakage": false,
+    "groundedness_pass": true,
+    "slot_extraction_used_llm": true,
+    "generation_mode": "transformers:models/response-generator-lora",
+    "optional_metrics": "BLEU/ROUGE/BERTScore hooks not installed for MVP"
+  },
+  "end_to_end": {
+    "task_success_rate": 0.5,
+    "latency_seconds_mean": 2.8009,
+    "latency_seconds_max": 5.4023,
+    "average_latency_ms": 2800.924,
+    "p95_latency_ms": 5402.271,
+    "json_leakage_rate": 0.0,
+    "groundedness_pass_rate": 1.0,
+    "transcript": [
+      {
+        "name": "search_book_reschedule_cancel",
+        "success": true,
+        "llm_slot_turns": 4,
+        "generation_modes": [
+          "transformers:models/response-generator-lora",
+          "direct",
+          "direct",
+          "direct"
+        ],
+        "responses": [
+          "Great, I can create a search record for Pizza Hut Cherry Hinton. To finish it, I still need the price range.",
+          "Great, I have created a booking record for Pizza Hut Cherry Hinton on Friday 10 July 2026 at 19:00 for 2 people. Your reference is BK-75I793.",
+          "Done, I have updated booking BK-75I793 for Pizza Hut Cherry Hinton to Saturday 11 July 2026 at 19:00 for 2 people.",
+          "Done - I have cancelled booking BK-75I793."
+        ]
+      },
+      {
+        "name": "clarify_missing_search",
+        "success": false,
+        "llm_slot_turns": 1,
+        "generation_modes": [
+          "transformers:models/response-generator-lora"
+        ],
+        "responses": [
+          "Sure - what kind of food would you like me to search for?"
+        ]
+      }
+    ]
+  },
+  "system_metrics": {
+    "intent_accuracy": 0.725,
+    "slot_precision": 0.951,
+    "slot_recall": 0.9151,
+    "slot_f1": 0.9327,
+    "retrieval_recall_at_3": 1.0,
+    "task_success_rate": 0.5,
+    "json_leakage_rate": 0.0,
+    "groundedness_pass_rate": 1.0,
+    "average_latency_ms": 2800.924,
+    "p95_latency_ms": 5402.271
+  }
+}

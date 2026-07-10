@@ -93,6 +93,13 @@ disjoint. The checker also verifies exact normalised user-message overlap,
 complete input overlap, duplicate rows, duplicate input/output pairs, restaurant
 identifier overlap, booking-reference grounding and JSONL schema validity.
 
+Response prompts are built by `src/restaurant_assistant/response_prompt.py` and
+shared by dataset generation, LoRA training, runtime inference and evaluation.
+The gold response is not included in the model prompt. Evaluation reports keep
+the deterministic baseline, raw pretrained output, raw trained-adapter output,
+validation result and final guarded fallback separate so fallback text is not
+reported as raw model performance.
+
 Codex did not execute response-model training or response-model evaluation.
 Run the following commands manually in Kaggle only.
 
