@@ -17,7 +17,6 @@ data/processed/*
 !data/processed/restaurants.jsonl
 data/runtime/*
 !data/runtime/README.md
-outputs/
 
 # Model/cache artifacts
 .cache/
