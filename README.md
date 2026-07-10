@@ -183,7 +183,10 @@ Current committed headline metrics:
 
 See:
 
-- `reports/model_comparison.md`
+- `reports/evaluation_matrix.md`
+- `reports/challenge_evaluation_matrix.md`
+- `reports/response_generation_comparison_trained.md`
+- `reports/response_generation_challenge_trained.md`
 - `reports/evaluation_lora_strict_eval.json`
 - `reports/evaluation_lora_strict_challenge.json`
 - `docs/evaluation_plan.md`
@@ -264,14 +267,3 @@ for disposable run metadata. Copy only report-ready evidence into `reports/`.
   addresses, phone numbers, postcodes, food types or restaurant names.
 - The local web app stores SQLite demo accounts, sessions, chat turns and
   booking records. It is for demonstration and evaluation, not deployment.
-
-## Demo Script
-
-For an 8-10 minute demo:
-
-1. Show a successful restaurant search with food, area and price.
-2. Ask an underspecified query and show clarification.
-3. Book the selected restaurant, then reschedule and cancel it.
-4. Show an unsupported request such as payment, taxi or live availability.
-5. Open the admin dashboard and point to transcript, booking and metric views.
-6. Close with `reports/model_comparison.md` and the safety/limitation notes.
