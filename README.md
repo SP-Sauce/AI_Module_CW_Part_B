@@ -126,7 +126,6 @@ data/processed/             Processed MultiWOZ restaurant records
 data/samples/               Small smoke-test dataset
 models/                     Completed slot and response LoRA adapters
 reports/                    Final metrics, matrices, metadata and integrity reports
-docs/                       Architecture and supporting technical documentation
 tests/                      Unit and integration test suite
 ```
 
