@@ -57,10 +57,6 @@ docs/                       Architecture, evaluation and training notes
 tests/                      Unit and integration tests
 ```
 
-`outputs/` is intentionally ignored. Scripts may create it for local generated
-experiment artifacts, but those files are disposable; report-ready evidence is
-kept in `reports/`.
-
 ## Installation
 
 The default rule-baseline system and tests do not require a model download.
